@@ -29,14 +29,12 @@ public class FibonacciNumbers {
 		long first = list.get(idx - 1);
 		long second = list.get(idx);
 
-		System.out.println("first = " + first + ", second = " + second);
 		list.add(first + second);
 
 		idx++;
 
-		System.out.println("list = " + list);
-
 		if (idx == n) {
+			System.out.println("list = " + list);
 			System.out.println("list.get(idx) = " + list.get(idx));
 			System.exit(0);
 		}

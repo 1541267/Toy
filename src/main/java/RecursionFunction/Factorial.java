@@ -20,6 +20,9 @@ public class Factorial {
 			return 1;
 		}
 
-		return number * factorial(--number);
+
+		// return number * factorial(--number);
+		// 재귀 호출에선 입력 값의 무결성 유지?
+		return number * factorial(number -1);
 	}
 }
