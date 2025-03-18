@@ -1,7 +1,7 @@
 package sort;
 
 // 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결, 결과를 모음
-// 불안정 정렬, 다른 우너소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
+// 불안정 정렬, 다른 원소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
 // 하나의 값을 피벗(기준)으로 잡고 피벗보다 왼쪽은 작은 배열, 오른쪽은 큰 배열로 분열(Divide), 재귀적으로 반복
 // 재귀 호출이 진행될 때마다 하나의 원소는 위치가 정해지므로 재귀함수가 반드시 끝나는 걸 보장
 
@@ -13,10 +13,11 @@ package sort;
 
 // 해결?: Random 피벗이나 중간값 피벗으로 해결 가능 (완전히 줄일 순 없음 O(n log n)에 가깝게), 왼쪽|오른쪽 피벗보다 항상 Random | 중간값이 더 성능이 좋음
 
-// 시간 복잡도: Best = O(n log n), Worst = O(n^2), Avg = O(n log n), 공간 복잡도: 주어진 배열 안에서 교환 == O(1)
+// 시간 복잡도: Best = O(n log n), Avg = O(n log n), Worst = O(n^2), 공간 복잡도: 주어진 배열 안에서 교환 == O(1)
 // 장점: 불필요한 데이터의 이동을 줄이고 먼 거리의 데이터를 교환, 한 번 결정되니 피벗들이 추 후 연산에서 제외, 시간 복잡도가 O(n log n)의 다른 알고리즘 보다 가장 빠릅
 // 단점: 불안정 정렬, 정렬된 배열에 대해선 Quick Sort의 불균형 분할에 의해 오히려 더 많이 걸림
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -24,7 +25,7 @@ import sort.customArr.CustomArray;
 
 // 퀵(피벗) 정렬 개선
 public class _4_Quick {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		CustomArray a = new CustomArray();
 		int[] arr = a.generateArr();
