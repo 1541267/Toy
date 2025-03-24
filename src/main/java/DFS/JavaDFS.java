@@ -1,6 +1,13 @@
 package DFS;
 
 // dfs 연습
+// 맵을 상하좌우 이동
+// 직접 상하좌우를 입력 가능
+// 			dfs(x - 1, y);
+// 			dfs(x + 1, y);
+// 			dfs(x, y - 1);
+// 			dfs(x, y + 1);
+// or 배열로 시작 dx = {1, -1, 0, 0}, dy = {0, 0, 1, -1}
 
 import java.io.BufferedReader;
 import java.io.IOException;

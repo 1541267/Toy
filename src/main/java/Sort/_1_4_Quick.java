@@ -1,4 +1,4 @@
-package sort;
+package Sort;
 
 // 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결, 결과를 모음
 // 불안정 정렬, 다른 원소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
@@ -8,7 +8,7 @@ package sort;
 // 피봇 값을 기준으로 오른쪽에선 작은 값 찾고 킵, 왼쪽에선 큰 값을 찾고 두 값을 스왑
 // 이 과정을 반복, 위의 인덱스가 교차하는 (해당 피봇에서 더 바꿀 값이 없으면) 해당 인덱스와 피봇을 스왑, 위 과정 반복
 
-// 개선: 피벗 값이 Min | Max으로 지정되어 파티션이 나누어지지 않았을 떄 O(n^2) == 정렬하고자 하는 배열이 오름차 | 내림차 정렬 되어 있을 떄 O(n^2)
+// 개선: 피벗 값이 Min | Max으로 지정되어 파티션이 나누어지지 않았을때 O(n^2) == 정렬하고자 하는 배열이 오름차 | 내림차 정렬 되어 있을 떄 O(n^2)
 // 이 때 배열에서 가장 앞에 있는 값과 중간값을 교환해 준다면 확률적으로 시간 복잡도 O(n log2 n)으로 개선 == 최악의 시간 복잡도가 O(n log2 n)이 되는건 아님
 
 // 해결?: Random 피벗이나 중간값 피벗으로 해결 가능 (완전히 줄일 순 없음 O(n log n)에 가깝게), 왼쪽|오른쪽 피벗보다 항상 Random | 중간값이 더 성능이 좋음
@@ -21,14 +21,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import sort.customArr.CustomArray;
+import Sort.ArrGenerator.ArrGenerator;
 
 // 퀵(피벗) 정렬 개선
-public class _4_Quick {
+public class _1_4_Quick {
 	public static void main(String[] args) throws IOException {
 
-		CustomArray a = new CustomArray();
-		int[] arr = a.generateArr();
+		ArrGenerator a = new ArrGenerator();
+		int[] arr = a.init();
 
 		int left = 0;
 		int right = arr.length - 1;
@@ -108,10 +108,10 @@ public class _4_Quick {
 }
 
 // 피벗이 왼쪽에 고정 -> 이미 정렬된 경우 비효율, O(n^2)
-// public class _4_Quick {
+// public class _1_4_Quick {
 // 	public static void main(String[] args) {
 //
-// 		CustomArray a = new CustomArray();
+// 		ArrGenerator a = new ArrGenerator();
 //
 // 		int[] arr = a.generateArr();
 //

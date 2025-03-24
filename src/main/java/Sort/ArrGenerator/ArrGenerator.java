@@ -1,14 +1,13 @@
-package sort.customArr;
+package Sort.ArrGenerator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 
-public class CustomArray {
+public class ArrGenerator {
 	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	static int n;
 
@@ -22,7 +21,7 @@ public class CustomArray {
 
 	static int[] arr = new int[n];
 
-	public CustomArray() {
+	public ArrGenerator() {
 		RandomGenerator rg = RandomGeneratorFactory.getDefault().create();
 
 		HashSet<Integer> temp = new HashSet<>();
@@ -37,7 +36,7 @@ public class CustomArray {
 		}
 	}
 
-	public int[] generateArr() {
+	public int[] init() {
 		return arr;
 	}
 }
