@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // _1_~ 방법들은 Comparsion Sort, 이를 모두 정렬하는 가짓수는 n!
 // 정렬을 통해 생기는 트리의 말단 노드가 n! 이상의 노드를 갖기 위해선 2^h >= n!을 만족하는 h를 가져야 하고
@@ -11,7 +11,7 @@ package Sort;
 
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _2_1_Counting {
 	public static void main(String[] args) {

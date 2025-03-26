@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 선택 정렬: 원소를 넣을 위치(인덱스(선택되어있음))는 정해져 있는 것이 _1_1_Bubble Sort 와의 차이
 // 시험에서 n회 회전 정렬 시 모양 구하기 문제?, 1회전시 최소값이 맨 앞, 최소값 순서 정렬
@@ -10,7 +10,7 @@ package Sort;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _1_2_Selection {
 	public static void main(String[] args) throws IOException {

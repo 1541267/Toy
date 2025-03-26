@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 버킷 정렬: 데이터를 여러 개의 버킷으로 분산 후 각 버킷 내부에서 정렬을 수행, 버킷을 순서대로 합침
 // 분산 단계: n개의 균등한 크기의 버킷으로 나눔, 정렬 단계: 각 버킷 내부를 다른 정렬 알고리즘 으로 정렬, 수집 단계: 모든 버킷을 순샤대로 합쳐 배열 생성
@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _2_3_Bucket {
 	public static void main(String[] args) {

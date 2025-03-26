@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 거품 정렬: 서로 인접한 원소를 대소비교, 1회전 시 가장 큰 값이 맨 뒤, 최대값 순서대로 정렬
 // 시간복잡도: Best, Worts, Avg = O(n^2), 공간복잡도: 주어진 배열 안에서 교환(Swap) O(1)
@@ -8,7 +8,7 @@ package Sort;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _1_1_Bubble {
 	public static void main(String[] args) throws IOException {

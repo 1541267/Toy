@@ -1,4 +1,4 @@
-package DFS;
+package Algorithm.DFS;
 
 // dfs 연습
 // 맵을 상하좌우 이동

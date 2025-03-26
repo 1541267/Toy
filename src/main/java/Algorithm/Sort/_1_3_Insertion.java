@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // Select, Bubble과 유사, 2번째 요소부터 시작 해 앞의 요소들과 비교 후 삽입 할 위치 지정, 앞의 원소를 뒤로 옮기고 지정된 자리에 삽입
 // 시간복잡도: Best(정렬이 되어 있는경우) O(n), Worst(역으로 정렬되어 있을 경우) & Avg O(n^2),  공간복잡도: 주어진 배열 안에서 Swap O(1)
@@ -10,7 +10,7 @@ package Sort;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _1_3_Insertion {
 	public static void main(String[] args) throws IOException {

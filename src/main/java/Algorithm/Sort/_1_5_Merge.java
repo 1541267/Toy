@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 병합 정렬: 분할 정복 방법을 통해 구현, 빠른 정렬로 분류되며 Quick과 함꼐 많이 언급, Quick과 반대로 안정 정렬
 // 요소를 최소 길이로 쪼갠 후 정렬, 이 후 병합 시키면서 정렬(두 영역이 정렬이 되어있기 때문에 순차적으로 두 배열을 비교)해 나가는 방식, 쪼개는 방식은 Quick과 유사
@@ -15,7 +15,7 @@ package Sort;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _1_5_Merge {
 	public static void main(String[] args) throws IOException {

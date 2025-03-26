@@ -1,4 +1,4 @@
-package Sort.ArrGenerator;
+package Algorithm.Sort.ArrGenerator;
 
 import java.io.BufferedReader;
 import java.io.IOException;

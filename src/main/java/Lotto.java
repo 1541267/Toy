@@ -13,7 +13,6 @@ public class Lotto {
 		RandomGenerator rg = RandomGeneratorFactory.getDefault().create();
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-
 		int count = 0;
 		System.out.println("몇 세트 생성?");
 		int n = Integer.parseInt(br.readLine());
@@ -30,10 +29,15 @@ public class Lotto {
 		}
 
 		System.out.println(n + "개 생성, 이중에 한 개씩 고르기");
+		StringBuilder sb = new StringBuilder();
+
 		while (count < 5) {
-			System.out.println(numList.get(Integer.parseInt(br.readLine())));
+			sb.append("==================================================").append("\n");
+			sb.append(numList.get(Integer.parseInt(br.readLine()))).append("\n");
 			count++;
 		}
+
+		System.out.println(sb);
 	}
 }
 // 	public static void main(String[] args) throws IOException {

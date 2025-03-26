@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결, 결과를 모음
 // 불안정 정렬, 다른 원소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 // 퀵(피벗) 정렬 개선
 public class _1_4_Quick {

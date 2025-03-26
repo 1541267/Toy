@@ -1,4 +1,4 @@
-package DFS;
+package Algorithm.DFS;
 
 // dfs 연습
 // 연결된 요소 확인 과정

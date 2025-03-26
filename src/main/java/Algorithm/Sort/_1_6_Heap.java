@@ -1,4 +1,4 @@
-package Sort;
+package Algorithm.Sort;
 
 // 힙 정렬: 완전 이진 트리(삽입 시 왼쪽부터 차례대로 추가) 를 기본으로 하는 Heap 구조를 기반으로한 정렬 방식
 // 시간 복잡도: Best: O(n log n), Worst: O(n log n), Avg: O(n log n)
@@ -13,7 +13,7 @@ package Sort;
 
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class _1_6_Heap {
 	public static void main(String[] args) {

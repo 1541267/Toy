@@ -1,8 +1,8 @@
-package BruteForce;
+package Algorithm.BruteForce;
 
 import java.util.Arrays;
 
-import Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 
 public class BruteForce {
 	static int n;
