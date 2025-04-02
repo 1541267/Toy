@@ -13,6 +13,7 @@ public class ArrGenerator {
 
 	static {
 		try {
+			System.out.print("배열 생성, 길이 입력: ");
 			n = Integer.parseInt(br.readLine());
 		} catch (IOException e) {
 			throw new RuntimeException(e);

@@ -14,28 +14,39 @@ public class SieveOfEratosthenes {
 		Arrays.fill(isPrime, true);
 		isPrime[0] = isPrime[1] = false;
 
-		System.out.print("n 번째 소수 찾기: ");
+		System.out.print("1~1000 범위, n 번째 소수 찾기: ");
 		int n = Integer.parseInt(br.readLine());
-
 		int primeCount = 0;
 
-		for (int i = 2; i <= max; i++) {
-			if (isPrime[i])
+		StringBuilder sb = new StringBuilder();
+		// 아래와 똑같으나 더 효율적, 반복 횟수 감소
+		for (int i = 2; i * i <= max1; i++) {
+			// for (int i = 2; i <= Math.sqrt(max); i++) {
+			if (isPrime[i]) {
+				sb.append(i).append(" ");
 				primeCount++;
-			if(n == primeCount) {
-				System.out.println("찾은 n번 째 소수: " + i);
+			}
+			if (n == primeCount) {
+				sb.append("\n").append("찾은 ").append(primeCount).append(" 번째 소수: ").append(i);
 				break;
 			}
-			for (int j = i * i; j <= max; j += i) {
+			for (int j = i * 2; j <= max; j += i) {
 				isPrime[j] = false;
 			}
 		}
-
-		for (int i = 0; i < max + 1; i++) {
-			if (isPrime[i]) {
-				System.out.print(i + " ");
-			}
-		}
-
+		// for (int i = 2; i <= max; i++) {
+		// 	if (isPrime[i]) {
+		// 		sb.append(i).append(" ");
+		// 		primeCount++;
+		// 	}
+		// 	if (n == primeCount) {
+		// 		sb.append("\n").append("찾은 ").append(primeCount).append(" 번째 소수: ").append(i);
+		// 		break;
+		// 	}
+		// 	for (int j = i * 2; j <= max; j += i) {
+		// 		isPrime[j] = false;
+		// 	}
+		// }
+		System.out.println(sb);
 	}
 }
