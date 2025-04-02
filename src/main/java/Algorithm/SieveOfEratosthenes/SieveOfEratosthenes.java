@@ -20,7 +20,7 @@ public class SieveOfEratosthenes {
 
 		StringBuilder sb = new StringBuilder();
 		// 아래와 똑같으나 더 효율적, 반복 횟수 감소
-		for (int i = 2; i * i <= max1; i++) {
+		for (int i = 2; i * i <= max; i++) {
 			// for (int i = 2; i <= Math.sqrt(max); i++) {
 			if (isPrime[i]) {
 				sb.append(i).append(" ");
