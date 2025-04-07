@@ -13,8 +13,6 @@ public class BigNumberCalc {
 		System.out.println(sum(a, b));
 	}
 
-
-
 	private static String sum(String a, String b) {
 		StringBuilder sb = new StringBuilder();
 		int i = a.length() - 1;
