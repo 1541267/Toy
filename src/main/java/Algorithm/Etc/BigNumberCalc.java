@@ -1,4 +1,4 @@
-package Algorithm;
+package Algorithm.Etc;
 
 public class BigNumberCalc {
 	public static void main(String[] args) {

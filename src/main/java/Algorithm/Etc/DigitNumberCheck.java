@@ -1,4 +1,4 @@
-package Algorithm;
+package Algorithm.Etc;
 
 import java.io.IOException;
 
