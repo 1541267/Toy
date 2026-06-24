@@ -8,36 +8,33 @@ import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 
 public class ArrGenerator {
-	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-	static int n;
 
-	static {
-		try {
-			System.out.print("배열 생성, 길이 입력: ");
-			n = Integer.parseInt(br.readLine());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+  static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+  static int n;
 
-	static int[] arr = new int[n];
+  static {
+    try {
+      System.out.print("배열 생성, 길이 입력: ");
+      n = Integer.parseInt(br.readLine());
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
-	public ArrGenerator() {
-		RandomGenerator rg = RandomGeneratorFactory.getDefault().create();
+  static int[] arr = new int[n];
 
-		HashSet<Integer> temp = new HashSet<>();
+  public ArrGenerator() {
+    RandomGenerator rg = RandomGeneratorFactory.getDefault().create();
 
-		while (temp.size() != n) {
-			temp.add(rg.nextInt(1, n * 6));
-		}
+    HashSet<Integer> temp = new HashSet<>();
 
-		int i = 0;
-		for (Integer num : temp) {
-			arr[i++] = num;
-		}
-	}
+    while (temp.size() != n) {temp.add(rg.nextInt(1, n * 6));}
 
-	public int[] init() {
-		return arr;
-	}
+    int i = 0;
+    for (Integer num : temp) {arr[i++] = num;}
+  }
+
+  public int[] init() {
+    return arr;
+  }
 }

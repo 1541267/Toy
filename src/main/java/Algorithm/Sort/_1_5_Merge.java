@@ -12,72 +12,76 @@ package Algorithm.Sort;
 // 작은 배열에선 비효율적 (삽입 정렬 보다 오히려 느림),캐시 친화적이지 않음(메모리 접근이 많아 속도가 느려질 수 있음)
 // 시간 복잡도: Best: O(n log n), Avg: O(n log n), Worst: O(n log n)
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _1_5_Merge {
-	public static void main(String[] args) throws IOException {
-		ArrGenerator a = new ArrGenerator();
 
-		int[] arr = a.init();
+  public static void main(String[] args) throws IOException {
+    ArrGenerator a = new ArrGenerator();
 
-		System.out.println("Befor: " + Arrays.toString(arr));
+    int[] arr = a.init();
 
-		mergeSort(arr, 0, arr.length - 1);
-		System.out.println("Finish: " + Arrays.toString(arr));
+    System.out.println("Befor: " + Arrays.toString(arr));
 
-	}
+    double start = System.currentTimeMillis();
 
-	private static void mergeSort(int[] arr, int left, int right) {
-		System.out.println(
-			"merge sort start arr : " + Arrays.toString(arr) + ", left : " + left + ", right : " + right);
+    mergeSort(arr, 0, arr.length - 1);
+    System.out.println("Finish: " + Arrays.toString(arr));
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 
-		if (left < right) {
+  private static void mergeSort(int[] arr, int left, int right) {
+    System.out.println(
+        "merge sort start arr : " + Arrays.toString(arr) + ", left : " + left + ", right : " + right);
 
-			int mid = (left + right) / 2;
+    if (left < right) {
 
-			mergeSort(arr, left, mid);
-			mergeSort(arr, mid + 1, right);
-			System.out.println("==========================================================");
-			System.out.println("Before Merge : " + Arrays.toString(arr));
-			merge(arr, left, mid, right);
-			System.out.println("==========================================================");
-			System.out.println("After Merge : " + Arrays.toString(arr));
-		}
-	}
+      int mid = (left + right) / 2;
 
-	private static void merge(int[] arr, int left, int mid, int right) {
-		int[] L = Arrays.copyOfRange(arr, left, mid + 1);
-		int[] R = Arrays.copyOfRange(arr, mid + 1, right + 1);
+      mergeSort(arr, left, mid);
+      mergeSort(arr, mid + 1, right);
+      System.out.println("==========================================================");
+      System.out.println("Before Merge : " + Arrays.toString(arr));
+      merge(arr, left, mid, right);
+      System.out.println("==========================================================");
+      System.out.println("After Merge : " + Arrays.toString(arr));
+    }
+  }
 
-		System.out.println("Merge start Left : " + left + ", right: " + right + ", L arr : " + Arrays.toString(L) + ", R arr : " + Arrays.toString(R) );
+  private static void merge(int[] arr, int left, int mid, int right) {
+    int[] L = Arrays.copyOfRange(arr, left, mid + 1);
+    int[] R = Arrays.copyOfRange(arr, mid + 1, right + 1);
 
-		int i = 0, j = 0, k = left;
-		int l1 = L.length, r1 = R.length;
+    System.out.println(
+        "Merge start Left : " + left + ", right: " + right + ", L arr : " + Arrays.toString(L) + ", R arr : " + Arrays.toString(R));
 
-		while (i < l1 && j < r1) {
-			if (L[i] <= R[j]) {
-				arr[k] = L[i++];
-			} else {
-				arr[k] = R[j++];
-			}
-			k++;
-		}
+    int i = 0, j = 0, k = left;
+    int l1 = L.length, r1 = R.length;
 
-		while (i < l1) {
-			System.out.println("==========================================================");
-			System.out.println("L Merge Before: " + Arrays.toString(arr));
-			arr[k++] = L[i++];
-			System.out.println("L Merge After: " + Arrays.toString(arr));
-		}
-		while (j < r1) {
-			System.out.println("==========================================================");
-			System.out.println("R Merge Before: " + Arrays.toString(arr));
-			arr[k++] = R[j++];
-			System.out.println("R Merge After: " + Arrays.toString(arr));
-		}
+    while (i < l1 && j < r1) {
+      if (L[i] <= R[j]) {
+        arr[k] = L[i++];
+      } else {
+        arr[k] = R[j++];
+      }
+      k++;
+    }
 
-	}
+    while (i < l1) {
+      System.out.println("==========================================================");
+      System.out.println("L Merge Before: " + Arrays.toString(arr));
+      arr[k++] = L[i++];
+      System.out.println("L Merge After: " + Arrays.toString(arr));
+    }
+    while (j < r1) {
+      System.out.println("==========================================================");
+      System.out.println("R Merge Before: " + Arrays.toString(arr));
+      arr[k++] = R[j++];
+      System.out.println("R Merge After: " + Arrays.toString(arr));
+    }
+
+  }
 }

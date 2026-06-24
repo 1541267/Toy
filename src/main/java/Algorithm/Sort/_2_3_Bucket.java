@@ -8,67 +8,64 @@ package Algorithm.Sort;
 // 정수: 정수의 범위가 너무 크면 버킷의 크기를 설정하는 데 문제 발생 가능 -> 입력이 너무 크면 메모리 낭비 -> ex 1~1_000_000 의 범위
 // 시간 복잡도: Best O(n + k): 데이터가 균등하게 분포, Worst: O(n^2): 모든 원소가 하나의 버킷에 들어가는 경우, Avg: O(n+k): k는 버킷 수
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _2_3_Bucket {
-	public static void main(String[] args) {
 
-		ArrGenerator a = new ArrGenerator();
+  public static void main(String[] args) {
 
-		int[] arr = a.init();
-		System.out.println("Before Arr: " + Arrays.toString(arr));
-		bucektSort(arr);
-		System.out.println("After Arr: " + Arrays.toString(arr));
+    ArrGenerator a = new ArrGenerator();
 
-	}
+    int[] arr = a.init();
+    System.out.println("Before Arr: " + Arrays.toString(arr));
 
-	private static void bucektSort(int[] arr) {
-		int n = arr.length;
-		List<Integer>[] buckets = new ArrayList[n];
+    double start = System.currentTimeMillis();
+    bucektSort(arr);
+    System.out.println("After Arr: " + Arrays.toString(arr));
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 
-		for (int i = 0; i < n; i++) {
-			buckets[i] = new ArrayList<>();
-		}
+  private static void bucektSort(int[] arr) {
+    int n = arr.length;
+    List<Integer>[] buckets = new ArrayList[n];
 
-		// 버킷에 원소 배치, 부동 소숫점
-		// for (int i = 0; i < n; i++) {
-		// 	int bucketIndex = (n * arr[i]);
-		// 	buckets[bucketIndex].add(arr[i]);
-		// }
+    for (int i = 0; i < n; i++) {buckets[i] = new ArrayList<>();}
 
-		// 정수 배치
-		int min = arr[0], max = arr[0];
-		for (int i = 1; i < n; i++) {
-			if (arr[i] < min)
-				min = arr[i];
-			if (arr[i] > max)
-				max = arr[i];
-		}
+    // 버킷에 원소 배치, 부동 소숫점
+    // for (int i = 0; i < n; i++) {
+    // 	int bucketIndex = (n * arr[i]);
+    // 	buckets[bucketIndex].add(arr[i]);
+    // }
 
-		// 각 원소를 적절한 버킷에 배치 (정수)
-		int range = max - min + 1;
-		for (int i = 0; i < n; i++) {
-			// 버킷 인덱스 계산 공식: (값 - 최소값) * 버킷 수 -1) / (최대값 - 최소값)
-			int bucketIndex = ((arr[i] - min) * (n - 1) / range);
-			buckets[bucketIndex].add(arr[i]);
-		}
+    // 정수 배치
+    int min = arr[0], max = arr[0];
+    for (int i = 1; i < n; i++) {
+      if (arr[i] < min) {min = arr[i];}
+      if (arr[i] > max) {max = arr[i];}
+    }
 
-		// 각 버킷 정렬
-		for (int i = 0; i < n; i++) {
-			Collections.sort(buckets[i]);
-		}
+    // 각 원소를 적절한 버킷에 배치 (정수)
+    int range = max - min + 1;
+    for (int i = 0; i < n; i++) {
+      // 버킷 인덱스 계산 공식: (값 - 최소값) * 버킷 수 -1) / (최대값 - 최소값)
+      int bucketIndex = ((arr[i] - min) * (n - 1) / range);
+      buckets[bucketIndex].add(arr[i]);
+    }
 
-		// 버킷 합치기
-		int index = 0;
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < buckets[i].size(); j++) {
-				arr[index++] = buckets[i].get(j);
-			}
-		}
-	}
+    // 각 버킷 정렬
+    for (int i = 0; i < n; i++) {Collections.sort(buckets[i]);}
+
+    // 버킷 합치기
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < buckets[i].size(); j++) {
+        arr[index++] = buckets[i].get(j);
+      }
+    }
+  }
 }

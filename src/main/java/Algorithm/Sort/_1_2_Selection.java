@@ -7,34 +7,36 @@ package Algorithm.Sort;
 // 단점: O(n^2) 비효율, 불안정 정렬(Unstable Sort), 배열의 길이가 길 수록 비효율적
 
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.io.IOException;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _1_2_Selection {
-	public static void main(String[] args) throws IOException {
 
-		ArrGenerator a = new ArrGenerator();
+  public static void main(String[] args) throws IOException {
 
-		int[] arr = a.init();
+    ArrGenerator a = new ArrGenerator();
 
-		System.out.println("Before Sort arr = " + Arrays.toString(arr));
+    int[] arr = a.init();
 
-		int index, temp;
+    System.out.println("Before Sort arr = " + Arrays.toString(arr));
+    double start = System.currentTimeMillis();
+    int index, temp;
 
-		for (int i = 0; i < arr.length - 1; i++) {
-			index = i;
-			for (int j = i + 1; j < arr.length; j++) {
-				if (arr[index] > arr[j]) {
-					index = j;
-				}
-			}
-			temp = arr[index];
-			arr[index] = arr[i];
-			arr[i] = temp;
-		}
-		System.out.println("======================================");
-		System.out.println("After Sort arr = " + Arrays.toString(arr));
-	}
+    for (int i = 0; i < arr.length - 1; i++) {
+      index = i;
+
+      for (int j = i + 1; j < arr.length; j++) {
+        if (arr[index] > arr[j]) {index = j;}
+      }
+
+      temp = arr[index];
+      arr[index] = arr[i];
+      arr[i] = temp;
+    }
+    System.out.println("======================================");
+    System.out.println("After Sort arr = " + Arrays.toString(arr));
+    System.out.println("======================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 }

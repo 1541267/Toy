@@ -20,6 +20,8 @@ public class _1_3_Insertion {
 
 		System.out.println("Before: " + Arrays.toString(arr));
 		System.out.println("==========================================================");
+
+		double start = System.currentTimeMillis();
 		for (int i = 1; i < arr.length; i++) {
 			int temp = arr[i];
 			int prev = i - 1;
@@ -33,5 +35,7 @@ public class _1_3_Insertion {
 		}
 		System.out.println("==========================================================");
 		System.out.println("After:  " + Arrays.toString(arr));
+		System.out.println("==========================================================");
+		System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
 	}
 }

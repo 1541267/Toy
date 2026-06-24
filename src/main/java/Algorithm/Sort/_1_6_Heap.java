@@ -11,72 +11,75 @@ package Algorithm.Sort;
 // 실제 구현에서 상수 요소가 높음 같은 O(n log n) 퀵 정렬, 합병 정렬에 비해 더 많은 연산 필요, 이미 정렬된 데이터에 최적화되지 않음(동일한 시간)
 // 구현 복잡
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _1_6_Heap {
-	public static void main(String[] args) {
-		ArrGenerator a = new ArrGenerator();
 
-		int[] arr = a.init();
+  public static void main(String[] args) {
+    ArrGenerator a = new ArrGenerator();
 
-		System.out.println("Before Arr: " + Arrays.toString(arr));
+    int[] arr = a.init();
 
-		heapSort(arr);
-		System.out.println("==========================================================");
-		System.out.println("After Arr: " + Arrays.toString(arr));
+    System.out.println("Before Arr: " + Arrays.toString(arr));
 
-	}
+    double start = System.currentTimeMillis();
 
-	private static void heapSort(int[] arr) {
-		int n = arr.length;
+    heapSort(arr);
+    System.out.println("==========================================================");
+    System.out.println("After Arr: " + Arrays.toString(arr));
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 
-		// maxHeap 초기화
-		for (int i = n / 2 - 1; i >= 0; i--) {        // 부모(root)노드 기준으로 왼쪽 자식노드 (2n + 1), 오른쪽 자식노드 (2n + 2)
-			System.out.println("==========================================================");
-			System.out.println("Before heapify: " + Arrays.toString(arr));
-			heapify(arr, n, i);        // 배열을 힙으로 구성, 자식노드로  부터 부모노드 비교, 부모가 항상 크게 조정, O(n)
-			System.out.println("After heapify: " + Arrays.toString(arr));
-		}
+  private static void heapSort(int[] arr) {
+    int n = arr.length;
 
-		// maxHeap의 extract 연산
-		for (int i = n - 1; i > 0; i--) {
-			swap(arr, 0, i);					// 최댓값이 마지막 위치로 이동
-			heapify(arr, i, 0);				// 요소가 하나 제거된 이후에 다시 최대 힙을 구성, 루트 기준으로 진행
-		}
-	}
+    // maxHeap 초기화
+    for (int i = n / 2 - 1; i >= 0; i--) {        // 부모(root)노드 기준으로 왼쪽 자식노드 (2n + 1), 오른쪽 자식노드 (2n + 2)
+      System.out.println("==========================================================");
+      System.out.println("Before heapify: " + Arrays.toString(arr));
+      heapify(arr, n, i);        // 배열을 힙으로 구성, 자식노드로  부터 부모노드 비교, 부모가 항상 크게 조정, O(n)
+      System.out.println("After heapify: " + Arrays.toString(arr));
+    }
 
-	private static void heapify(int[] arr, int n, int i) {
-		int p = i;
-		int l = i * 2 + 1;
-		int r = i * 2 + 2;
+    // maxHeap의 extract 연산
+    for (int i = n - 1; i > 0; i--) {
+      swap(arr, 0, i);          // 최댓값이 마지막 위치로 이동
+      heapify(arr, i, 0);        // 요소가 하나 제거된 이후에 다시 최대 힙을 구성, 루트 기준으로 진행
+    }
+  }
 
-		// 왼쪽 자식 노드
-		if (l < n && arr[p] < arr[l]) {
-			p = l;
-		}
+  private static void heapify(int[] arr, int n, int i) {
+    int p = i;
+    int l = i * 2 + 1;
+    int r = i * 2 + 2;
 
-		// 오른쪽 자식 노드
-		if (r < n && arr[p] < arr[r]) {
-			p = r;
-		}
+    // 왼쪽 자식 노드
+    if (l < n && arr[p] < arr[l]) {
+      p = l;
+    }
 
-		// 부모노드 < 자식노드
-		if (i != p) {
-			swap(arr, p, i);
-			heapify(arr, n, p);
-		}
-	}
+    // 오른쪽 자식 노드
+    if (r < n && arr[p] < arr[r]) {
+      p = r;
+    }
 
-	private static void swap(int[] arr, int a, int b) {
-		System.out.println("==========================================================");
+    // 부모노드 < 자식노드
+    if (i != p) {
+      swap(arr, p, i);
+      heapify(arr, n, p);
+    }
+  }
 
-		System.out.println("Before Swap Arr: " + Arrays.toString(arr));
-		int temp = arr[a];
-		arr[a] = arr[b];
-		arr[b] = temp;
-		System.out.println("After Swap Arr: " + Arrays.toString(arr));
-	}
+  private static void swap(int[] arr, int a, int b) {
+    System.out.println("==========================================================");
+
+    System.out.println("Before Swap Arr: " + Arrays.toString(arr));
+    int temp = arr[a];
+    arr[a] = arr[b];
+    arr[b] = temp;
+    System.out.println("After Swap Arr: " + Arrays.toString(arr));
+  }
 
 }

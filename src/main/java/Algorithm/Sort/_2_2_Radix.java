@@ -14,65 +14,69 @@ package Algorithm.Sort;
 // -> MSD는 상위 자릿수부터 내려가기 때문에 하위 자릿수에서의 처리 방식이 상위 자릿수에서의 처리 방식에 영향을 받을 수 있음
 // LSD는 자릿수가 정해진 경우 좀 더 빠를 수 있음
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _2_2_Radix {
-	public static void main(String[] args) {
-		ArrGenerator a = new ArrGenerator();
 
-		int[] arr = a.init();
+  public static void main(String[] args) {
+    ArrGenerator a = new ArrGenerator();
 
-		int n = arr.length;
-		System.out.println("Before Arr: " + Arrays.toString(arr));
-		radixSort(arr, n);
-		System.out.println("After Arr: " + Arrays.toString(arr));
-	}
+    int[] arr = a.init();
 
-	private static void radixSort(int[] arr, int n) {
-		int m = getMax(arr);
-		// 최댓값을 나눴을 때 0이 나오면 모든 숫자가 i의 아래
-		// exp: 자릿수
-		for (int exp = 1; (m / exp) > 0; exp *= 10) {
-			countSort(arr, n, exp);
-		}
+    int n = arr.length;
 
-	}
+    double start = System.currentTimeMillis();
 
-	// 특정 자릿수를 기준으로 counting sort 수행
-	private static void countSort(int[] arr, int n, int exp) {
-		int[] buffer = new int[n];
-		int[] count = new int[10];
+    System.out.println("Before Arr: " + Arrays.toString(arr));
+    radixSort(arr, n);
+    System.out.println("After Arr: " + Arrays.toString(arr));
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+}
 
-		// exp의 자릿수에 해당하는 count 증가
-		for (int i = 0; i < n; i++) {
-			count[(arr[i] / exp) % 10]++;
-		}
+  private static void radixSort(int[] arr, int n) {
+    int m = getMax(arr);
+    // 최댓값을 나눴을 때 0이 나오면 모든 숫자가 i의 아래
+    // exp: 자릿수
+    for (int exp = 1; (m / exp) > 0; exp *= 10) {
+      countSort(arr, n, exp);
+    }
+  }
 
-		// 누적 합
-		for (int i = 1; i < 10; i++) {
-			count[i] += count[i - 1];
-		}
+  // 특정 자릿수를 기준으로 counting sort 수행
+  private static void countSort(int[] arr, int n, int exp) {
+    int[] buffer = new int[n];
+    int[] count = new int[10];
 
-		// 일반적인 Counting sort 과정
-		for (int i = n - 1; i >= 0; i--) {
-			buffer[count[(arr[i] / exp) % 10] - 1] = arr[i];
-			count[(arr[i] / exp) % 10]--;
-		}
+    // exp의 자릿수에 해당하는 count 증가
+    for (int i = 0; i < n; i++) {
+      count[(arr[i] / exp) % 10]++;
+    }
 
-		// 원래 배열에 정렬된 결과 복사
-		for (int i = 0; i < n; i++) {
-			arr[i] = buffer[i];
-		}
-	}
+    // 누적 합
+    for (int i = 1; i < 10; i++) {
+      count[i] += count[i - 1];
+    }
 
-	static int getMax(int[] arr) {
+    // 일반적인 Counting sort 과정
+    for (int i = n - 1; i >= 0; i--) {
+      buffer[count[(arr[i] / exp) % 10] - 1] = arr[i];
+      count[(arr[i] / exp) % 10]--;
+    }
 
-		int max = 0;
-		for (int i = 0; i < arr.length; i++) {
-			max = Math.max(arr[i], max);
-		}
-		return max;
-	}
+    // 원래 배열에 정렬된 결과 복사
+    for (int i = 0; i < n; i++) {
+      arr[i] = buffer[i];
+    }
+  }
+
+  static int getMax(int[] arr) {
+
+    int max = 0;
+    for (int i = 0; i < arr.length; i++) {
+      max = Math.max(arr[i], max);
+    }
+    return max;
+  }
 }

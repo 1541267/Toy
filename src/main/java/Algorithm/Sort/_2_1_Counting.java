@@ -9,44 +9,43 @@ package Algorithm.Sort;
 // 장점: O(n)의 시간 복잡도,
 // 단점: 배열 사이즈를 n 마큼 돌 때 증가시켜주는 Counting 배열의 크기가 큼 (메모리 낭비가 심함), k가 너무 클 경우 비효율적 (ex: 입력 범위가 1조 -> O(k) 가 되어버림)
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 public class _2_1_Counting {
-	public static void main(String[] args) {
-		ArrGenerator a = new ArrGenerator();
 
-		int[] arr = a.init();
+  public static void main(String[] args) {
+    ArrGenerator a = new ArrGenerator();
 
-		int n = arr.length;
-		System.out.println("Before Arr: " + Arrays.toString(arr));
+    int[] arr = a.init();
 
-		int[] sortedArr = new int[n];
+    int n = arr.length;
+    System.out.println("Before Arr: " + Arrays.toString(arr));
 
-		int[] counting = new int[n * 6];
+    double start = System.currentTimeMillis();
 
-		for (int i = 0; i < n; i++) {
-			counting[arr[i]]++;
-		}
+    int[] sortedArr = new int[n];
 
-		System.out.println("First Counting Arr: " + Arrays.toString(counting));
+    int[] counting = new int[n * 6];
 
-		for (int i = 1; i < counting.length; i++) {
-			counting[i] += counting[i - 1];
-		}
+    for (int j : arr) {counting[j]++;}
 
-		System.out.println("Second Counting Arr: " + Arrays.toString(counting));
+    System.out.println("First Counting Arr: " + Arrays.toString(counting));
 
-		for (int i = n - 1; i >= 0; i--) {
-		System.out.println("==========================================================");
-			System.out.println("Sorting counting: " + Arrays.toString(counting));
+    for (int i = 1; i < counting.length; i++) {counting[i] += counting[i - 1];}
 
-			counting[arr[i]]--;
-			sortedArr[counting[arr[i]]] = arr[i];
-			System.out.println("Sorted Arr: " + Arrays.toString(sortedArr));
-		}
-		System.out.println("After arr = " + Arrays.toString(sortedArr));
+    System.out.println("Second Counting Arr: " + Arrays.toString(counting));
 
-	}
+    for (int i = n - 1; i >= 0; i--) {
+      System.out.println("==========================================================");
+      System.out.println("Sorting counting: " + Arrays.toString(counting));
+
+      counting[arr[i]]--;
+      sortedArr[counting[arr[i]]] = arr[i];
+      System.out.println("Sorted Arr: " + Arrays.toString(sortedArr));
+    }
+    System.out.println("After arr = " + Arrays.toString(sortedArr));
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 }

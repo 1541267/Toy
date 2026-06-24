@@ -15,7 +15,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -23,8 +22,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-public class YearProgress extends Application {
-
+public class YearProgressAI extends Application {
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일");
 	private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH시 mm분 ss초");
 
@@ -39,9 +37,7 @@ public class YearProgress extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		primaryStage.setTitle("Year Progress");
-		primaryStage.getIcons().add(new Image("/icon.png"));
-		primaryStage.setAlwaysOnTop(true);
+		primaryStage.setTitle("연간 진행률 확인");
 		// 메인 컨테이너
 		VBox root = new VBox(10);
 		root.setPadding(new Insets(20));
@@ -52,7 +48,12 @@ public class YearProgress extends Application {
 		// 현재 날짜/시간 레이블
 		dateTimeLabel = new Label();
 		dateTimeLabel.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 16));
-		dateTimeLabel.setTextFill(Color.rgb(0, 0, 0));
+		dateTimeLabel.setTextFill(Color.rgb(255, 255, 255));
+		// 크리스마스까지 레이블
+		christmasLabel = new Label();
+		christmasLabel.setAlignment(Pos.CENTER_LEFT);
+		christmasLabel.setFont(Font.font("Malgun Gothic", 14));
+		christmasLabel.setTextFill(Color.rgb(255, 255, 255));
 
 		// 진행률 섹션
 		VBox progressSection = new VBox(5);
@@ -60,19 +61,13 @@ public class YearProgress extends Application {
 
 		progressLabel = new Label();
 		progressLabel.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		progressLabel.setTextFill(Color.rgb(0, 0, 0));
+		progressLabel.setTextFill(Color.rgb(255, 255, 255));
 
 		progressBar = new ProgressBar(0);
 		progressBar.setPrefWidth(300);
 		progressBar.setStyle("-fx-accent: #ff0063;");
 
 		progressSection.getChildren().addAll(progressLabel, progressBar);
-
-		// 크리스마스까지 레이블
-		christmasLabel = new Label();
-		christmasLabel.setAlignment(Pos.CENTER_LEFT);
-		christmasLabel.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		christmasLabel.setTextFill(Color.rgb(0, 0, 0));
 
 		// 경과 시간 정보
 		GridPane timeGrid = new GridPane();
@@ -83,29 +78,29 @@ public class YearProgress extends Application {
 
 		Label passingTimeTitle = new Label("보낸 시간");
 		passingTimeTitle.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		passingTimeTitle.setTextFill(Color.rgb(0, 0, 0));
+		passingTimeTitle.setTextFill(Color.rgb(255, 255, 255));
 		passingTimeLabel = new Label();
-		passingTimeLabel.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		passingTimeLabel.setTextFill(Color.rgb(0, 0, 0));
+		passingTimeLabel.setFont(Font.font("Malgun Gothic", 14));
+		passingTimeLabel.setTextFill(Color.rgb(255, 255, 255));
 
 		Label remainingTimeTitle = new Label("남은 시간");
 		remainingTimeTitle.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		remainingTimeTitle.setTextFill(Color.rgb(0, 0, 0));
+		remainingTimeTitle.setTextFill(Color.rgb(255, 255, 255));
 		remainingTimeLabel = new Label();
-		remainingTimeLabel.setFont(Font.font("Malgun Gothic", FontWeight.BOLD, 14));
-		remainingTimeLabel.setTextFill(Color.rgb(0, 0, 0));
+		remainingTimeLabel.setFont(Font.font("Malgun Gothic", 14));
+		remainingTimeLabel.setTextFill(Color.rgb(255, 255, 255));
 
-		timeGrid.add(christmasLabel, 0, 0);
-		timeGrid.add(passingTimeTitle, 0, 1);
-		timeGrid.add(passingTimeLabel, 0, 2);
-		timeGrid.add(remainingTimeTitle, 0, 3);
-		timeGrid.add(remainingTimeLabel, 0, 4);
+
+		timeGrid.add(passingTimeTitle, 0, 0);
+		timeGrid.add(passingTimeLabel, 0, 1);
+		timeGrid.add(remainingTimeTitle, 0, 2);
+		timeGrid.add(remainingTimeLabel, 0, 3);
 
 		// 모든 요소를 root에 추가
 		root.getChildren().addAll(
 			dateTimeLabel,
 			progressSection,
-			// christmasLabel,
+			christmasLabel,
 			timeGrid
 		);
 
@@ -158,7 +153,7 @@ public class YearProgress extends Application {
 			// 진행률 계산 (초 단위 비교)
 			double totalSeconds = ChronoUnit.SECONDS.between(firstDateTime, nextYear);
 			double currentSeconds = ChronoUnit.SECONDS.between(firstDateTime, currentDateTime);
-			double progressPercentageSeconds = Math.floor(currentSeconds / totalSeconds * 100_000) / 1000.0;
+			double progressPercentageSeconds = (currentSeconds / totalSeconds * 100);
 
 			// UI 업데이트
 			dateTimeLabel.setText(String.format("%s %s, %s",
@@ -168,7 +163,7 @@ public class YearProgress extends Application {
 
 			christmasLabel.setText(String.format("크리스마스까지 %d일 남았습니다", daysUntilChristmas));
 
-			progressLabel.setText(String.format("%d년 진행률: %.3f%%", currentYear, progressPercentageSeconds));
+			progressLabel.setText(String.format("%d년 진행률: %.2f%%", currentYear, progressPercentageSeconds));
 			progressBar.setProgress(progressPercentageSeconds / 100);
 
 			passingTimeLabel.setText(String.format("%d일 | %d시간 | %d분 \n%d초",

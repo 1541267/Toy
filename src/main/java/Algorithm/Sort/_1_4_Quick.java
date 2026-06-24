@@ -17,94 +17,95 @@ package Algorithm.Sort;
 // 장점: 불필요한 데이터의 이동을 줄이고 먼 거리의 데이터를 교환, 한 번 결정되니 피벗들이 추 후 연산에서 제외, 시간 복잡도가 O(n log n)의 다른 알고리즘 보다 가장 빠릅
 // 단점: 불안정 정렬, 정렬된 배열에 대해선 Quick Sort의 불균형 분할에 의해 오히려 더 많이 걸림
 
+import Algorithm.Sort.ArrGenerator.ArrGenerator;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
-
 // 퀵(피벗) 정렬 개선
 public class _1_4_Quick {
-	public static void main(String[] args) throws IOException {
 
-		ArrGenerator a = new ArrGenerator();
-		int[] arr = a.init();
+  public static void main(String[] args) throws IOException {
 
-		int left = 0;
-		int right = arr.length - 1;
-		System.out.println("Before = " + Arrays.toString(arr));
-		System.out.println("==========================================================");
-		quickSort(arr, left, right);
-		System.out.println("After = " + Arrays.toString(arr));
-	}
+    ArrGenerator a = new ArrGenerator();
+    int[] arr = a.init();
 
-	// Random 피벗
-	private static int randomPivot(int left, int right) {
-		Random rand = new Random();
-		return left + rand.nextInt(right - left + 1);
-	}
+    int left = 0;
+    int right = arr.length - 1;
+    System.out.println("Before = " + Arrays.toString(arr));
+    System.out.println("==========================================================");
+    double start = System.currentTimeMillis();
+    quickSort(arr, left, right);
+    System.out.println("==========================================================");
+    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+  }
 
-	private static void quickSort(int[] arr, int left, int right) {
-		if (left >= right)
-			return;
+  // Random 피벗
+  private static int randomPivot(int left, int right) {
+    Random rand = new Random();
+    return left + rand.nextInt(right - left + 1);
+  }
 
-		// 개선된 피벗 선택
-		int pivotIndex = medianOfThree(arr, left, right);
-		swap(arr, left, pivotIndex); // 선택된 피벗을 첫 번째 위치로 이동
+  private static void quickSort(int[] arr, int left, int right) {
+    if (left >= right) {return;}
 
-		int pivot = partition(arr, left, right);
+    // 개선된 피벗 선택
+    int pivotIndex = medianOfThree(arr, left, right);
+    swap(arr, left, pivotIndex); // 선택된 피벗을 첫 번째 위치로 이동
 
-		quickSort(arr, left, pivot - 1);
-		quickSort(arr, pivot + 1, right);
-	}
+    int pivot = partition(arr, left, right);
 
-	private static int partition(int[] arr, int left, int right) {
-		int pivot = arr[left];
-		int i = left, j = right;
-		System.out.println("pivot = " + pivot);
+    quickSort(arr, left, pivot - 1);
+    quickSort(arr, pivot + 1, right);
+  }
 
-		while (i < j) {
-			while (i < j && arr[j] > pivot) { // 오른쪽에서 pivot보다 작은 값 찾기
-				j--;
-			}
-			while (i < j && arr[i] <= pivot) { // 왼쪽에서 pivot보다 큰 값 찾기
-				i++;
-			}
-			if (i < j) {
-				System.out.println("Before Swap = " + Arrays.toString(arr) + ", i = " + i + ", j = " + j);
-				swap(arr, i, j);
-				System.out.println("After Swap =  " + Arrays.toString(arr));
-				System.out.println("==========================================================");
-			}
-		}
+  private static int partition(int[] arr, int left, int right) {
+    int pivot = arr[left];
+    int i = left, j = right;
+    System.out.println("pivot = " + pivot);
 
-		System.out.println("부분 정렬 Before = " + Arrays.toString(arr) + ", i = " + i + ", j = " + j);
-		swap(arr, left, i); // 피벗을 최종 위치로 이동
-		System.out.println("부분 정렬 After = " + Arrays.toString(arr) + ", i = " + i + ", j = " + j);
-		System.out.println("==========================================================");
-		return i;
-	}
+    while (i < j) {
+      while (i < j && arr[j] > pivot) { // 오른쪽에서 pivot보다 작은 값 찾기
+        j--;
+      }
+      while (i < j && arr[i] <= pivot) { // 왼쪽에서 pivot보다 큰 값 찾기
+        i++;
+      }
+      if (i < j) {
+        System.out.println("Before Swap = " + Arrays.toString(arr) + ", i = " + i + ", j = " + j);
+        swap(arr, i, j);
+        System.out.println("After Swap =  " + Arrays.toString(arr));
+        System.out.println("==========================================================");
+      }
+    }
 
-	private static int medianOfThree(int[] arr, int left, int right) {
-		int mid = (left + right) / 2;
+    System.out.println("부분 정렬 Before = " + Arrays.toString(arr) + "\ni = " + i + ", j = " + j);
+    swap(arr, left, i); // 피벗을 최종 위치로 이동
+    System.out.println("부분 정렬 After = " + Arrays.toString(arr) + "\ni = " + i + ", j = " + j);
+    System.out.println("==========================================================");
+    return i;
+  }
 
-		int a = arr[left], b = arr[mid], c = arr[right];
+  private static int medianOfThree(int[] arr, int left, int right) {
+    int mid = (left + right) / 2;
 
-		// 중간값 찾기
-		if ((a > b && a < c) || (a < b && a > c)) {
-			return left;
-		} else if ((b > a && b < c) || (b < a && b > c)) {
-			return mid;
-		} else {
-			return right;
-		}
-	}
+    int a = arr[left], b = arr[mid], c = arr[right];
 
-	private static void swap(int[] arr, int i, int j) {
-		int temp = arr[i];
-		arr[i] = arr[j];
-		arr[j] = temp;
-	}
+    // 중간값 찾기
+    if ((a > b && a < c) || (a < b && a > c)) {
+      return left;
+    } else if ((b > a && b < c) || (b < a && b > c)) {
+      return mid;
+    } else {
+      return right;
+    }
+  }
+
+  private static void swap(int[] arr, int i, int j) {
+    int temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
 }
 
 // 피벗이 왼쪽에 고정 -> 이미 정렬된 경우 비효율, O(n^2)
