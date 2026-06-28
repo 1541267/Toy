@@ -1,0 +1,1172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>병합 정렬 시각화</title>
+</head>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  /* ── Study Notes ── */
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-card {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.warn {
+    border-color: #78350f;
+    color: #fcd34d;
+    background: #1c1008;
+  }
+
+  /* ── Controls ── */
+  .controls-bar {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* ── Dual Panel ── */
+  .dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 140px;
+    margin-bottom: 0.75rem;
+    width: 100%;
+  }
+
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
+  }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  /* bar states */
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.range {
+    background: #2d4a7a;
+  }
+
+  .bar.left-half {
+    background: #0e7490;
+  }
+
+  .bar.right-half {
+    background: #6d28d9;
+  }
+
+  .bar.comparing {
+    background: #0f766e;
+  }
+
+  .bar.swap {
+    background: #b45309;
+  }
+
+  .bar.sorted {
+    background: #ffff00;
+  }
+
+  .bar.done {
+    background: #ff0063;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 0.6rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Log */
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .phase-split {
+    background: #1e2d5e;
+    color: #93c5fd;
+  }
+
+  .phase-merge {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-place {
+    background: #14532d;
+    color: #86efac;
+  }
+
+  .phase-copy {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
+
+  .phase-opt {
+    background: #2e1065;
+    color: #c4b5fd;
+  }
+
+  /* ── Code Blocks ── */
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .code-dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  /* syntax highlight via spans */
+  .ck {
+    color: #6272a4;
+  }
+
+  /* comment */
+  .kw {
+    color: #bd93f9;
+  }
+
+  /* keyword */
+  .ty {
+    color: #8be9fd;
+  }
+
+  /* type */
+  .fn {
+    color: #50fa7b;
+  }
+
+  /* function */
+  .nm {
+    color: #ffb86c;
+  }
+
+  /* variable / param */
+  .st {
+    color: #f1fa8c;
+  }
+
+  /* string / operator */
+  .nu {
+    color: #ff79c6;
+  }
+
+  /* number */
+  .an {
+    color: #ff5555;
+  }
+
+  /* annotation highlight — key point */
+
+  /* diff badge */
+  .diff-note {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .diff-note strong {
+    color: #c7d2fe;
+  }
+
+  .diff-note .hl {
+    color: #6ee7b7;
+    font-weight: 600;
+  }
+
+  .diff-note .hlw {
+    color: #fcd34d;
+    font-weight: 600;
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>병합 정렬 시각화</h1>
+    <p>요소를 최소 길이로 쪼갠 후 정렬, 이 후 병합 시키면서 정렬</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 병합 정렬 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🔍 개념</h3>
+        <ul>
+          <li><strong>분할 정복</strong> 방식으로 구현</li>
+          <li>빠른 정렬로 분류, Quick Sort와 함께 자주 언급</li>
+          <li>Quick과 반대로 <strong>안정 정렬(Stable Sort)</strong></li>
+          <li>요소를 최소 단위로 쪼갠 후, 병합하면서 정렬</li>
+          <li>두 영역이 이미 정렬돼 있으므로 순차 비교로 병합</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚡ Quick vs Merge</h3>
+        <ul>
+          <li><strong>Quick:</strong> 피벗으로 재배치 & 분할 (Partition)</li>
+          <li><strong>Merge:</strong> 단순히 반으로 나눈 뒤 Merge 과정에서 정렬</li>
+          <li>LinkedList 정렬 → <strong class="hl">Merge Sort 유리</strong></li>
+          <li>Quick Sort는 Partition 시 임의 접근·swap 필요 → LinkedList 비효율</li>
+          <li>배열 접근 O(1) vs LinkedList 접근 O(n)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✅ 장점</h3>
+        <ul>
+          <li>안정 정렬 (같은 값의 순서 보장)</li>
+          <li>최악의 경우에도 <strong>O(n log n)</strong> 보장</li>
+          <li>LinkedList 정렬에 매우 효율적</li>
+          <li>순차적 비교 → 캐시 예측 가능한 접근</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">Best O(n log n)</span>
+          <span class="badge good">Avg O(n log n)</span>
+          <span class="badge good">Worst O(n log n)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>❌ 단점</h3>
+        <ul>
+          <li><strong>추가 메모리</strong> 필요 — 제자리 정렬 아님</li>
+          <li>배열 복사 과정으로 메모리 효율 떨어짐</li>
+          <li>작은 배열에선 삽입 정렬보다 느릴 수 있음</li>
+          <li>캐시 친화적이지 않음 (메모리 접근 많음)</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge warn">Space O(n)</span>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Diff note -->
+  <div class="diff-note">
+    <strong>merge() vs optimizedMerge() 차이</strong><br>
+    <span class="hlw">merge()</span>: 매 병합마다 <code>Arrays.copyOfRange()</code> 로 L, R 두 배열을 새로 생성 →
+    메모리 할당 + GC 반복으로 무거움<br>
+    <span class="hl">optimizedMerge()</span>: <code>temp</code> 배열을 최초 한 번만 생성 후 해당 구간만 복사해서 사용 → 왼쪽
+    잔여 원소만 복사하면 되고 오른쪽 잔여 원소는 arr에 그대로 남아 별도 복사 불필요
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>배열 크기</label>
+      <input type="range" id="sizeSlider" min="4" max="150" value="30" step="1">
+      <span class="val" id="sizeLabel">30</span>
+    </div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btnPlay">▶ 시작</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">새 배열</button>
+    </div>
+  </div>
+
+  <!-- Legend (shared) -->
+  <div class="legend" style="margin-bottom:0.85rem; padding:0 0.2rem;">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#4c4e9a"></div>
+      기본
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#2d4a7a"></div>
+      현재 범위
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0e7490"></div>
+      왼쪽 절반
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#6d28d9"></div>
+      오른쪽 절반
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0f766e"></div>
+      비교 중
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#b45309"></div>
+      복사/배치
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#ffff00"></div>
+      정렬 완료
+    </div>
+  </div>
+
+  <!-- Dual Panel -->
+  <div class="dual">
+
+    <!-- Panel A: normal merge -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#fcd34d"></div>
+          merge() — 기본
+        </div>
+        <div class="panel-step" id="stepA">—</div>
+      </div>
+      <div class="bar-area" id="barA"></div>
+      <div class="log-box" id="logA">시작 버튼을 누르세요.</div>
+    </div>
+
+    <!-- Panel B: optimized merge -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#6ee7b7"></div>
+          optimizedMerge() — 개선
+        </div>
+        <div class="panel-step" id="stepB">—</div>
+      </div>
+      <div class="bar-area" id="barB"></div>
+      <div class="log-box" id="logB">시작 버튼을 누르세요.</div>
+    </div>
+
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <!-- mergeSort() common -->
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#a5b4fc"></div>
+        mergeSort() — 공통 (분할 재귀)
+      </div>
+      <pre><span class="kw">private static void</span> <span class="fn">mergeSort</span>(
+    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span>[] <span
+            class="nm">temp</span>, <span class="ty">int</span> <span class="nm">selectNum</span>,
+    <span class="ty">int</span> <span class="nm">left</span>, <span class="ty">int</span> <span
+            class="nm">right</span>) {
+
+  <span class="ck">// left >= right 이면 원소가 1개 이하 → 더 이상 분할 불필요, 재귀 종료</span>
+  <span class="kw">if</span> (<span class="nm">left</span> &lt; <span class="nm">right</span>) {
+
+    <span class="ck">// 중간 인덱스 계산 (left + right) / 2 대신 오버플로 방지를 위해 아래 방식 사용</span>
+    <span class="ty">int</span> <span class="nm">mid</span> = <span class="nm">left</span> + (<span
+            class="nm">right</span> - <span class="nm">left</span>) / <span class="nu">2</span>;
+
+    <span class="ck">// 왼쪽 절반 재귀 분할</span>
+    <span class="fn">mergeSort</span>(<span class="nm">arr</span>, <span
+            class="nm">temp</span>, <span class="nm">selectNum</span>, <span class="nm">left</span>, <span
+            class="nm">mid</span>);
+    <span class="ck">// 오른쪽 절반 재귀 분할</span>
+    <span class="fn">mergeSort</span>(<span class="nm">arr</span>, <span
+            class="nm">temp</span>, <span class="nm">selectNum</span>, <span class="nm">mid</span> + <span
+            class="nu">1</span>, <span class="nm">right</span>);
+
+    <span class="ck">// 두 절반이 각각 정렬된 상태에서 병합</span>
+    <span class="kw">switch</span> (<span class="nm">selectNum</span>) {
+      <span class="kw">case</span> <span class="nu">1</span>:
+        <span class="ck">// 공부용: 매 merge 마다 L, R 배열을 새로 생성</span>
+        <span class="fn">merge</span>(<span class="nm">arr</span>, <span
+            class="nm">left</span>, <span class="nm">mid</span>, <span class="nm">right</span>);
+        <span class="kw">break</span>;
+      <span class="kw">case</span> <span class="nu">2</span>:
+        <span class="ck">// 개선: 미리 생성한 temp 배열의 구간만 복사해서 사용</span>
+        <span class="fn">optimizedMerge</span>(<span class="nm">arr</span>, <span
+            class="nm">temp</span>, <span class="nm">left</span>, <span class="nm">mid</span>, <span
+            class="nm">right</span>);
+        <span class="kw">break</span>;
+      <span class="kw">default</span>:
+        <span class="kw">throw new</span> IllegalArgumentException(<span
+            class="st">"잘못된 정렬 선택"</span>);
+    }
+  }
+}</pre>
+    </div>
+
+    <div class="code-dual">
+
+      <!-- merge() -->
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          merge() — 기본 (공부용)
+        </div>
+        <pre><span class="ck">// merge 구간을 임시 두 배열로 복사</span>
+<span class="kw">private static void</span> <span class="fn">merge</span>(<span
+              class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
+              class="nm">left</span>, <span class="ty">int</span> <span class="nm">mid</span>, <span
+              class="ty">int</span> <span class="nm">right</span>) {
+
+  <span class="ty">int</span>[] <span class="nm">L</span> = Arrays.<span
+              class="fn">copyOfRange</span>(<span class="nm">arr</span>, <span
+              class="nm">left</span>, <span class="nm">mid</span> + <span class="nu">1</span>);
+  <span class="ty">int</span>[] <span class="nm">R</span> = Arrays.<span
+              class="fn">copyOfRange</span>(<span class="nm">arr</span>, <span class="nm">mid</span> + <span
+              class="nu">1</span>, <span class="nm">right</span> + <span class="nu">1</span>);
+
+  <span class="ty">int</span> <span class="nm">i</span> = <span class="nu">0</span>, <span
+              class="nm">j</span> = <span class="nu">0</span>, <span class="nm">k</span> = <span
+              class="nm">left</span>;
+  <span class="ty">int</span> <span class="nm">leftSize</span>  = <span class="nm">L</span>.length;
+  <span class="ty">int</span> <span class="nm">rightSize</span> = <span class="nm">R</span>.length;
+
+  <span class="kw">while</span> (<span class="nm">i</span> &lt; <span class="nm">leftSize</span> &amp;&amp; <span
+              class="nm">j</span> &lt; <span class="nm">rightSize</span>) {
+    <span class="ck">// L[i] &lt; R[j] 로 하면 오른쪽 값이 먼저 들어가</span>
+    <span class="ck">// 안정 정렬이 깨짐 → &lt;= 로 비교해야 안정 정렬 보장</span>
+    <span class="kw">if</span> (<span class="nm">L</span>[<span class="nm">i</span>] &lt;= <span
+              class="nm">R</span>[<span class="nm">j</span>]) {
+      <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">L</span>[<span
+              class="nm">i</span>++];
+    } <span class="kw">else</span> {
+      <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">R</span>[<span
+              class="nm">j</span>++];
+    }
+  }
+
+  <span class="ck">// 왼쪽 잔여 원소 복사</span>
+  <span class="kw">while</span> (<span class="nm">i</span> &lt; <span class="nm">leftSize</span>) {
+    <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">L</span>[<span
+              class="nm">i</span>++];
+  }
+
+  <span class="ck">// 오른쪽 잔여 원소 복사</span>
+  <span class="kw">while</span> (<span class="nm">j</span> &lt; <span class="nm">rightSize</span>) {
+    <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">R</span>[<span
+              class="nm">j</span>++];
+  }
+}</pre>
+      </div>
+
+      <!-- optimizedMerge() -->
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#6ee7b7"></div>
+          optimizedMerge() — 개선 (copyOfRange 최적화)
+        </div>
+        <pre><span class="ck">// 기존: 매 merge 마다 Arrays.copyOfRange() 로 L, R 배열을 새로 생성</span>
+<span class="ck">// → 메모리 할당 & GC 제거가 반복돼 무거움</span>
+<span class="ck">// 개선: temp 배열은 최초 한 번만 생성</span>
+<span class="ck">//       merge 시 필요한 구간만 temp 로 복사 후</span>
+<span class="ck">//       temp 에서 읽고 arr 에 기록</span>
+<span class="kw">private static void</span> <span class="fn">optimizedMerge</span>(
+    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span>[] <span
+              class="nm">temp</span>,
+    <span class="ty">int</span> <span class="nm">left</span>, <span class="ty">int</span> <span
+              class="nm">mid</span>, <span class="ty">int</span> <span class="nm">right</span>) {
+
+  <span class="ck">// left ~ right 구간만 temp 에 복사</span>
+  System.<span class="fn">arraycopy</span>(<span class="nm">arr</span>, <span class="nm">left</span>, <span
+              class="nm">temp</span>, <span class="nm">left</span>, <span class="nm">right</span> - <span
+              class="nm">left</span> + <span class="nu">1</span>);
+
+  <span class="ty">int</span> <span class="nm">i</span> = <span class="nm">left</span>;      <span
+              class="ck">// 왼쪽 시작 포인터</span>
+  <span class="ty">int</span> <span class="nm">j</span> = <span class="nm">mid</span> + <span
+              class="nu">1</span>;  <span class="ck">// 오른쪽 시작 포인터</span>
+  <span class="ty">int</span> <span class="nm">k</span> = <span class="nm">left</span>;      <span
+              class="ck">// arr 에 저장할 위치</span>
+
+  <span class="kw">while</span> (<span class="nm">i</span> &lt;= <span class="nm">mid</span> &amp;&amp; <span
+              class="nm">j</span> &lt;= <span class="nm">right</span>) {
+    <span class="ck">// &lt;= 로 비교해야 안정 정렬 보장</span>
+    <span class="kw">if</span> (<span class="nm">temp</span>[<span class="nm">i</span>] &lt;= <span
+              class="nm">temp</span>[<span class="nm">j</span>]) {
+      <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">temp</span>[<span
+              class="nm">i</span>++];
+    } <span class="kw">else</span> {
+      <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">temp</span>[<span
+              class="nm">j</span>++];
+    }
+  }
+
+  <span class="ck">// 오른쪽 원소가 먼저 선택되면 왼쪽 원소가 arr 에서 덮어써져 사라질 수 있음</span>
+  <span class="ck">// → 남은 왼쪽 원소(temp[i ~ mid])는 반드시 다시 arr 로 복사</span>
+  <span class="ck">//</span>
+  <span class="ck">// 반면 오른쪽 잔여(temp[j ~ right])는</span>
+  <span class="ck">// k 가 j 위치에 도달하기 전엔 arr 에 원래 값이 그대로 남아 있음</span>
+  <span class="ck">// → 별도 복사 불필요, 왼쪽만 처리하면 됨</span>
+  <span class="kw">while</span> (<span class="nm">i</span> &lt;= <span class="nm">mid</span>) {
+    <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">temp</span>[<span
+              class="nm">i</span>++];
+  }
+}</pre>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+</body>
+<script>
+  // ─────────────────────────────────────────────
+  // Speed map
+  // ─────────────────────────────────────────────
+  const speedMap = {1: 800, 2: 500, 3: 300, 4: 180, 5: 100, 6: 55, 7: 30, 8: 15, 9: 6, 10: 0.5};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
+
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ─────────────────────────────────────────────
+  // Array helpers
+  // ─────────────────────────────────────────────
+  function randArr(n) {
+    const v = Array.from({length: n}, (_, i) => i + 1);
+    for (let i = v.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [v[i], v[j]] = [v[j], v[i]];
+    }
+    return v;
+  }
+
+  // ─────────────────────────────────────────────
+  // Step generators
+  // ─────────────────────────────────────────────
+
+  /* ── Normal merge ── */
+  function genNormal(src) {
+    const steps = [];
+    const a = [...src];
+    const sorted = new Set();
+
+    function push(type, extra, msg) {
+      steps.push({type, arr: [...a], sortedSet: new Set(sorted), msg, ...extra});
+    }
+
+    function merge(left, mid, right) {
+      const L = a.slice(left, mid + 1);
+      const R = a.slice(mid + 1, right + 1);
+      push('merge-start', {left, mid, right, L: [...L], R: [...R]},
+          `merge() → L복사: [${L}]  R복사: [${R}]  (copyOfRange 2번 호출)`);
+
+      let i = 0, j = 0, k = left;
+      while (i < L.length && j < R.length) {
+        push('compare', {left, right, mid, ci: left + i, cj: mid + 1 + j},
+            `L[${i}]=${L[i]} vs R[${j}]=${R[j]} → ${L[i] <= R[j] ? 'L 선택'
+                : 'R 선택'} (≤ 비교로 안정정렬 유지)`);
+        if (L[i] <= R[j]) { a[k++] = L[i++]; } else { a[k++] = R[j++]; }
+        push('place', {left, right, mid, pk: k - 1},
+            `arr[${k - 1}] = ${a[k - 1]} 배치`);
+      }
+      while (i < L.length) {
+        push('copy-left', {left, right, mid, pk: k}, `왼쪽 잔여 L[${i}]=${L[i]} 복사`);
+        a[k++] = L[i++];
+      }
+      while (j < R.length) {
+        push('copy-right', {left, right, mid, pk: k}, `오른쪽 잔여 R[${j}]=${R[j]} 복사`);
+        a[k++] = R[j++];
+      }
+    }
+
+    function ms(left, right) {
+      if (left >= right) {
+        if (left === right) {
+          sorted.add(left);
+        }
+        return;
+      }
+      push('split', {left, right}, `split [${left}~${right}]`);
+      const mid = Math.floor((left + right) / 2);
+      ms(left, mid);
+      ms(mid + 1, right);
+      merge(left, mid, right);
+      for (let k = left; k <= right; k++) {
+        sorted.add(k);
+      }
+      push('sub-sorted', {left, right}, `[${left}~${right}] 병합 완료`);
+    }
+
+    ms(0, a.length - 1);
+    const all = new Set(Array.from({length: a.length}, (_, i) => i));
+    steps.push({type: 'done', arr: [...a], sortedSet: all, msg: '정렬 완료!'});
+    return steps;
+  }
+
+  /* ── Optimized merge ── */
+  function genOptimized(src) {
+    const steps = [];
+    const a = [...src];
+    const temp = new Array(a.length);
+    const sorted = new Set();
+
+    function push(type, extra, msg) {
+      steps.push({type, arr: [...a], sortedSet: new Set(sorted), msg, ...extra});
+    }
+
+    function optimizedMerge(left, mid, right) {
+      // copy only the range
+      for (let x = left; x <= right; x++) {
+        temp[x] = a[x];
+      }
+      push('merge-start', {left, mid, right},
+          `optimizedMerge() → temp[${left}~${right}] 복사 (구간만, 1번 arraycopy)`);
+
+      let i = left, j = mid + 1, k = left;
+      while (i <= mid && j <= right) {
+        push('compare', {left, right, mid, ci: i, cj: j},
+            `temp[${i}]=${temp[i]} vs temp[${j}]=${temp[j]} → ${temp[i] <= temp[j] ? '왼쪽 선택'
+                : '오른쪽 선택'}`);
+        if (temp[i] <= temp[j]) { a[k++] = temp[i++]; } else { a[k++] = temp[j++]; }
+        push('place', {left, right, mid, pk: k - 1}, `arr[${k - 1}] = ${a[k - 1]} 기록`);
+      }
+      // 오른쪽 잔여는 arr에 원래 값이 그대로 → 복사 불필요
+      while (i <= mid) {
+        push('copy-left', {left, right, mid, pk: k},
+            `왼쪽 잔여 temp[${i}]=${temp[i]} 복사 (오른쪽 잔여는 이미 arr에 존재)`);
+        a[k++] = temp[i++];
+      }
+    }
+
+    function ms(left, right) {
+      if (left >= right) {
+        if (left === right) {
+          sorted.add(left);
+        }
+        return;
+      }
+      push('split', {left, right}, `split [${left}~${right}]`);
+      const mid = Math.floor((left + right) / 2);
+      ms(left, mid);
+      ms(mid + 1, right);
+      optimizedMerge(left, mid, right);
+      for (let k = left; k <= right; k++) {
+        sorted.add(k);
+      }
+      push('sub-sorted', {left, right}, `[${left}~${right}] 병합 완료`);
+    }
+
+    ms(0, a.length - 1);
+    const all = new Set(Array.from({length: a.length}, (_, i) => i));
+    steps.push({type: 'done', arr: [...a], sortedSet: all, msg: '정렬 완료!'});
+    return steps;
+  }
+
+  // ─────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────
+  function renderStep(step, barAreaId, logId) {
+    const barArea = document.getElementById(barAreaId);
+    const logEl = document.getElementById(logId);
+    const maxVal = Math.max(...step.arr);
+    const showNum = step.arr.length <= 20;
+    barArea.style.gridTemplateColumns = `repeat(${step.arr.length},1fr)`;
+
+    barArea.innerHTML = step.arr.map((v, idx) => {
+      let cls = 'bar normal';
+      if (step.sortedSet?.has(idx)) {
+        cls = step.type === 'done' ? 'bar done' : 'bar sorted';
+      } else if (step.left !== undefined && idx >= step.left && idx <= step.right) {
+        // highlight left / right halves when mid is known
+        if (step.mid !== undefined) {
+          cls = idx <= step.mid ? 'bar left-half' : 'bar right-half';
+        } else {
+          cls = 'bar range';
+        }
+      }
+      if ((step.type === 'compare') && (idx === step.ci || idx === step.cj)) {
+        cls = 'bar comparing';
+      }
+      if ((step.type === 'place' || step.type === 'copy-left' || step.type === 'copy-right') && idx
+          === step.pk) {
+        cls = 'bar swap';
+      }
+
+      const h = Math.max(10, Math.round((v / maxVal) * 130));
+      const textColor = cls.includes('sorted') || cls.includes('done') ? '#86efac'
+          : cls.includes('comparing') ? '#67e8f9'
+              : cls.includes('swap') ? '#fcd34d'
+                  : '#a5b4fc';
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${textColor}">${showNum
+          ? v : ''}</span></div>`;
+    }).join('');
+
+    // tag
+    const tagMap = {
+      'split': '<span class="phase-tag phase-split">분할</span>',
+      'merge-start': '<span class="phase-tag phase-merge">병합 시작</span>',
+      'compare': '<span class="phase-tag phase-merge">비교</span>',
+      'place': '<span class="phase-tag phase-place">배치</span>',
+      'copy-left': '<span class="phase-tag phase-copy">왼쪽 복사</span>',
+      'copy-right': '<span class="phase-tag phase-copy">오른쪽 복사</span>',
+      'sub-sorted': '<span class="phase-tag phase-done">구간 완료</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    };
+    logEl.innerHTML = (tagMap[step.type] || '') + (step.msg || '');
+  }
+
+  // ─────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────
+  let stepsA = [], stepsB = [], idxA = 0, idxB = 0;
+  let playing = false, timer = null;
+
+  function init() {
+    stopPlay();
+    const n = getSize();
+    const base = randArr(n);
+    stepsA = genNormal(base);
+    stepsB = genOptimized(base);
+    idxA = 0;
+    idxB = 0;
+    const initStep = {type: 'init', arr: [...base], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'};
+    renderStep(initStep, 'barA', 'logA');
+    renderStep(initStep, 'barB', 'logB');
+    document.getElementById('stepA').textContent = '—';
+    document.getElementById('stepB').textContent = '—';
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+    document.getElementById('btnPlay').disabled = false;
+  }
+
+  function tick() {
+    const doneA = idxA >= stepsA.length;
+    const doneB = idxB >= stepsB.length;
+    if (doneA && doneB) {
+      stopPlay();
+      return;
+    }
+    if (!doneA) {
+      renderStep(stepsA[idxA], 'barA', 'logA');
+      document.getElementById('stepA').textContent = `${idxA + 1} / ${stepsA.length}`;
+      idxA++;
+    }
+    if (!doneB) {
+      renderStep(stepsB[idxB], 'barB', 'logB');
+      document.getElementById('stepB').textContent = `${idxB + 1} / ${stepsB.length}`;
+      idxB++;
+    }
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  // ─────────────────────────────────────────────
+  // Event listeners
+  // ─────────────────────────────────────────────
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (idxA >= stepsA.length && idxB >= stepsB.length) {
+      return;
+    }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', init);
+
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  init();
+</script>
+</html>

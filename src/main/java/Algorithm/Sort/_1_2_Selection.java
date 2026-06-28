@@ -13,14 +13,17 @@ import java.util.Arrays;
 
 public class _1_2_Selection {
 
+  static boolean isAllowPrint;
+
   public static void main(String[] args) throws IOException {
 
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
+    isAllowPrint = a.isAllowPrint();
 
     System.out.println("Before Sort arr = " + Arrays.toString(arr));
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
     int index, temp;
 
     for (int i = 0; i < arr.length - 1; i++) {
@@ -33,10 +36,13 @@ public class _1_2_Selection {
       temp = arr[index];
       arr[index] = arr[i];
       arr[i] = temp;
+      if (isAllowPrint) {
+        System.out.println("======================================");
+        System.out.println("newArr = " + Arrays.toString(arr));
+      }
     }
-    System.out.println("======================================");
     System.out.println("After Sort arr = " + Arrays.toString(arr));
     System.out.println("======================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println("Selection Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 }

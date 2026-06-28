@@ -11,29 +11,33 @@ import java.util.Arrays;
 
 public class _1_1_Bubble {
 
+  static boolean isAllowPrint;
+
   public static void main(String[] args) throws IOException {
     ArrGenerator a = new ArrGenerator();
 
-    int[] newArr = a.init();
+    int[] arr = a.init();
+    isAllowPrint = a.isAllowPrint();
 
-    System.out.println("Befor sort = " + Arrays.toString(newArr));
+    System.out.println("Before sort = " + Arrays.toString(arr));
 
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
 
-    for (int i = 0; i < newArr.length - 1; i++) {
-      for (int j = 1; j < newArr.length - i; j++) {
-        if (newArr[j - 1] > newArr[j]) {
-          int temp = newArr[j - 1];
-          newArr[j - 1] = newArr[j];
-          newArr[j] = temp;
+    for (int i = 0; i < arr.length - 1; i++) {
+      for (int j = 1; j < arr.length - i; j++) {
+        if (arr[j - 1] > arr[j]) {
+          int temp = arr[j - 1];
+          arr[j - 1] = arr[j];
+          arr[j] = temp;
         }
+      }
+      if (isAllowPrint) {
         System.out.println("======================================");
-        System.out.println("newArr = " + Arrays.toString(newArr));
+        System.out.println(Arrays.toString(arr));
       }
     }
+    System.out.println("After sort = " + Arrays.toString(arr));
     System.out.println("======================================");
-    System.out.println("After sort = " + Arrays.toString(newArr));
-    System.out.println("======================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println("Buble Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 }

@@ -23,11 +23,11 @@ public class _2_3_Bucket {
     int[] arr = a.init();
     System.out.println("Before Arr: " + Arrays.toString(arr));
 
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
     bucektSort(arr);
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("==========================================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println((System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 
   private static void bucektSort(int[] arr) {

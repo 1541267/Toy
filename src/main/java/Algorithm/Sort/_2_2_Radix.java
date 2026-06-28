@@ -26,13 +26,13 @@ public class _2_2_Radix {
 
     int n = arr.length;
 
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
 
     System.out.println("Before Arr: " + Arrays.toString(arr));
     radixSort(arr, n);
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("==========================================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println((System.nanoTime() - start) / 1_000_000.0 + "ms");
 }
 
   private static void radixSort(int[] arr, int n) {

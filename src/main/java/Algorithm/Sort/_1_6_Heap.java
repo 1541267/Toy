@@ -16,20 +16,24 @@ import java.util.Arrays;
 
 public class _1_6_Heap {
 
+  static boolean isAllowPrint;
+
   public static void main(String[] args) {
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
 
+    isAllowPrint = a.isAllowPrint();
+
     System.out.println("Before Arr: " + Arrays.toString(arr));
 
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
 
     heapSort(arr);
     System.out.println("==========================================================");
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("==========================================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println((System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 
   private static void heapSort(int[] arr) {
@@ -37,10 +41,12 @@ public class _1_6_Heap {
 
     // maxHeap 초기화
     for (int i = n / 2 - 1; i >= 0; i--) {        // 부모(root)노드 기준으로 왼쪽 자식노드 (2n + 1), 오른쪽 자식노드 (2n + 2)
-      System.out.println("==========================================================");
-      System.out.println("Before heapify: " + Arrays.toString(arr));
+      if (isAllowPrint) {
+        System.out.println("==========================================================");
+        System.out.println("Before heapify: " + Arrays.toString(arr));
+      }
       heapify(arr, n, i);        // 배열을 힙으로 구성, 자식노드로  부터 부모노드 비교, 부모가 항상 크게 조정, O(n)
-      System.out.println("After heapify: " + Arrays.toString(arr));
+      if (isAllowPrint) {System.out.println("After heapify: " + Arrays.toString(arr));}
     }
 
     // maxHeap의 extract 연산
@@ -73,13 +79,16 @@ public class _1_6_Heap {
   }
 
   private static void swap(int[] arr, int a, int b) {
-    System.out.println("==========================================================");
+    if (isAllowPrint) {
+      System.out.println("==========================================================");
+      System.out.println("Before Swap Arr: " + Arrays.toString(arr));
+    }
 
-    System.out.println("Before Swap Arr: " + Arrays.toString(arr));
     int temp = arr[a];
     arr[a] = arr[b];
     arr[b] = temp;
-    System.out.println("After Swap Arr: " + Arrays.toString(arr));
+
+    if (isAllowPrint) {System.out.println("After Swap Arr: " + Arrays.toString(arr));}
   }
 
 }

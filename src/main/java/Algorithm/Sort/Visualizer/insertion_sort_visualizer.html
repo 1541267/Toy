@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>삽입 정렬 시각화</title>
+</head>
+<style>
+  .qs-wrap {
+    padding: 1rem 0;
+    font-family: var(--font-sans);
+  }
+  .qs-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .qs-btn {
+    cursor: pointer;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text-primary);
+  }
+  .qs-btn:hover { background: var(--surface-1); }
+  .qs-btn.primary {
+    background: var(--bg-accent);
+    color: var(--text-accent);
+    border-color: var(--border-accent);
+  }
+  .qs-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .qs-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+  .qs-row input[type=range] { flex: 1; max-width: 120px; }
+  .qs-row span.val {
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 28px;
+  }
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 160px;
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .bar {
+    border-radius: 4px 4px 0 0;
+    transition: height 0.15s, background 0.15s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    min-width: 1px;
+    box-sizing: border-box;
+  }
+  .bar span { font-size: 10px; font-weight: 500; margin-bottom: 3px; overflow: hidden; }
+  .bar.normal   { background: #AFA9EC; }
+  .bar.key      { background: #0000ff; }   /* 삽입할 키 값 */
+  .bar.shifting { background: #EF9F27; }   /* 오른쪽으로 밀리는 중 */
+  .bar.comparing{ background: #1D9E75; }   /* 비교 대상 */
+  .bar.inserted { background: #f05a7e; }   /* 삽입 완료 위치 */
+  .bar.sorted   { background: #ff0063; }   /* 정렬된 영역 */
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-secondary); }
+  .legend-dot { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+  .log {
+    background: var(--surface-1);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 13px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    min-height: 38px;
+    line-height: 1.6;
+  }
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 6px;
+  }
+  .phase-key     { background: #E0E6FF; color: #1a2aa3; }
+  .phase-compare { background: #E1F5EE; color: #0F6E56; }
+  .phase-shift   { background: #FAEEDA; color: #854F0B; }
+  .phase-insert  { background: #fde8ed; color: #7a1e3a; }
+  .phase-done    { background: #EAF3DE; color: #3a6e00; }
+  .step-counter { font-size: 12px; color: var(--text-muted); margin-top: 5px; text-align: right; }
+</style>
+<body>
+<div class="qs-wrap">
+  <h2 class="sr-only">삽입 정렬 시각화</h2>
+
+  <div class="qs-row">
+    <span>배열 크기</span>
+    <input type="range" id="sizeSlider" min="4" max="100" value="10" step="1">
+    <span class="val" id="sizeLabel">10</span>
+    <span style="margin-left:12px;">속도</span>
+    <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+    <span class="val" id="speedLabel">보통</span>
+  </div>
+
+  <div class="qs-controls">
+    <button class="qs-btn primary" id="btnPlay">▶ 시작</button>
+    <button class="qs-btn" id="btnStep">한 단계씩</button>
+    <button class="qs-btn" id="btnReset">새 배열</button>
+  </div>
+
+  <div class="bar-area" id="barArea"></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#0000ff"></div>삽입할 키</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1D9E75"></div>비교 중</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#EF9F27"></div>오른쪽으로 이동</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f05a7e"></div>삽입 완료</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#ff0063"></div>정렬된 영역</div>
+  </div>
+
+  <div class="log" id="log">배열을 생성하고 시작 버튼을 누르세요.</div>
+  <div class="step-counter" id="stepCounter"></div>
+</div>
+</body>
+<script>
+  const speedMap = { 1:750,2:500,3:300,4:200,5:100,6:50,7:30,8:20,9:10,10:0.001 };
+  const speedNames = { 1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게' };
+
+  let steps = [], stepIdx = 0, playing = false, timer = null;
+
+  function getSize()  { return parseInt(document.getElementById('sizeSlider').value); }
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  function randArr(n) {
+    const v = Array.from({length:n},(_,i)=>i+1);
+    for(let i=v.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[v[i],v[j]]=[v[j],v[i]];}
+    return v;
+  }
+
+  function generateSteps(arr) {
+    const a = [...arr], s = [], n = a.length;
+    // 인덱스 0은 처음부터 정렬된 영역
+    const sortedBoundary = { val: 0 }; // 0..sortedBoundary.val 은 정렬됨
+
+    s.push({ type:'init', arr:[...a], sortedBound: 0, msg:'인덱스 0은 이미 정렬된 상태로 시작합니다.' });
+
+    for (let i = 1; i < n; i++) {
+      const key = a[i];
+      let prev = i - 1;
+
+      s.push({ type:'key', arr:[...a], keyIdx: i, key, prev, sortedBound: i - 1,
+        msg: `키 값 ${key} (인덱스 ${i}) 선택 — 왼쪽 정렬 영역에서 삽입 위치 탐색` });
+
+      while (prev >= 0 && a[prev] > key) {
+        s.push({ type:'compare', arr:[...a], keyIdx: i, key, prev, sortedBound: i - 1,
+          msg: `prev=${prev}: ${a[prev]} > 키(${key}) → 오른쪽으로 이동` });
+        a[prev + 1] = a[prev];
+        s.push({ type:'shift', arr:[...a], keyIdx: i, key, shiftIdx: prev + 1, prev, sortedBound: i - 1,
+          msg: `인덱스 ${prev}의 값 ${a[prev+1]} → 인덱스 ${prev+1}으로 이동` });
+        prev--;
+      }
+
+      if (prev >= 0) {
+        s.push({ type:'compare', arr:[...a], keyIdx: i, key, prev, sortedBound: i - 1,
+          msg: `prev=${prev}: ${a[prev]} ≤ 키(${key}) → 여기에 삽입` });
+      }
+
+      a[prev + 1] = key;
+      s.push({ type:'insert', arr:[...a], keyIdx: prev + 1, key, sortedBound: i,
+        msg: `키 ${key}를 인덱스 ${prev + 1}에 삽입 완료` });
+    }
+
+    s.push({ type:'done', arr:[...a], sortedBound: n - 1, msg:'정렬 완료!' });
+    return s;
+  }
+
+  function init() {
+    stopPlay();
+    const arr = randArr(getSize());
+    steps = generateSteps(arr);
+    stepIdx = 0;
+    renderStep(steps[0]);
+    document.getElementById('stepCounter').textContent = '';
+    document.getElementById('btnPlay').disabled = false;
+  }
+
+  function renderStep(step) {
+    const barArea = document.getElementById('barArea');
+    const log = document.getElementById('log');
+    const maxVal = Math.max(...step.arr);
+    const showNum = step.arr.length <= 20;
+    barArea.style.gridTemplateColumns = `repeat(${step.arr.length}, 1fr)`;
+    const n = step.arr.length;
+
+    barArea.innerHTML = step.arr.map((v, idx) => {
+      let cls = 'bar normal';
+
+      if (step.type === 'done') {
+        cls = 'bar sorted';
+      } else {
+        // 정렬된 영역 (0 ~ sortedBound)
+        if (idx <= step.sortedBound) cls = 'bar sorted';
+
+        // 오버라이드: 특수 상태
+        if (step.type === 'key' && idx === step.keyIdx) cls = 'bar key';
+        if (step.type === 'compare' && idx === step.keyIdx) cls = 'bar key';
+        if (step.type === 'compare' && idx === step.prev) cls = 'bar comparing';
+        if (step.type === 'shift' && idx === step.shiftIdx) cls = 'bar shifting';
+        if (step.type === 'shift' && idx === step.prev) cls = 'bar key'; // 키 자리 비어있음 표시
+        if (step.type === 'insert' && idx === step.keyIdx) cls = 'bar inserted';
+      }
+
+      const h = Math.max(14, Math.round((v / maxVal) * 140));
+      const textColor = cls.includes('sorted') ? '#27500A'
+        : cls.includes('key') ? '#993C1D'
+        : cls.includes('comparing') ? '#085041'
+        : cls.includes('shifting') ? '#633806'
+        : cls.includes('inserted') ? '#7a1e3a'
+        : '#3C3489';
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${textColor}">${showNum ? v : ''}</span></div>`;
+    }).join('');
+
+    let tag = '';
+    if (step.type === 'key') tag = '<span class="phase-tag phase-key">키 선택</span>';
+    else if (step.type === 'compare') tag = '<span class="phase-tag phase-compare">비교</span>';
+    else if (step.type === 'shift') tag = '<span class="phase-tag phase-shift">이동</span>';
+    else if (step.type === 'insert') tag = '<span class="phase-tag phase-insert">삽입</span>';
+    else if (step.type === 'done') tag = '<span class="phase-tag phase-done">완료</span>';
+    log.innerHTML = tag + (step.msg || '');
+  }
+
+  function playStep() {
+    if (stepIdx >= steps.length) { stopPlay(); return; }
+    renderStep(steps[stepIdx]);
+    document.getElementById('stepCounter').textContent = `${stepIdx+1} / ${steps.length} 단계`;
+    stepIdx++;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    if (stepIdx >= steps.length) return;
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(playStep, speedMap[getSpeed()]);
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    if (stepIdx < steps.length) {
+      renderStep(steps[stepIdx]);
+      document.getElementById('stepCounter').textContent = `${stepIdx+1} / ${steps.length} 단계`;
+      stepIdx++;
+    }
+  });
+
+  document.getElementById('btnReset').addEventListener('click', init);
+  document.getElementById('sizeSlider').addEventListener('input', e => { document.getElementById('sizeLabel').textContent = e.target.value; init(); });
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) { clearInterval(timer); timer = setInterval(playStep, speedMap[getSpeed()]); }
+  });
+
+  init();
+</script>
+</html>

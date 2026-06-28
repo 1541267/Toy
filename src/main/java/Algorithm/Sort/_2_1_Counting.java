@@ -22,7 +22,7 @@ public class _2_1_Counting {
     int n = arr.length;
     System.out.println("Before Arr: " + Arrays.toString(arr));
 
-    double start = System.currentTimeMillis();
+    long start = System.nanoTime();
 
     int[] sortedArr = new int[n];
 
@@ -46,6 +46,6 @@ public class _2_1_Counting {
     }
     System.out.println("After arr = " + Arrays.toString(sortedArr));
     System.out.println("==========================================================");
-    System.out.println((System.currentTimeMillis() - start) / 1000 + "ms");
+    System.out.println((System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 }
