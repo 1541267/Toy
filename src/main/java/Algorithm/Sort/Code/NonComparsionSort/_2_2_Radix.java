@@ -1,4 +1,4 @@
-package Algorithm.Sort;
+package Algorithm.Sort.Code.NonComparsionSort;
 
 // 기수(Radix) 정렬: 데이터를 구성하는 기본 요소(Radix)를 이용해 정렬을 진행하는 방식 , 아래의 방법은 LSD
 // 입력 데이터의 최대값에 따라 Counting Sort의 비효율성을 개선하기 위해 Radix Sort 사용 가능
@@ -14,7 +14,7 @@ package Algorithm.Sort;
 // -> MSD는 상위 자릿수부터 내려가기 때문에 하위 자릿수에서의 처리 방식이 상위 자릿수에서의 처리 방식에 영향을 받을 수 있음
 // LSD는 자릿수가 정해진 경우 좀 더 빠를 수 있음
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 import java.util.Arrays;
 
 public class _2_2_Radix {

@@ -1,4 +1,4 @@
-package Algorithm.Sort;
+package Algorithm.Sort.Code.NonComparsionSort;
 
 // 버킷 정렬: 데이터를 여러 개의 버킷으로 분산 후 각 버킷 내부에서 정렬을 수행, 버킷을 순서대로 합침
 // 분산 단계: n개의 균등한 크기의 버킷으로 나눔, 정렬 단계: 각 버킷 내부를 다른 정렬 알고리즘 으로 정렬, 수집 단계: 모든 버킷을 순샤대로 합쳐 배열 생성
@@ -8,7 +8,7 @@ package Algorithm.Sort;
 // 정수: 정수의 범위가 너무 크면 버킷의 크기를 설정하는 데 문제 발생 가능 -> 입력이 너무 크면 메모리 낭비 -> ex 1~1_000_000 의 범위
 // 시간 복잡도: Best O(n + k): 데이터가 균등하게 분포, Worst: O(n^2): 모든 원소가 하나의 버킷에 들어가는 경우, Avg: O(n+k): k는 버킷 수
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package Algorithm.Sort;
+package Algorithm.Sort.Code.ComparsionSort;
 
 // 병합 정렬: 분할 정복 방법을 통해 구현, 빠른 정렬로 분류되며 Quick과 함꼐 많이 언급, Quick과 반대로 안정 정렬
 // 요소를 최소 길이로 쪼갠 후 정렬, 이 후 병합 시키면서 정렬(두 영역이 정렬이 되어있기 때문에 순차적으로 두 배열을 비교)해 나가는 방식, 쪼개는 방식은 Quick과 유사
@@ -12,9 +12,11 @@ package Algorithm.Sort;
 // 단점: 추가적인 메모리 공간 필요(정렬을 위해 배열을 복사하는 과정 필요), 제자리 정렬이 아님(메모리 효율 떨어짐)
 // 작은 배열에선 비효율적 (삽입 정렬 보다 오히려 느림),캐시 친화적이지 않음(메모리 접근이 많아 속도가 느려질 수 있음)
 // 시간 복잡도: Best: O(n log n), Avg: O(n log n), Worst: O(n log n)
-//
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+// 데이터들의 크기가 주기억장치(RAM | ROM)에 다 들어가지 못하는 데이터 정렬에도 많이 사용
+// 안정 정렬이 필요한 경우 사용 ex) 동접자는 이름순 유지 ...
+
+import Algorithm.Sort.ArrGenerator;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

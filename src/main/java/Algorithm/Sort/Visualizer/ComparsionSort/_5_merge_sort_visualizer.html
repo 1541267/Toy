@@ -570,6 +570,8 @@
           <li>Quick과 반대로 <strong>안정 정렬(Stable Sort)</strong></li>
           <li>요소를 최소 단위로 쪼갠 후, 병합하면서 정렬</li>
           <li>두 영역이 이미 정렬돼 있으므로 순차 비교로 병합</li>
+          <li>데이터들의 크기가 주기억장치(RAM | ROM)에 다 들어가지 못하는 데이터 정렬에도 많이 사용</li>
+          <li>안정 정렬이 필요한 경우 사용 ex) 동접자는 이름순 유지 ...</li>
         </ul>
       </div>
 
@@ -643,38 +645,6 @@
     </div>
   </div>
 
-  <!-- Legend (shared) -->
-  <div class="legend" style="margin-bottom:0.85rem; padding:0 0.2rem;">
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#4c4e9a"></div>
-      기본
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#2d4a7a"></div>
-      현재 범위
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#0e7490"></div>
-      왼쪽 절반
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#6d28d9"></div>
-      오른쪽 절반
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#0f766e"></div>
-      비교 중
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#b45309"></div>
-      복사/배치
-    </div>
-    <div class="legend-item">
-      <div class="legend-dot" style="background:#ffff00"></div>
-      정렬 완료
-    </div>
-  </div>
-
   <!-- Dual Panel -->
   <div class="dual">
 
@@ -683,11 +653,43 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fcd34d"></div>
-          merge() — 기본
+          merge()
         </div>
         <div class="panel-step" id="stepA">—</div>
       </div>
       <div class="bar-area" id="barA"></div>
+
+      <div class="legend" style="margin-bottom:0.85rem; padding:0 0.2rem;">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2d4a7a"></div>
+          현재 범위
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0e7490"></div>
+          왼쪽 절반
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#6d28d9"></div>
+          오른쪽 절반
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          비교 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          복사/배치
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ffff00"></div>
+          정렬 완료
+        </div>
+      </div>
+
       <div class="log-box" id="logA">시작 버튼을 누르세요.</div>
     </div>
 
@@ -696,11 +698,43 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#6ee7b7"></div>
-          optimizedMerge() — 개선
+          optimizedMerge()
         </div>
         <div class="panel-step" id="stepB">—</div>
       </div>
       <div class="bar-area" id="barB"></div>
+
+      <div class="legend" style="margin-bottom:0.85rem; padding:0 0.2rem;">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2d4a7a"></div>
+          현재 범위
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0e7490"></div>
+          왼쪽 절반
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#6d28d9"></div>
+          오른쪽 절반
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          비교 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          복사/배치
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ffff00"></div>
+          정렬 완료
+        </div>
+      </div>
+
       <div class="log-box" id="logB">시작 버튼을 누르세요.</div>
     </div>
 

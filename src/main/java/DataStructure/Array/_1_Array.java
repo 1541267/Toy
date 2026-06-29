@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 
 public class _1_Array {
 	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));

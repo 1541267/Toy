@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 
 public class BinarySearch {
 	public static void main(String[] args) throws IOException {

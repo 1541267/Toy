@@ -1,4 +1,4 @@
-package Algorithm.Sort;
+package Algorithm.Sort.Code.ComparsionSort;
 
 // 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결, 결과를 모음
 // 불안정 정렬, 다른 원소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
@@ -19,7 +19,9 @@ package Algorithm.Sort;
 // 장점: 불필요한 데이터의 이동을 줄이고 먼 거리의 데이터를 교환, 한 번 결정되니 피벗들이 추 후 연산에서 제외, 시간 복잡도가 O(n log n)의 다른 알고리즘 보다 가장 빠릅
 // 단점: 불안정 정렬, 정렬된 배열에 대해선 Quick Sort의 불균형 분할에 의해 오히려 더 많이 걸림
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+// 평균적으로 가장 빠른 정렬 & CPU Cache 를 잘 활용해 일반적인 정렬은 Quick 을 가장 먼저 고려
+
+import Algorithm.Sort.ArrGenerator;
 import java.io.IOException;
 import java.util.Arrays;
 

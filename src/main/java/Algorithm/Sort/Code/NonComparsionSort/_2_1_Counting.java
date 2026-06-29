@@ -1,4 +1,4 @@
-package Algorithm.Sort;
+package Algorithm.Sort.Code.NonComparsionSort;
 
 // _1_~ 방법들은 Comparsion Sort, 이를 모두 정렬하는 가짓수는 n!
 // 정렬을 통해 생기는 트리의 말단 노드가 n! 이상의 노드를 갖기 위해선 2^h >= n!을 만족하는 h를 가져야 하고
@@ -9,7 +9,7 @@ package Algorithm.Sort;
 // 장점: O(n)의 시간 복잡도,
 // 단점: 배열 사이즈를 n 마큼 돌 때 증가시켜주는 Counting 배열의 크기가 큼 (메모리 낭비가 심함), k가 너무 클 경우 비효율적 (ex: 입력 범위가 1조 -> O(k) 가 되어버림)
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 import java.util.Arrays;
 
 public class _2_1_Counting {

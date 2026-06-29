@@ -2,7 +2,7 @@ package Algorithm.BruteForce;
 
 import java.util.Arrays;
 
-import Algorithm.Sort.ArrGenerator.ArrGenerator;
+import Algorithm.Sort.ArrGenerator;
 
 public class BruteForce {
 	static int n;
