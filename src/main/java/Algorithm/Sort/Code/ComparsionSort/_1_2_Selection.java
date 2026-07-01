@@ -46,6 +46,6 @@ public class _1_2_Selection {
     }
     System.out.println("After Sort arr = " + Arrays.toString(arr));
     System.out.println("======================================");
-    System.out.println("Selection Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+    System.out.println("_2_Selection Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 }

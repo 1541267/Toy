@@ -13,7 +13,7 @@ package Algorithm.Sort.Code.ComparsionSort;
 // 병합을 위한 추가 메모리 사용 & 메모리 접근량이 증가해 CPU Cache 효율이 Quickl Sort 보다 떨어짐
 // 작은 배열에선 비효율적 (삽입 정렬 보다 오히려 느림),캐시 친화적이지 않음(메모리 접근이 많아 속도가 느려질 수 있음)
 // 시간 복잡도: Best: O(n log n), Avg: O(n log n), Worst: O(n log n)
-// 공간 복잡도: 
+// 공간 복잡도: O(n)
 
 // 데이터들의 크기가 주기억장치(RAM)에 다 들어가지 못하는 데이터 정렬에도 많이 사용
 // 안정 정렬이 필요한 경우 사용 ex) 동접자는 이름순 유지 ...

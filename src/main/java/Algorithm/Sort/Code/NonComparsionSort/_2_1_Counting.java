@@ -14,11 +14,13 @@ import java.util.Arrays;
 
 public class _2_1_Counting {
 
+  static boolean isAllowPrint;
+
   public static void main(String[] args) {
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
-
+    isAllowPrint = a.isAllowPrint();
     int n = arr.length;
     System.out.println("Before Arr: " + Arrays.toString(arr));
 
@@ -29,22 +31,27 @@ public class _2_1_Counting {
     int[] counting = new int[n * 6];
 
     for (int j : arr) {counting[j]++;}
+    if (isAllowPrint) {System.out.println("First Counting Arr: " + Arrays.toString(counting));}
 
-    System.out.println("First Counting Arr: " + Arrays.toString(counting));
+    for (int i = 1; i < counting.length; i++) {
+      counting[i] += counting[i - 1];
+    }
 
-    for (int i = 1; i < counting.length; i++) {counting[i] += counting[i - 1];}
-
-    System.out.println("Second Counting Arr: " + Arrays.toString(counting));
+    if (isAllowPrint) {System.out.println("Second Counting Arr: " + Arrays.toString(counting));}
 
     for (int i = n - 1; i >= 0; i--) {
-      System.out.println("==========================================================");
-      System.out.println("Sorting counting: " + Arrays.toString(counting));
+      if (isAllowPrint) {
+        System.out.println("==========================================================");
+        System.out.println("Sorting counting: " + Arrays.toString(counting));
+      }
 
       counting[arr[i]]--;
       sortedArr[counting[arr[i]]] = arr[i];
-      System.out.println("Sorted Arr: " + Arrays.toString(sortedArr));
+
+      if (isAllowPrint) {System.out.println("Sorted Arr: " + Arrays.toString(sortedArr));}
     }
     System.out.println("After arr = " + Arrays.toString(sortedArr));
+
     System.out.println("==========================================================");
     System.out.println((System.nanoTime() - start) / 1_000_000.0 + "ms");
   }

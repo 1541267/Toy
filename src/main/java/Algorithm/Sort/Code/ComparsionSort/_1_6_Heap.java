@@ -16,13 +16,24 @@ package Algorithm.Sort.Code.ComparsionSort;
 // 최악의 성능 보장이 필요할 때 사용 O(n log n)
 // 최댓값 or 최솟값을 여러번 꺼내야 하는 경우 ex) 게임 랭킹, 우선순위 큐, 스케줄러 등
 
-// 추가 설명 - Bottom-Up Heapify (Floyd)
-// -> 일반 Heapify의 최적화 기법
-// -> 먼저 리프까지 내려간 뒤, 원래 루트 값이 들어갈 위치를 한 번에 찾아 삽입
-// -> 비교 횟수와 데이터 이동을 줄일 수 있으나 구현이 복잡하여 일반 Heapify가 더 널리 사용됨
+// Bottom-Up (Floyd 방식)
+//  이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)
+
+// Top-Down (Insertion 방식)
+// 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)
+
+// 차이 핵심
+// Top-Down: 삽입 기반 (Priority Queue, streaming system)
+// Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)
+
+// 실제 사용:
+// Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현
+// Top-Down: Priority Queue, 실시간 top-K, 스케줄링
 
 import Algorithm.Sort.ArrGenerator;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 public class _1_6_Heap {
@@ -30,6 +41,7 @@ public class _1_6_Heap {
   static boolean isAllowPrint;
 
   public static void main(String[] args) throws IOException {
+    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
@@ -38,17 +50,20 @@ public class _1_6_Heap {
     System.out.println("==========================================================");
     System.out.println("Before Arr: " + Arrays.toString(arr));
 
+    System.out.println("Heap 빌드 방식 선택\n1: bottom-up, 2: top-down");
+    int selectNum = Integer.parseInt(br.readLine());
     long start = System.nanoTime();
 
-    heapSort(arr);
+    heapSort(arr, selectNum);
 
     System.out.println("==========================================================");
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("==========================================================");
-    System.out.println("Heap Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+    System.out.println(
+        "Heap Sort " + (selectNum == 1 ? "Bottom-Up" : "Top-Down") + " | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
   }
 
-  private static void heapSort(int[] arr) {
+  private static void heapSort(int[] arr, int selectNum) {
     int n = arr.length;
 
     // Build Max Heap & 마지막 부모 노드부터 Heaspify를 수행해 최대 힙 구성
@@ -58,14 +73,29 @@ public class _1_6_Heap {
       System.out.println("Build Heap");
     }
 
-    for (int i = n / 2 - 1; i >= 0; i--) {
-      if (isAllowPrint) {
-        System.out.println("----------------------------------------------------------");
-        System.out.printf("heapify(%d): %s\n", i, Arrays.toString(arr));
-      }
+    switch (selectNum) {
+      case 1:
+        for (int i = n / 2 - 1; i >= 0; i--) {
+          if (isAllowPrint) {
+            System.out.println("----------------------------------------------------------");
+            System.out.printf("heapify(%d): %s\n", i, Arrays.toString(arr));
+          }
 
-      // heapify: O(log n), 초기 힙 구성 전체: O(n)
-      heapify(arr, n, i);
+          // heapify: O(log n), 초기 힙 구성 전체: O(n)
+          heapify(arr, n, i);
+        }
+        break;
+      case 2:
+        for (int i = 1; i < n; i++) {
+          if (isAllowPrint) {
+            System.out.println("----------------------------------------------------------");
+            System.out.printf("siftUp(%d): %s\n", i, Arrays.toString(arr));
+          }
+          siftUp(arr, i);
+        }
+        break;
+      default:
+        throw new IllegalArgumentException("잘못 된 정렬 선택");
     }
 
     // Heap의 루트(최대값)를 마지막 원소와 교환
@@ -93,7 +123,7 @@ public class _1_6_Heap {
     }
   }
 
-  // 현재 노드를 기준으로 최대 힙 속성을 만족하도록 아래 방향으로 재구성
+  // 현재 노드를 기준으로 최대 힙 속성을 만족하도록 아래 방향으로 재구성, bottom-up
   // 시간복잡도 : O(log n)
   private static void heapify(int[] arr, int n, int i) {
     int p = i;
@@ -110,6 +140,20 @@ public class _1_6_Heap {
     if (i != p) {
       swap(arr, p, i);
       heapify(arr, n, p);
+    }
+  }
+
+  // top-down
+  private static void siftUp(int[] arr, int i) {
+    int child = i;
+
+    while (child > 0) {
+      int parent = (child - 1) / 2;
+
+      if (arr[parent] >= arr[child]) {break;}
+
+      swap(arr, parent, child);
+      child = parent;
     }
   }
 
