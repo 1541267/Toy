@@ -1,7 +1,7 @@
 package Algorithm.Sort.Code.ComparsionSort;
 
 // 거품 정렬: 서로 인접한 원소를 대소비교, 1회전 시 가장 큰 값이 맨 뒤, 최대값 순서대로 정렬
-// 시간복잡도: Best, Worts, Avg = O(n^2), 공간복잡도: 주어진 배열 안에서 교환(Swap) O(1)
+// 시간복잡도: Best(정렬 돼있는 경우) O(n), Worst, Avg = O(n^2), 공간복잡도: 주어진 배열 안에서 교환(Swap) O(1)
 // 장점: 구현 간단, 제자리 정렬(배열 안에서 교환)이라 다른 메모리 공간 필요 X, 안정 정렬(Stable Sort)
 // 단점: O(n^2) 비효율, 정렬 되어있지 않은 원소를 정렬하기 위해 교환 연산(Swap)이 많이 발생, 배열의 길이가 길 수록 비효율적
 
@@ -26,13 +26,16 @@ public class _1_1_Bubble {
     long start = System.nanoTime();
 
     for (int i = 0; i < arr.length - 1; i++) {
+      boolean swapped = false;
       for (int j = 1; j < arr.length - i; j++) {
         if (arr[j - 1] > arr[j]) {
           int temp = arr[j - 1];
           arr[j - 1] = arr[j];
           arr[j] = temp;
+          swapped = true;
         }
       }
+      if (!swapped) {break;}
       if (isAllowPrint) {
         System.out.println("======================================");
         System.out.println(Arrays.toString(arr));

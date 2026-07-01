@@ -6,7 +6,9 @@
   <title>버블 정렬 시각화</title>
 </head>
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
   body {
     margin: 0;
@@ -14,6 +16,7 @@
     color: #e2e8f0;
     font-family: 'Segoe UI', system-ui, sans-serif;
   }
+
   .page {
     max-width: 960px;
     margin: 0 auto;
@@ -21,92 +24,442 @@
   }
 
   /* ── Header ── */
-  .header { text-align: center; margin-bottom: 2rem; }
-  .header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 0.3rem; color: #f8fafc; }
-  .header p  { font-size: 0.82rem; color: #64748b; margin: 0; }
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
 
   /* ── Study Notes ── */
-  .notes-toggle { background: #1e2433; border: 1px solid #2d3552; border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden; }
-  .notes-toggle summary {
-    padding: 0.75rem 1.1rem; cursor: pointer; font-size: 0.82rem; font-weight: 600;
-    color: #94a3b8; letter-spacing: 0.3px; list-style: none;
-    display: flex; align-items: center; gap: 8px; user-select: none;
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
   }
-  .notes-toggle summary::before { content: '▶'; font-size: 9px; transition: transform 0.2s; color: #6366f1; }
-  .notes-toggle[open] summary::before { transform: rotate(90deg); }
-  .notes-toggle summary::-webkit-details-marker { display: none; }
-  .notes-body { padding: 0 1.1rem 1.1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width: 680px) { .notes-body { grid-template-columns: 1fr; } }
-  .note-card { background: #141824; border: 1px solid #252d45; border-radius: 8px; padding: 0.85rem 1rem; }
-  .note-card h3 { margin: 0 0 0.55rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #6366f1; }
-  .note-card ul { margin: 0; padding-left: 1.1rem; font-size: 0.79rem; color: #94a3b8; line-height: 1.75; }
-  .note-card ul li { margin-bottom: 0.1rem; }
-  .note-card ul li strong { color: #c7d2fe; }
-  .complexity-row { display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap; }
-  .badge { background: #1e2433; border: 1px solid #334155; border-radius: 5px; padding: 2px 9px; font-size: 0.73rem; color: #a5b4fc; font-weight: 600; }
-  .badge.good { border-color: #065f46; color: #6ee7b7; background: #022c22; }
-  .badge.warn { border-color: #78350f; color: #fcd34d; background: #1c1008; }
-  .badge.bad  { border-color: #7f1d1d; color: #fca5a5; background: #1c0a0a; }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-card {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.warn {
+    border-color: #78350f;
+    color: #fcd34d;
+    background: #1c1008;
+  }
+
+  .badge.bad {
+    border-color: #7f1d1d;
+    color: #fca5a5;
+    background: #1c0a0a;
+  }
 
   /* ── Controls ── */
   .controls-bar {
-    background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px;
-    padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
-    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
   }
-  .ctrl-group { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #64748b; }
-  .ctrl-group label { color: #94a3b8; font-weight: 500; white-space: nowrap; }
-  .ctrl-group input[type=range] { width: 100px; accent-color: #6366f1; }
-  .ctrl-group .val { font-weight: 600; color: #e2e8f0; min-width: 32px; font-size: 0.8rem; }
-  .btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
-  .btn { cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 6px 14px; border-radius: 7px; border: 1px solid #334155; background: #1e2433; color: #cbd5e1; transition: background 0.15s; white-space: nowrap; }
-  .btn:hover { background: #273047; }
-  .btn.primary { background: #4f46e5; border-color: #6366f1; color: #fff; }
-  .btn.primary:hover { background: #4338ca; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
 
   /* ── Viz Panel ── */
-  .viz-panel { background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
-  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .panel-title { font-size: 0.8rem; font-weight: 700; color: #c7d2fe; display: flex; align-items: center; gap: 6px; }
-  .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; }
-  .panel-step { font-size: 0.7rem; color: #475569; }
+  .viz-panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
 
-  .bar-area { display: grid; align-items: flex-end; gap: 2px; height: 160px; margin-bottom: 0.75rem; width: 100%; }
-  .bar { border-radius: 3px 3px 0 0; transition: height 0.12s, background 0.12s; display: flex; align-items: flex-end; justify-content: center; min-width: 1px; }
-  .bar span { font-size: 9px; font-weight: 600; margin-bottom: 2px; line-height: 1; overflow: hidden; }
-  .bar.normal    { background: #4c4e9a; }
-  .bar.comparing { background: #0f766e; }
-  .bar.swap      { background: #b45309; }
-  .bar.boundary  { background: #1d4ed8; }
-  .bar.sorted    { background: #ffff00; }
-  .bar.done      { background: #ff0063; }
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 160px;
+    margin-bottom: 0.75rem;
+    width: 100%;
+  }
+
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
+  }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.comparing {
+    background: #0f766e;
+  }
+
+  .bar.swap {
+    background: #b45309;
+  }
+
+  .bar.boundary {
+    background: #1d4ed8;
+  }
+
+  .bar.sorted {
+    background: #ffff00;
+  }
+
+  .bar.done {
+    background: #ff0063;
+  }
 
   /* ── Legend ── */
-  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 0.75rem; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #64748b; }
-  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 0.75rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 
   /* ── Log ── */
-  .log-box { background: #0f1117; border: 1px solid #1e2433; border-radius: 7px; padding: 7px 11px; font-size: 0.75rem; color: #94a3b8; min-height: 36px; line-height: 1.55; }
-  .phase-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.67rem; font-weight: 700; margin-right: 5px; letter-spacing: 0.3px; }
-  .phase-compare { background: #14374e; color: #67e8f9; }
-  .phase-swap    { background: #451a03; color: #fcd34d; }
-  .phase-done    { background: #052e16; color: #4ade80; }
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .phase-compare {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-swap {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
 
   /* ── Code ── */
-  .code-section { margin-top: 1.5rem; }
-  .code-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 0.75rem; padding-left: 0.2rem; }
-  .code-panel { background: #0d1117; border: 1px solid #2d3552; border-radius: 10px; overflow: hidden; }
-  .code-panel-header { display: flex; align-items: center; gap: 7px; padding: 0.6rem 1rem; background: #161b27; border-bottom: 1px solid #2d3552; font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
-  .code-panel-header .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  pre { margin: 0; padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.72rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; color: #cdd6f4; white-space: pre; }
-  .ck { color: #6272a4; }
-  .kw { color: #bd93f9; }
-  .ty { color: #8be9fd; }
-  .fn { color: #50fa7b; }
-  .nm { color: #ffb86c; }
-  .nu { color: #ff79c6; }
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  .ck {
+    color: #6272a4;
+  }
+
+  .kw {
+    color: #bd93f9;
+  }
+
+  .ty {
+    color: #8be9fd;
+  }
+
+  .fn {
+    color: #50fa7b;
+  }
+
+  .nm {
+    color: #ffb86c;
+  }
+
+  .nu {
+    color: #ff79c6;
+  }
 </style>
 
 <body>
@@ -154,11 +507,11 @@
       <div class="note-card">
         <h3>⏱ 복잡도</h3>
         <ul>
-          <li>Best / Avg / Worst 모두 <strong>O(n²)</strong></li>
+          <li>Best (정렬 돼있어 swap이 되지 않은 경우) O(n), Avg & Worst <strong>O(n²)</strong></li>
           <li>공간 복잡도: 배열 안에서 교환 → <strong>O(1)</strong></li>
         </ul>
         <div class="complexity-row">
-          <span class="badge bad">Best O(n²)</span>
+          <span class="badge good">Best O(n)</span>
           <span class="badge bad">Avg O(n²)</span>
           <span class="badge bad">Worst O(n²)</span>
           <span class="badge good">Space O(1)</span>
@@ -198,10 +551,22 @@
     </div>
     <div class="bar-area" id="barArea"></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#0f766e"></div>비교 중</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>교환</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div>회전 경계</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ffff00"></div>정렬 완료</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e"></div>
+        비교 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309"></div>
+        교환
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8"></div>
+        회전 경계
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffff00"></div>
+        정렬 완료
+      </div>
     </div>
     <div class="log-box" id="log">시작 버튼을 누르세요.</div>
   </div>
@@ -215,24 +580,34 @@
         _1_1_Bubble.java
       </div>
       <pre><span class="ck">// 거품 정렬: 서로 인접한 원소를 대소비교, 1회전 시 가장 큰 값이 맨 뒤, 최대값 순서대로 정렬</span>
-<span class="ck">// 시간복잡도: Best, Worst, Avg = O(n²)</span>
+<span class="ck">// 시간복잡도: Best (정렬 돼있어 swap이 되지 않은 경우) O(n), Worst & Avg = O(n²)</span>
 <span class="ck">// 공간복잡도: 주어진 배열 안에서 교환(Swap) O(1)</span>
 <span class="ck">// 장점: 구현 간단, 제자리 정렬이라 다른 메모리 공간 필요 X, 안정 정렬(Stable Sort)</span>
 <span class="ck">// 단점: O(n²) 비효율, 정렬되어 있지 않은 원소를 정렬하기 위해 교환 연산(Swap)이 많이 발생</span>
-<span class="ck">//       배열의 길이가 길수록 비효율적</span>
+<span class="ck">// 배열의 길이가 길수록 비효율적</span>
 
-<span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length - <span class="nu">1</span>; <span class="nm">i</span>++) {
-
+<span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length - <span
+            class="nu">1</span>; <span class="nm">i</span>++) {
+  <span class="ty">boolean</span><span class="nm"> swaaped</span> = <span class="nm">false</span>;
   <span class="ck">// j가 arr.length - i 까지만 순회 → 이미 확정된 뒤쪽은 제외</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nu">1</span>; <span class="nm">j</span> &lt; <span class="nm">arr</span>.length - <span class="nm">i</span>; <span class="nm">j</span>++) {
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
+            class="nu">1</span>; <span class="nm">j</span> &lt; <span class="nm">arr</span>.length - <span
+            class="nm">i</span>; <span class="nm">j</span>++) {
 
     <span class="ck">// 인접한 두 원소 비교, 앞이 크면 교환 → 큰 값이 오른쪽으로 밀림</span>
-    <span class="kw">if</span> (<span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>] &gt; <span class="nm">arr</span>[<span class="nm">j</span>]) {
-      <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>];
-      <span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>] = <span class="nm">arr</span>[<span class="nm">j</span>];
+    <span class="kw">if</span> (<span class="nm">arr</span>[<span class="nm">j</span> - <span
+            class="nu">1</span>] &gt; <span class="nm">arr</span>[<span class="nm">j</span>]) {
+      <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span
+            class="nm">j</span> - <span class="nu">1</span>];
+      <span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>] = <span
+            class="nm">arr</span>[<span class="nm">j</span>];
       <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">temp</span>;
+      <span class="nm">swaaped</span> = <span class="nm">true</span>;
     }
   }
+  <span class="ck">// 정렬돼있어 한번도 swap이 일어나지 않는 경우 조기 종료로 O(n)</span>
+  <span class="kw">if</span> (<span class="nm">!swapped</span>) { break; }
   <span class="ck">// 1회전 완료 → 인덱스 (arr.length - 1 - i) 에 최댓값 확정</span>
 }</pre>
     </div>
@@ -241,89 +616,172 @@
 </div>
 </body>
 <script>
-  const speedMap   = {1:750,2:500,3:300,4:200,5:100,6:50,7:30,8:20,9:10,10:0.001};
-  const speedNames = {1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게'};
+  const speedMap = {1: 750, 2: 500, 3: 300, 4: 200, 5: 100, 6: 50, 7: 30, 8: 20, 9: 10, 10: 0.001};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
 
-  let steps=[], stepIdx=0, playing=false, timer=null;
-  function getSize()  { return parseInt(document.getElementById('sizeSlider').value); }
+  let steps = [], stepIdx = 0, playing = false, timer = null;
+
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
   function randArr(n) {
-    const v=Array.from({length:n},(_,i)=>i+1);
-    for(let i=v.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[v[i],v[j]]=[v[j],v[i]];}
+    const v = Array.from({length: n}, (_, i) => i + 1);
+    for (let i = v.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [v[i], v[j]] = [v[j], v[i]];
+    }
     return v;
   }
 
   function generateSteps(arr) {
-    const a=[...arr],s=[],n=a.length;
-    const sortedSet=new Set();
-    for(let i=0;i<n-1;i++){
-      for(let j=1;j<n-i;j++){
-        s.push({type:'compare',arr:[...a],j,boundary:n-i,sortedSet:new Set(sortedSet),msg:`j=${j}: ${a[j-1]} vs ${a[j]} 비교 중`});
-        if(a[j-1]>a[j]){
-          [a[j-1],a[j]]=[a[j],a[j-1]];
-          s.push({type:'swap',arr:[...a],j,boundary:n-i,sortedSet:new Set(sortedSet),msg:`${a[j]} ↔ ${a[j-1]} 교환`});
+    const a = [...arr], s = [], n = a.length;
+    const sortedSet = new Set();
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = 1; j < n - i; j++) {
+        s.push({
+          type: 'compare',
+          arr: [...a],
+          j,
+          boundary: n - i,
+          sortedSet: new Set(sortedSet),
+          msg: `j=${j}: ${a[j - 1]} vs ${a[j]} 비교 중`
+        });
+        if (a[j - 1] > a[j]) {
+          [a[j - 1], a[j]] = [a[j], a[j - 1]];
+          s.push({
+            type: 'swap',
+            arr: [...a],
+            j,
+            boundary: n - i,
+            sortedSet: new Set(sortedSet),
+            msg: `${a[j]} ↔ ${a[j - 1]} 교환`
+          });
         }
       }
-      sortedSet.add(n-1-i);
-      s.push({type:'round',arr:[...a],boundary:n-i-1,sortedSet:new Set(sortedSet),msg:`${i+1}회전 완료 — 인덱스 ${n-1-i} 확정`});
+      sortedSet.add(n - 1 - i);
+      s.push({
+        type: 'round',
+        arr: [...a],
+        boundary: n - i - 1,
+        sortedSet: new Set(sortedSet),
+        msg: `${i + 1}회전 완료 — 인덱스 ${n - 1 - i} 확정`
+      });
     }
     sortedSet.add(0);
-    s.push({type:'done',arr:[...a],sortedSet:new Set(Array.from({length:n},(_,i)=>i)),msg:'정렬 완료!'});
+    s.push({
+      type: 'done',
+      arr: [...a],
+      sortedSet: new Set(Array.from({length: n}, (_, i) => i)),
+      msg: '정렬 완료!'
+    });
     return s;
   }
 
   function init() {
     stopPlay();
-    const arr=randArr(getSize());
-    steps=generateSteps(arr);
-    stepIdx=0;
-    renderStep({type:'init',arr:[...arr],sortedSet:new Set(),msg:'시작 버튼을 누르세요.'});
-    document.getElementById('stepCounter').textContent='—';
-    document.getElementById('btnPlay').disabled=false;
+    const arr = randArr(getSize());
+    steps = generateSteps(arr);
+    stepIdx = 0;
+    renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'});
+    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('btnPlay').disabled = false;
   }
 
   function renderStep(step) {
-    const barArea=document.getElementById('barArea');
-    const log=document.getElementById('log');
-    const maxVal=Math.max(...step.arr);
-    const showNum=step.arr.length<=20;
-    barArea.style.gridTemplateColumns=`repeat(${step.arr.length},1fr)`;
-    barArea.innerHTML=step.arr.map((v,idx)=>{
-      let cls='bar normal';
-      if(step.sortedSet?.has(idx)) cls=step.type==='done'?'bar done':'bar sorted';
-      if(step.type==='compare'&&(idx===step.j-1||idx===step.j)) cls='bar comparing';
-      if(step.type==='swap'   &&(idx===step.j-1||idx===step.j)) cls='bar swap';
-      if((step.type==='compare'||step.type==='swap')&&idx===step.boundary-1&&!step.sortedSet?.has(idx)) cls='bar boundary';
-      if(step.type==='done') cls='bar done';
-      const h=Math.max(10,Math.round((v/maxVal)*140));
-      const tc=cls.includes('done')||cls.includes('sorted')?'#86efac':cls.includes('comparing')?'#67e8f9':cls.includes('swap')?'#fcd34d':cls.includes('boundary')?'#93c5fd':'#a5b4fc';
-      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum?v:''}</span></div>`;
+    const barArea = document.getElementById('barArea');
+    const log = document.getElementById('log');
+    const maxVal = Math.max(...step.arr);
+    const showNum = step.arr.length <= 20;
+    barArea.style.gridTemplateColumns = `repeat(${step.arr.length},1fr)`;
+    barArea.innerHTML = step.arr.map((v, idx) => {
+      let cls = 'bar normal';
+      if (step.sortedSet?.has(idx)) {
+        cls = step.type === 'done' ? 'bar done' : 'bar sorted';
+      }
+      if (step.type === 'compare' && (idx === step.j - 1 || idx === step.j)) {
+        cls = 'bar comparing';
+      }
+      if (step.type === 'swap' && (idx === step.j - 1 || idx === step.j)) {
+        cls = 'bar swap';
+      }
+      if ((step.type === 'compare' || step.type === 'swap') && idx === step.boundary - 1
+          && !step.sortedSet?.has(idx)) {
+        cls = 'bar boundary';
+      }
+      if (step.type === 'done') {
+        cls = 'bar done';
+      }
+      const h = Math.max(10, Math.round((v / maxVal) * 140));
+      const tc = cls.includes('done') || cls.includes('sorted') ? '#86efac' : cls.includes(
+          'comparing') ? '#67e8f9' : cls.includes('swap') ? '#fcd34d' : cls.includes('boundary')
+          ? '#93c5fd' : '#a5b4fc';
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum ? v
+          : ''}</span></div>`;
     }).join('');
-    const tagMap={compare:'<span class="phase-tag phase-compare">비교</span>',swap:'<span class="phase-tag phase-swap">교환</span>',round:'<span class="phase-tag phase-done">확정</span>',done:'<span class="phase-tag phase-done">완료 ✓</span>'};
-    log.innerHTML=(tagMap[step.type]||'')+(step.msg||'');
+    const tagMap = {
+      compare: '<span class="phase-tag phase-compare">비교</span>',
+      swap: '<span class="phase-tag phase-swap">교환</span>',
+      round: '<span class="phase-tag phase-done">확정</span>',
+      done: '<span class="phase-tag phase-done">완료 ✓</span>'
+    };
+    log.innerHTML = (tagMap[step.type] || '') + (step.msg || '');
   }
 
   function tick() {
-    if(stepIdx>=steps.length){stopPlay();return;}
+    if (stepIdx >= steps.length) {
+      stopPlay();
+      return;
+    }
     renderStep(steps[stepIdx]);
-    document.getElementById('stepCounter').textContent=`${stepIdx+1} / ${steps.length}`;
+    document.getElementById('stepCounter').textContent = `${stepIdx + 1} / ${steps.length}`;
     stepIdx++;
   }
-  function stopPlay(){playing=false;clearInterval(timer);document.getElementById('btnPlay').textContent='▶ 시작';}
 
-  document.getElementById('btnPlay').addEventListener('click',()=>{
-    if(playing){stopPlay();return;}
-    if(stepIdx>=steps.length)return;
-    playing=true;document.getElementById('btnPlay').textContent='⏸ 일시정지';
-    timer=setInterval(tick,speedMap[getSpeed()]);
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (stepIdx >= steps.length) {
+      return;
+    }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
   });
-  document.getElementById('btnStep').addEventListener('click',()=>{stopPlay();tick();});
-  document.getElementById('btnReset').addEventListener('click',init);
-  document.getElementById('sizeSlider').addEventListener('input',e=>{document.getElementById('sizeLabel').textContent=e.target.value;init();});
-  document.getElementById('speedSlider').addEventListener('input',e=>{
-    document.getElementById('speedLabel').textContent=speedNames[e.target.value];
-    if(playing){clearInterval(timer);timer=setInterval(tick,speedMap[getSpeed()]);}
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+  document.getElementById('btnReset').addEventListener('click', init);
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
   });
   init();
 </script>

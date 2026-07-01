@@ -1,10 +1,10 @@
 package Algorithm.Sort.Code.ComparsionSort;
 
-// 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결, 결과를 모음
+// 퀵(피벗)정렬: 분할 정복(Divide And Conquer) : 문제를 작은 2개의 문제로 분리 하고 각각 해결
 // 불안정 정렬, 다른 원소와의 비교만으로 정렬을 수행, Merge와 달리 배열을 비균등하게 분할
 // 하나의 값을 피벗(기준)으로 잡고 피벗보다 왼쪽은 작은 배열, 오른쪽은 큰 배열로 분열(Divide), 재귀적으로 반복
 //  -> 이 과정이 partition 과정 (피벗 기준 재배치 & 분할)
-// 재귀 호출이 진행될 때마다 하나의 원소는 위치가 정해지므로 재귀함수가 반드시 끝나는 걸 보장
+// 재귀 호출이 진행될 때마다 하나의 원소는 위치가 정해짐
 
 // 피봇 값을 기준으로 오른쪽에선 작은 값 찾고 킵, 왼쪽에선 큰 값을 찾고 두 값을 스왑
 // 이 과정을 반복, 위의 인덱스가 교차하는 (해당 피봇에서 더 바꿀 값이 없으면) 해당 인덱스와 피봇을 스왑, 위 과정 반복
@@ -13,13 +13,26 @@ package Algorithm.Sort.Code.ComparsionSort;
 // 이 때 배열에서 가장 앞에 있는 값과 중간값을 교환해 준다면 확률적으로 시간 복잡도 O(n log2 n)으로 개선 == 최악의 시간 복잡도가 O(n log2 n)이 되는건 아님
 
 // 해결?: Random 피벗이나 중간값 피벗으로 해결 가능 (완전히 줄일 순 없음 O(n log n)에 가깝게), 왼쪽|오른쪽 피벗보다 항상 Random | 중간값이 더 성능이 좋음
-// -> Random 보단 중간값으로 해결
+// -> Random 보단 중간값으로 해결, 중간값은 이미 or 거의 정렬 or 역정렬 된 상황에서 매우 강함
 
-// 시간 복잡도: Best = O(n log n), Avg = O(n log n), Worst = O(n^2), 공간 복잡도: 주어진 배열 안에서 교환 == O(1)
+// 아래 코드 방식은 Hoare Parition (양방향 포인터)이고 Lomuto Parition 방식이 추가로 있음
+// Lomuto 방식은 pivot 이 오른쪽에 고정, 포인터인 i 는 partition 도중 pivot 보다 작은 값이 끝나는 인덱스 위치
+// 두 번째 포인터인 j 는 검사중인 인덱스 위치
+// i = 0 j = 0 부터 검사, j++ 와 pivot 을 비교 후 pivot 보다 작으면 i++ & swap(i, j), 아니면 j++ 로 계속 비교
+// j 가 pivot 앞까지 도달하면 swap(i, pivot) 하며 pivot은 위치 확정, 이후 재귀 호출로 분할 정복
+
+// 시간 복잡도: Best = O(n log n), Avg = O(n log n), Worst = O(n^2)
+// 공간 복잡도: 주어진 배열 안에서 교환 == O(1), 재귀호출 비용으로 Avg = O(log n), Worst = O(n)
 // 장점: 불필요한 데이터의 이동을 줄이고 먼 거리의 데이터를 교환, 한 번 결정되니 피벗들이 추 후 연산에서 제외, 시간 복잡도가 O(n log n)의 다른 알고리즘 보다 가장 빠릅
 // 단점: 불안정 정렬, 정렬된 배열에 대해선 Quick Sort의 불균형 분할에 의해 오히려 더 많이 걸림
 
-// 평균적으로 가장 빠른 정렬 & CPU Cache 를 잘 활용해 일반적인 정렬은 Quick 을 가장 먼저 고려
+// 평균적으로 가장 빠른 정렬 & CPU Cache 를 잘 활용해
+// Primitive 배열 (메모리상에 데이터를 연속으로 저장하는 타입들, char, int ...),
+// 메모리 여유, 불안정 정렬도 괜찮은 경우엔 Quick 을 가장 먼저 고려
+// -> 주기억장치(RAM | ROM)에서 데이터를 가져올 때 필요한 데이터뿐만 아닌 주변 메모리(캐시 라인)까지 함께 Cache 에 저장
+// -> Quick Sort는 배열이 연속된 인덱스에 주로 접근해 Cpu Cache 히트율이 높다
+// -> Heap Sort는 배열을 이진 트리처럼 사용해 부모(0) → 자식(1, 2) → 손자(3, 4, 5, 6) 처럼
+// -> 멀리 떨어진 인덱스를 반복 접근하기 떄문에 CPU Cache 히트율이 낮음
 
 import Algorithm.Sort.ArrGenerator;
 import java.io.IOException;
@@ -109,9 +122,7 @@ public class _1_4_Quick {
     int pivot = arr[left];
     int i = left, j = right;
 
-    if (isAllowPrint) {
-      System.out.println("pivot = " + pivot);
-    }
+    if (isAllowPrint) {System.out.println("pivot = " + pivot);}
 
     while (i < j) {
       // 오른쪽에서 pivot보다 작은 값 찾기

@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>힙 정렬 시각화</title>
+</head>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .header { text-align: center; margin-bottom: 2rem; }
+  .header h1 {
+    font-size: 1.65rem; font-weight: 700; letter-spacing: -0.5px;
+    margin: 0 0 0.3rem; color: #f8fafc;
+  }
+  .header p { font-size: 0.82rem; color: #64748b; margin: 0; }
+
+  /* ── Notes ── */
+  .notes-toggle {
+    background: #1e2433; border: 1px solid #2d3552;
+    border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;
+  }
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem; cursor: pointer; font-size: 0.82rem;
+    font-weight: 600; color: #94a3b8; letter-spacing: 0.3px;
+    list-style: none; display: flex; align-items: center; gap: 8px; user-select: none;
+  }
+  .notes-toggle summary::before {
+    content: '▶'; font-size: 9px; transition: transform 0.2s; color: #6366f1;
+  }
+  .notes-toggle[open] summary::before { transform: rotate(90deg); }
+  .notes-toggle summary::-webkit-details-marker { display: none; }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+  }
+  @media (max-width: 680px) { .notes-body { grid-template-columns: 1fr; } }
+
+  .note-card {
+    background: #141824; border: 1px solid #252d45;
+    border-radius: 8px; padding: 0.85rem 1rem;
+  }
+  .note-card h3 {
+    margin: 0 0 0.55rem; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.8px; color: #6366f1;
+  }
+  .note-card ul {
+    margin: 0; padding-left: 1.1rem; font-size: 0.79rem;
+    color: #94a3b8; line-height: 1.75;
+  }
+  .note-card ul li { margin-bottom: 0.1rem; }
+  .note-card ul li strong { color: #c7d2fe; }
+
+  .complexity-row { display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap; }
+  .badge {
+    background: #1e2433; border: 1px solid #334155; border-radius: 5px;
+    padding: 2px 9px; font-size: 0.73rem; color: #a5b4fc; font-weight: 600;
+  }
+  .badge.good { border-color: #065f46; color: #6ee7b7; background: #022c22; }
+  .badge.warn { border-color: #78350f; color: #fcd34d; background: #1c1008; }
+  .badge.bad  { border-color: #7f1d1d; color: #fca5a5; background: #1c0808; }
+
+  /* ── Controls ── */
+  .controls-bar {
+    background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px;
+    padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
+    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+  }
+  .ctrl-group { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #64748b; }
+  .ctrl-group label { color: #94a3b8; font-weight: 500; white-space: nowrap; }
+  .ctrl-group input[type=range] { width: 100px; accent-color: #6366f1; }
+  .ctrl-group .val { font-weight: 600; color: #e2e8f0; min-width: 32px; font-size: 0.8rem; }
+
+  .btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+  .btn {
+    cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 6px 14px;
+    border-radius: 7px; border: 1px solid #334155; background: #1e2433;
+    color: #cbd5e1; transition: background 0.15s; white-space: nowrap;
+  }
+  .btn:hover { background: #273047; }
+  .btn.primary { background: #4f46e5; border-color: #6366f1; color: #fff; }
+  .btn.primary:hover { background: #4338ca; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  /* ── Panel ── */
+  .panel {
+    background: #1a1f2e; border: 1px solid #2d3552;
+    border-radius: 10px; padding: 1rem;
+  }
+  .panel-header {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 0.75rem;
+  }
+  .panel-title {
+    font-size: 0.8rem; font-weight: 700; color: #c7d2fe;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .panel-step { font-size: 0.7rem; color: #475569; }
+
+  .bar-area {
+    display: grid; align-items: flex-end; gap: 2px;
+    height: 160px; margin-bottom: 0.75rem; width: 100%;
+  }
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s;
+    display: flex; align-items: flex-end; justify-content: center; min-width: 1px;
+  }
+  .bar span { font-size: 9px; font-weight: 600; margin-bottom: 2px; line-height: 1; overflow: hidden; }
+
+  /* bar states */
+  .bar.normal   { background: #4c4e9a; }
+  .bar.range    { background: #1e4976; }    /* 현재 힙 범위 */
+  .bar.root     { background: #1d4ed8; }    /* 루트 (최댓값 후보) */
+  .bar.parent   { background: #0e7490; }    /* heapify 대상 부모 */
+  .bar.child    { background: #6d28d9; }    /* 비교 대상 자식 */
+  .bar.swapping { background: #b45309; }    /* swap 중 */
+  .bar.sorted   { background: #ffff00; }    /* 정렬 확정 */
+  .bar.done     { background: #ff0063; }    /* 전체 완료 */
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 0.6rem;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #64748b; }
+  .legend-dot  { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  .log-box {
+    background: #0f1117; border: 1px solid #1e2433; border-radius: 7px;
+    padding: 7px 11px; font-size: 0.75rem; color: #94a3b8;
+    min-height: 36px; line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block; padding: 1px 6px; border-radius: 4px;
+    font-size: 0.67rem; font-weight: 700; margin-right: 5px; letter-spacing: 0.3px;
+  }
+  .phase-build   { background: #1e2d5e; color: #93c5fd; }
+  .phase-heapify { background: #14374e; color: #67e8f9; }
+  .phase-swap    { background: #451a03; color: #fcd34d; }
+  .phase-sort    { background: #14532d; color: #86efac; }
+  .phase-done    { background: #052e16; color: #4ade80; }
+
+  /* ── Code ── */
+  .code-section { margin-top: 1.5rem; }
+  .code-section-title {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #475569; margin-bottom: 0.75rem; padding-left: 0.2rem;
+  }
+  .code-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 740px) { .code-dual { grid-template-columns: 1fr; } }
+
+  .code-panel { background: #0d1117; border: 1px solid #2d3552; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .code-panel pre { flex: 1; }
+  .code-panel-header {
+    display: flex; align-items: center; gap: 7px;
+    padding: 0.6rem 1rem; background: #161b27;
+    border-bottom: 1px solid #2d3552; font-size: 0.75rem; font-weight: 700; color: #94a3b8;
+  }
+  .code-panel-header .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  pre {
+    margin: 0; padding: 1rem 1.1rem; overflow-x: auto;
+    font-size: 0.72rem; line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4; white-space: pre;
+  }
+  .ck { color: #6272a4; }
+  .kw { color: #bd93f9; }
+  .ty { color: #8be9fd; }
+  .fn { color: #50fa7b; }
+  .nm { color: #ffb86c; }
+  .st { color: #f1fa8c; }
+  .nu { color: #ff79c6; }
+</style>
+
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>힙 정렬 시각화</h1>
+    <p>최대 힙(Max Heap) 구성 후, 루트를 추출하며 반복 정렬</p>
+  </div>
+
+  <details class="notes-toggle">
+    <summary>📖 힙 정렬 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🔍 개념</h3>
+        <ul>
+          <li><strong>완전 이진 트리</strong> 형태의 Heap 자료구조를 이용한 정렬</li>
+          <li>최대 힙(Max Heap)을 구성해 루트(배열의 첫 번째 요소)에 최댓값을 위치</li>
+          <li>루트와 마지막 원소를 Swap 후 힙 크기 1 감소</li>
+          <li>힙 크기가 1이 될 때까지 <strong>Heapify &amp; Swap 반복</strong> → 오름차순 정렬</li>
+          <li>부모 인덱스 <strong>i</strong> → 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong></li>
+          <li>최댓값/최솟값을 여러 번 꺼내야 할 때 사용 (게임 랭킹, 우선순위 큐, 스케줄러)</li>
+          <li>최악의 성능 보장이 필요할 때 적합 — 항상 O(n log n)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✅ 장점</h3>
+        <ul>
+          <li>Best/Avg/Worst 모두 <strong>O(n log n)</strong> 시간 보장</li>
+          <li><strong>제자리 정렬</strong> — O(1) 추가 공간</li>
+          <li>부분 정렬에 효율적 (가장 큰/작은 k개 원소 추출)</li>
+          <li>우선순위 큐(Priority Queue) 원리 이해에 최적</li>
+          <li>메모리 제약 환경에서 유용</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">Best O(n log n)</span>
+          <span class="badge good">Avg O(n log n)</span>
+          <span class="badge good">Worst O(n log n)</span>
+          <span class="badge">Space O(1)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>⚠️ 단점</h3>
+        <ul>
+          <li><strong>불안정 정렬</strong> — 동일 값의 원래 순서 보장 안 됨</li>
+          <li>구현이 복잡하고 상수 요소가 높음</li>
+          <li><strong>캐시 지역성 낮음</strong> — 배열을 이진 트리처럼 사용해 멀리 떨어진 인덱스를 반복 접근</li>
+          <li>부모(0) → 자식(1,2) → 손자(3,4,5,6) 처럼 불규칙한 메모리 접근 → CPU Cache 히트율 낮음</li>
+          <li>같은 O(n log n)인 Quick Sort에 비해 실제로는 느린 경우가 많음</li>
+          <li>입력 데이터 상태(정렬 여부)에 관계없이 항상 비슷한 수행 시간</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔎 Bottom-Up Heapify (Floyd)</h3>
+        <ul>
+          <li>일반 heapify의 최적화 기법</li>
+          <li>리프까지 내려간 뒤, 원래 루트 값이 들어갈 위치를 한 번에 찾아 삽입</li>
+          <li>비교 횟수와 데이터 이동을 줄일 수 있음</li>
+          <li>구현이 복잡해 일반 heapify가 더 널리 사용됨</li>
+          <li>Build Heap 전체 시간 복잡도: <strong>O(n)</strong> (각 노드 높이만큼만 처리)</li>
+        </ul>
+      </div>
+
+    </div>
+  </details>
+
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>배열 크기</label>
+      <input type="range" id="sizeSlider" min="4" max="100" value="30" step="1">
+      <span class="val" id="sizeLabel">30</span>
+    </div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btnPlay">▶ 시작</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">새 배열</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <div class="dot" style="background:#67e8f9"></div>
+        Heap Sort — Build Heap → Sort
+      </div>
+      <div class="panel-step" id="stepCounter">—</div>
+    </div>
+    <div class="bar-area" id="barArea"></div>
+
+    <div class="legend" style="padding:0 0.2rem; margin-bottom:0.85rem;">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8"></div>
+        루트 (최댓값)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0e7490"></div>
+        부모 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9"></div>
+        자식 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309"></div>
+        Swap
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e4976"></div>
+        힙 범위
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffff00"></div>
+        정렬 완료
+      </div>
+    </div>
+
+    <div class="log-box" id="log">시작 버튼을 누르세요.</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <div class="code-dual">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#a5b4fc"></div>
+          heapSort() — 진입점
+        </div>
+        <pre><span class="kw">private static void</span> <span class="fn">heapSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
+  <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">arr</span>.length;
+
+  <span class="ck">// ① Build Max Heap</span>
+  <span class="ck">// 마지막 부모 노드(n/2-1)부터 루트(0)까지 heapify 수행 → O(n)</span>
+  <span class="ck">// 부모 인덱스 i → 왼쪽 자식 (2i+1), 오른쪽 자식 (2i+2)</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">n</span> / <span class="nu">2</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
+    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span class="nm">i</span>);
+  }
+
+  <span class="ck">// ② Sort: 루트(최댓값)를 마지막 원소와 교환</span>
+  <span class="ck">// 힙 크기 1 감소 → heapify 반복 → O(n log n)</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">n</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt; <span class="nu">0</span>; <span class="nm">i</span>--) {
+    <span class="ck">// 루트 ↔ 마지막, 최댓값을 제자리로</span>
+    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nu">0</span>, <span class="nm">i</span>);
+    <span class="ck">// 축소된 힙에서 루트부터 재구성</span>
+    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">i</span>, <span class="nu">0</span>);
+  }
+}
+
+<span class="kw">private static void</span> <span class="fn">swap</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span class="nm">a</span>, <span class="ty">int</span> <span class="nm">b</span>) {
+  <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span class="nm">a</span>];
+  <span class="nm">arr</span>[<span class="nm">a</span>] = <span class="nm">arr</span>[<span class="nm">b</span>];
+  <span class="nm">arr</span>[<span class="nm">b</span>] = <span class="nm">temp</span>;
+}</pre>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          heapify() — 최대 힙 속성 재구성
+        </div>
+        <pre><span class="ck">// 현재 노드를 기준으로 최대 힙 속성을</span>
+<span class="ck">// 만족하도록 아래 방향으로 재구성</span>
+<span class="ck">// 시간복잡도: O(log n)</span>
+<span class="kw">private static void</span> <span class="fn">heapify</span>(
+    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span class="nm">n</span>, <span class="ty">int</span> <span class="nm">i</span>) {
+
+  <span class="ty">int</span> <span class="nm">p</span> = <span class="nm">i</span>;           <span class="ck">// 최대값 후보 (처음엔 부모)</span>
+  <span class="ty">int</span> <span class="nm">l</span> = <span class="nm">i</span> * <span class="nu">2</span> + <span class="nu">1</span>; <span class="ck">// 왼쪽 자식 인덱스</span>
+  <span class="ty">int</span> <span class="nm">r</span> = <span class="nm">i</span> * <span class="nu">2</span> + <span class="nu">2</span>; <span class="ck">// 오른쪽 자식 인덱스</span>
+
+  <span class="ck">// 왼쪽 자식이 부모보다 크면 후보 갱신</span>
+  <span class="kw">if</span> (<span class="nm">l</span> &lt; <span class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span class="nm">arr</span>[<span class="nm">l</span>]) { <span class="nm">p</span> = <span class="nm">l</span>; }
+
+  <span class="ck">// 오른쪽 자식이 현재 후보보다 크면 후보 갱신</span>
+  <span class="kw">if</span> (<span class="nm">r</span> &lt; <span class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span class="nm">arr</span>[<span class="nm">r</span>]) { <span class="nm">p</span> = <span class="nm">r</span>; }
+
+  <span class="ck">// 부모가 자식보다 작으면 Swap 후 재귀</span>
+  <span class="kw">if</span> (<span class="nm">i</span> != <span class="nm">p</span>) {
+    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nm">p</span>, <span class="nm">i</span>);
+    <span class="ck">// 교환된 위치에서 재귀</span>
+    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span class="nm">p</span>);
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+<script>
+  const speedMap   = {1:750, 2:500, 3:300, 4:200, 5:100, 6:50, 7:30, 8:20, 9:10, 10:0.001};
+  const speedNames = {1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게'};
+
+  let arr = [], steps = [], stepIdx = 0, playing = false, timer = null;
+
+  function getSize()  { return parseInt(document.getElementById('sizeSlider').value); }
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  function randArr(n) {
+    const v = Array.from({length: n}, (_, i) => i + 1);
+    for (let i = v.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [v[i], v[j]] = [v[j], v[i]];
+    }
+    return v;
+  }
+
+  // ─────────────────────────────────────────────
+  // Step generator — Build Heap + Sort 한 흐름
+  // ─────────────────────────────────────────────
+  function generateSteps(src) {
+    const steps = [];
+    const a = [...src];
+    const n = a.length;
+    const sorted = new Set();
+
+    function push(type, extra, msg) {
+      steps.push({type, arr: [...a], sortedSet: new Set(sorted), msg, ...extra});
+    }
+
+    // ── heapify (재귀, 스텝 기록) ──
+    function heapify(heapSize, i) {
+      let p = i;
+      const l = i * 2 + 1;
+      const r = i * 2 + 2;
+
+      push('heapify', {hi: i, l: l < heapSize ? l : -1, r: r < heapSize ? r : -1, heapSize},
+        `heapify(${i}): 부모 arr[${i}]=${a[i]}`
+        + (l < heapSize ? `  왼쪽[${l}]=${a[l]}` : '')
+        + (r < heapSize ? `  오른쪽[${r}]=${a[r]}` : ''));
+
+      if (l < heapSize && a[p] < a[l]) p = l;
+      if (r < heapSize && a[p] < a[r]) p = r;
+
+      if (i !== p) {
+        push('swap', {swapA: i, swapB: p, heapSize},
+          `Swap arr[${i}]=${a[i]} ↔ arr[${p}]=${a[p]}  (부모 < 자식)`);
+        [a[i], a[p]] = [a[p], a[i]];
+        push('swapped', {hi: p, heapSize},
+          `Swap 완료 → 재귀 heapify(${p})`);
+        heapify(heapSize, p);
+      } else {
+        push('no-swap', {hi: i, heapSize},
+          `arr[${i}]=${a[i]} 이 자식보다 크거나 같음 → Swap 불필요`);
+      }
+    }
+
+    // ── ① Build Max Heap ──
+    push('build-start', {heapSize: n}, '① Build Max Heap 시작 — 마지막 부모부터 루트(0) 방향으로 heapify');
+
+    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+      push('build-iter', {hi: i, heapSize: n},
+        `Build Heap: heapify(${i}) 호출  (마지막 부모: ${Math.floor(n/2)-1}, 루트: 0)`);
+      heapify(n, i);
+    }
+
+    push('build-done', {heapSize: n},
+      '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 → ② Sort 단계 시작');
+
+    // ── ② Sort ──
+    for (let i = n - 1; i > 0; i--) {
+      push('extract', {swapA: 0, swapB: i, heapSize: i + 1},
+        `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap → arr[${i}] 위치 확정`);
+      [a[0], a[i]] = [a[i], a[0]];
+      sorted.add(i);
+      push('extracted', {heapSize: i},
+        `arr[${i}]=${a[i]} 정렬 확정 ✓  힙 크기 ${i+1} → ${i}  → heapify(0) 수행`);
+      if (i > 1) heapify(i, 0);
+    }
+
+    sorted.add(0);
+    const all = new Set(Array.from({length: n}, (_, k) => k));
+    steps.push({type: 'done', arr: [...a], sortedSet: all, heapSize: 0, msg: '정렬 완료! 🎉'});
+    return steps;
+  }
+
+  // ─────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────
+  function renderStep(step) {
+    const barArea = document.getElementById('barArea');
+    const log     = document.getElementById('log');
+    const maxVal  = Math.max(...step.arr);
+    const showNum = step.arr.length <= 20;
+    barArea.style.gridTemplateColumns = `repeat(${step.arr.length},1fr)`;
+
+    const hs = step.heapSize ?? step.arr.length;
+
+    barArea.innerHTML = step.arr.map((v, idx) => {
+      let cls = 'bar normal';
+
+      if (step.sortedSet?.has(idx)) {
+        cls = step.type === 'done' ? 'bar done' : 'bar sorted';
+      } else if (idx < hs) {
+        cls = 'bar range';
+      }
+
+      // 루트 강조 (sort 단계에서)
+      if (idx === 0 && (step.type === 'build-done' || step.type === 'extracted') && !step.sortedSet?.has(0)) {
+        cls = 'bar root';
+      }
+
+      // heapify 대상 부모
+      if ((step.type === 'heapify' || step.type === 'no-swap') && idx === step.hi) {
+        cls = 'bar parent';
+      }
+      // 자식 노드
+      if (step.type === 'heapify' &&
+          ((step.l !== undefined && idx === step.l) ||
+           (step.r !== undefined && idx === step.r)) &&
+          idx >= 0 && idx < hs) {
+        cls = 'bar child';
+      }
+      // swap 중
+      if ((step.type === 'swap' || step.type === 'extract') &&
+          (idx === step.swapA || idx === step.swapB)) {
+        cls = 'bar swapping';
+      }
+
+      const h  = Math.max(10, Math.round((v / maxVal) * 150));
+      const tc = (cls.includes('done') || cls.includes('sorted')) ? '#86efac'
+               : cls.includes('swapping') ? '#fcd34d'
+               : cls.includes('root')     ? '#93c5fd'
+               : cls.includes('parent')   ? '#67e8f9'
+               : cls.includes('child')    ? '#c4b5fd'
+               : cls.includes('range')    ? '#7ea3c4'
+               : '#a5b4fc';
+
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum ? v : ''}</span></div>`;
+    }).join('');
+
+    const tagMap = {
+      'build-start': '<span class="phase-tag phase-build">Build Heap</span>',
+      'build-iter':  '<span class="phase-tag phase-build">Build</span>',
+      'heapify':     '<span class="phase-tag phase-heapify">Heapify</span>',
+      'swap':        '<span class="phase-tag phase-swap">Swap</span>',
+      'swapped':     '<span class="phase-tag phase-swap">Swap 완료</span>',
+      'no-swap':     '<span class="phase-tag phase-heapify">비교</span>',
+      'build-done':  '<span class="phase-tag phase-sort">힙 완성 ✓</span>',
+      'extract':     '<span class="phase-tag phase-swap">루트 추출</span>',
+      'extracted':   '<span class="phase-tag phase-sort">확정</span>',
+      'done':        '<span class="phase-tag phase-done">완료 ✓</span>',
+    };
+    log.innerHTML = (tagMap[step.type] || '') + (step.msg || '');
+  }
+
+  // ─────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────
+  function init() {
+    stopPlay();
+    const n = getSize();
+    arr = randArr(n);
+    steps = generateSteps(arr);
+    stepIdx = 0;
+    renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), heapSize: n, msg: '시작 버튼을 누르세요.'});
+    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('btnPlay').disabled = false;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length) { stopPlay(); return; }
+    renderStep(steps[stepIdx]);
+    document.getElementById('stepCounter').textContent = `${stepIdx + 1} / ${steps.length}`;
+    stepIdx++;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    if (stepIdx >= steps.length) return;
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', init);
+
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) { clearInterval(timer); timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  init();
+</script>
+</html>
