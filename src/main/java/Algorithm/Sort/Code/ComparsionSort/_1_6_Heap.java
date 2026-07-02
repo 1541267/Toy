@@ -45,22 +45,25 @@ public class _1_6_Heap {
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
+    int[] arr2 = arr.clone();
 
     isAllowPrint = a.isAllowPrint();
     System.out.println("==========================================================");
     System.out.println("Before Arr: " + Arrays.toString(arr));
+    System.out.println("Before Arr2: " + Arrays.toString(arr2));
 
-    System.out.println("Heap 빌드 방식 선택\n1: bottom-up, 2: top-down");
-    int selectNum = Integer.parseInt(br.readLine());
     long start = System.nanoTime();
+    heapSort(arr, 1);
+    String firstEnd = (System.nanoTime() - start) / 1_000_000.0 + "ms";
 
-    heapSort(arr, selectNum);
+    start = System.nanoTime();
+    heapSort(arr2, 2);
+    String secondEnd = (System.nanoTime() - start) / 1_000_000.0 + "ms";
 
     System.out.println("==========================================================");
     System.out.println("After Arr: " + Arrays.toString(arr));
-    System.out.println("==========================================================");
-    System.out.println(
-        "Heap Sort " + (selectNum == 1 ? "Bottom-Up" : "Top-Down") + " | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+    System.out.println("After Arr2: " + Arrays.toString(arr2));
+    System.out.println("Heap Sort\nBottom-Up: " + firstEnd + ", Top-Down: " + secondEnd);
   }
 
   private static void heapSort(int[] arr, int selectNum) {
@@ -81,7 +84,7 @@ public class _1_6_Heap {
             System.out.printf("heapify(%d): %s\n", i, Arrays.toString(arr));
           }
 
-          // heapify: O(log n), 초기 힙 구성 전체: O(n)
+          // heapify: O(log n), 초기 힙 구성 전체: O(n), bottomUp
           heapify(arr, n, i);
         }
         break;

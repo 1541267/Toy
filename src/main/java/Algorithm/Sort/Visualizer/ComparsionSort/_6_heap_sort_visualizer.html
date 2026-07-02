@@ -6,7 +6,9 @@
   <title>힙 정렬 시각화</title>
 </head>
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
 
   body {
     margin: 0;
@@ -21,171 +23,503 @@
     padding: 1.5rem 1.25rem 3rem;
   }
 
-  .header { text-align: center; margin-bottom: 2rem; }
-  .header h1 {
-    font-size: 1.65rem; font-weight: 700; letter-spacing: -0.5px;
-    margin: 0 0 0.3rem; color: #f8fafc;
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
   }
-  .header p { font-size: 0.82rem; color: #64748b; margin: 0; }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
 
   /* ── Notes ── */
   .notes-toggle {
-    background: #1e2433; border: 1px solid #2d3552;
-    border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden;
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
   }
+
   .notes-toggle summary {
-    padding: 0.75rem 1.1rem; cursor: pointer; font-size: 0.82rem;
-    font-weight: 600; color: #94a3b8; letter-spacing: 0.3px;
-    list-style: none; display: flex; align-items: center; gap: 8px; user-select: none;
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
   }
+
   .notes-toggle summary::before {
-    content: '▶'; font-size: 9px; transition: transform 0.2s; color: #6366f1;
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
   }
-  .notes-toggle[open] summary::before { transform: rotate(90deg); }
-  .notes-toggle summary::-webkit-details-marker { display: none; }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
 
   .notes-body {
     padding: 0 1.1rem 1.1rem;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
   }
-  @media (max-width: 680px) { .notes-body { grid-template-columns: 1fr; } }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
 
   .note-card {
-    background: #141824; border: 1px solid #252d45;
-    border-radius: 8px; padding: 0.85rem 1rem;
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
   }
-  .note-card h3 {
-    margin: 0 0 0.55rem; font-size: 0.78rem; font-weight: 700;
-    letter-spacing: 0.8px; color: #6366f1;
-  }
-  .note-card ul {
-    margin: 0; padding-left: 1.1rem; font-size: 0.79rem;
-    color: #94a3b8; line-height: 1.75;
-  }
-  .note-card ul li { margin-bottom: 0.1rem; }
-  .note-card ul li strong { color: #c7d2fe; }
 
-  .complexity-row { display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap; }
-  .badge {
-    background: #1e2433; border: 1px solid #334155; border-radius: 5px;
-    padding: 2px 9px; font-size: 0.73rem; color: #a5b4fc; font-weight: 600;
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: #6366f1;
   }
-  .badge.good { border-color: #065f46; color: #6ee7b7; background: #022c22; }
-  .badge.warn { border-color: #78350f; color: #fcd34d; background: #1c1008; }
-  .badge.bad  { border-color: #7f1d1d; color: #fca5a5; background: #1c0808; }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.warn {
+    border-color: #78350f;
+    color: #fcd34d;
+    background: #1c1008;
+  }
+
+  .badge.bad {
+    border-color: #7f1d1d;
+    color: #fca5a5;
+    background: #1c0808;
+  }
 
   /* ── Controls ── */
   .controls-bar {
-    background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px;
-    padding: 0.9rem 1.1rem; margin-bottom: 1.25rem;
-    display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
   }
-  .ctrl-group { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #64748b; }
-  .ctrl-group label { color: #94a3b8; font-weight: 500; white-space: nowrap; }
-  .ctrl-group input[type=range] { width: 100px; accent-color: #6366f1; }
-  .ctrl-group .val { font-weight: 600; color: #e2e8f0; min-width: 32px; font-size: 0.8rem; }
 
-  .btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
-  .btn {
-    cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 6px 14px;
-    border-radius: 7px; border: 1px solid #334155; background: #1e2433;
-    color: #cbd5e1; transition: background 0.15s; white-space: nowrap;
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
   }
-  .btn:hover { background: #273047; }
-  .btn.primary { background: #4f46e5; border-color: #6366f1; color: #fff; }
-  .btn.primary:hover { background: #4338ca; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .dual-viz {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .dual-viz {
+      grid-template-columns: 1fr;
+    }
+  }
 
   /* ── Panel ── */
   .panel {
-    background: #1a1f2e; border: 1px solid #2d3552;
-    border-radius: 10px; padding: 1rem;
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
   }
+
   .panel-header {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
   }
+
   .panel-title {
-    font-size: 0.8rem; font-weight: 700; color: #c7d2fe;
-    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; }
-  .panel-step { font-size: 0.7rem; color: #475569; }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
 
   .bar-area {
-    display: grid; align-items: flex-end; gap: 2px;
-    height: 160px; margin-bottom: 0.75rem; width: 100%;
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 160px;
+    margin-bottom: 0.75rem;
+    width: 100%;
   }
+
   .bar {
     border-radius: 3px 3px 0 0;
     transition: height 0.12s, background 0.12s;
-    display: flex; align-items: flex-end; justify-content: center; min-width: 1px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
   }
-  .bar span { font-size: 9px; font-weight: 600; margin-bottom: 2px; line-height: 1; overflow: hidden; }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1;
+    overflow: hidden;
+  }
 
   /* bar states */
-  .bar.normal   { background: #4c4e9a; }
-  .bar.range    { background: #1e4976; }    /* 현재 힙 범위 */
-  .bar.root     { background: #1d4ed8; }    /* 루트 (최댓값 후보) */
-  .bar.parent   { background: #0e7490; }    /* heapify 대상 부모 */
-  .bar.child    { background: #6d28d9; }    /* 비교 대상 자식 */
-  .bar.swapping { background: #b45309; }    /* swap 중 */
-  .bar.sorted   { background: #ffff00; }    /* 정렬 확정 */
-  .bar.done     { background: #ff0063; }    /* 전체 완료 */
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.range {
+    background: #1e4976;
+  }
+
+  /* 현재 힙 범위 */
+  .bar.root {
+    background: #1d4ed8;
+  }
+
+  /* 루트 (최댓값 후보) */
+  .bar.parent {
+    background: #0e7490;
+  }
+
+  /* heapify 대상 부모 */
+  .bar.child {
+    background: #6d28d9;
+  }
+
+  /* 비교 대상 자식 */
+  .bar.swapping {
+    background: #b45309;
+  }
+
+  /* swap 중 */
+  .bar.sorted {
+    background: #ffff00;
+  }
+
+  /* 정렬 확정 */
+  .bar.done {
+    background: #ff0063;
+  }
+
+  /* 전체 완료 */
 
   .legend {
-    display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 0.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 0.6rem;
   }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #64748b; }
-  .legend-dot  { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
 
   .log-box {
-    background: #0f1117; border: 1px solid #1e2433; border-radius: 7px;
-    padding: 7px 11px; font-size: 0.75rem; color: #94a3b8;
-    min-height: 36px; line-height: 1.55;
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
   }
 
   .phase-tag {
-    display: inline-block; padding: 1px 6px; border-radius: 4px;
-    font-size: 0.67rem; font-weight: 700; margin-right: 5px; letter-spacing: 0.3px;
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
   }
-  .phase-build   { background: #1e2d5e; color: #93c5fd; }
-  .phase-heapify { background: #14374e; color: #67e8f9; }
-  .phase-swap    { background: #451a03; color: #fcd34d; }
-  .phase-sort    { background: #14532d; color: #86efac; }
-  .phase-done    { background: #052e16; color: #4ade80; }
+
+  .phase-build {
+    background: #1e2d5e;
+    color: #93c5fd;
+  }
+
+  .phase-heapify {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-swap {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-sort {
+    background: #14532d;
+    color: #86efac;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
 
   /* ── Code ── */
-  .code-section { margin-top: 1.5rem; }
-  .code-section-title {
-    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: #475569; margin-bottom: 0.75rem; padding-left: 0.2rem;
+  .code-section {
+    margin-top: 1.5rem;
   }
-  .code-dual { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width: 740px) { .code-dual { grid-template-columns: 1fr; } }
 
-  .code-panel { background: #0d1117; border: 1px solid #2d3552; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
-  .code-panel pre { flex: 1; }
-  .code-panel-header {
-    display: flex; align-items: center; gap: 7px;
-    padding: 0.6rem 1rem; background: #161b27;
-    border-bottom: 1px solid #2d3552; font-size: 0.75rem; font-weight: 700; color: #94a3b8;
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
   }
-  .code-panel-header .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .code-full {
+    margin-bottom: 1rem;
+  }
+
+  .code-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .code-dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .code-panel pre {
+    flex: 1;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
 
   pre {
-    margin: 0; padding: 1rem 1.1rem; overflow-x: auto;
-    font-size: 0.72rem; line-height: 1.7;
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    color: #cdd6f4; white-space: pre;
+    color: #cdd6f4;
+    white-space: pre;
   }
-  .ck { color: #6272a4; }
-  .kw { color: #bd93f9; }
-  .ty { color: #8be9fd; }
-  .fn { color: #50fa7b; }
-  .nm { color: #ffb86c; }
-  .st { color: #f1fa8c; }
-  .nu { color: #ff79c6; }
+
+  .ck {
+    color: #6272a4;
+  }
+
+  .kw {
+    color: #bd93f9;
+  }
+
+  .ty {
+    color: #8be9fd;
+  }
+
+  .fn {
+    color: #50fa7b;
+  }
+
+  .nm {
+    color: #ffb86c;
+  }
+
+  .st {
+    color: #f1fa8c;
+  }
+
+  .nu {
+    color: #ff79c6;
+  }
 </style>
 
 <body>
@@ -207,7 +541,8 @@
           <li>최대 힙(Max Heap)을 구성해 루트(배열의 첫 번째 요소)에 최댓값을 위치</li>
           <li>루트와 마지막 원소를 Swap 후 힙 크기 1 감소</li>
           <li>힙 크기가 1이 될 때까지 <strong>Heapify &amp; Swap 반복</strong> → 오름차순 정렬</li>
-          <li>부모 인덱스 <strong>i</strong> → 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong></li>
+          <li>부모 인덱스 <strong>i</strong> → 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong>
+          </li>
           <li>최댓값/최솟값을 여러 번 꺼내야 할 때 사용 (게임 랭킹, 우선순위 큐, 스케줄러)</li>
           <li>최악의 성능 보장이 필요할 때 적합 — 항상 O(n log n)</li>
         </ul>
@@ -243,13 +578,26 @@
       </div>
 
       <div class="note-card">
-        <h3>🔎 Bottom-Up Heapify (Floyd)</h3>
+        <h3>🔎 Bottom-Up Heapify (Floyd), Top-Down Heapify 차이</h3>
         <ul>
-          <li>일반 heapify의 최적화 기법</li>
-          <li>리프까지 내려간 뒤, 원래 루트 값이 들어갈 위치를 한 번에 찾아 삽입</li>
-          <li>비교 횟수와 데이터 이동을 줄일 수 있음</li>
-          <li>구현이 복잡해 일반 heapify가 더 널리 사용됨</li>
-          <li>Build Heap 전체 시간 복잡도: <strong>O(n)</strong> (각 노드 높이만큼만 처리)</li>
+          <li>Bottom-Up (Floyd 방식)</li>
+          <ul>
+            <li> 이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)</li>
+          </ul>
+          <li>Top-Down (Insertion 방식)</li>
+          <ul>
+            <li> 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)</li>
+          </ul>
+          <li> 차이 핵심</li>
+          <ul>
+            <li> Top-Down: 삽입 기반 (Priority Queue, streaming system)</li>
+            <li> Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)</li>
+          </ul>
+          <ul>
+            <li> 실제 사용:</li>
+            <li> Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현</li>
+            <li> Top-Down: Priority Queue, 실시간 top-K, 스케줄링</li>
+          </ul>
         </ul>
       </div>
 
@@ -274,79 +622,147 @@
     </div>
   </div>
 
-  <div class="panel">
-    <div class="panel-header">
-      <div class="panel-title">
-        <div class="dot" style="background:#67e8f9"></div>
-        Heap Sort — Build Heap → Sort
+  <div class="dual-viz">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#fbbf24"></div>
+          Bottom-Up (Floyd) — Build → Sort
+        </div>
+        <div class="panel-step" id="stepCounterBU">—</div>
       </div>
-      <div class="panel-step" id="stepCounter">—</div>
-    </div>
-    <div class="bar-area" id="barArea"></div>
-
-    <div class="legend" style="padding:0 0.2rem; margin-bottom:0.85rem;">
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#1d4ed8"></div>
-        루트 (최댓값)
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#0e7490"></div>
-        부모 노드
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#6d28d9"></div>
-        자식 노드
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#b45309"></div>
-        Swap
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#1e4976"></div>
-        힙 범위
-      </div>
-      <div class="legend-item">
-        <div class="legend-dot" style="background:#ffff00"></div>
-        정렬 완료
-      </div>
+      <div class="bar-area" id="barAreaBU"></div>
+      <div class="log-box" id="logBU">시작 버튼을 누르세요.</div>
     </div>
 
-    <div class="log-box" id="log">시작 버튼을 누르세요.</div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#67e8f9"></div>
+          Top-Down (Insertion) — Build → Sort
+        </div>
+        <div class="panel-step" id="stepCounterTD">—</div>
+      </div>
+      <div class="bar-area" id="barAreaTD"></div>
+      <div class="log-box" id="logTD">시작 버튼을 누르세요.</div>
+    </div>
+  </div>
+
+  <div class="legend" style="padding:0 0.2rem; margin: 0.85rem 0;">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#1d4ed8"></div>
+      루트 (최댓값)
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#0e7490"></div>
+      부모 노드
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#6d28d9"></div>
+      자식 노드
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#b45309"></div>
+      Swap
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#1e4976"></div>
+      힙 범위
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#ffff00"></div>
+      정렬 완료
+    </div>
   </div>
 
   <div class="code-section">
     <div class="code-section-title">📄 소스 코드</div>
 
-    <div class="code-dual">
+    <div class="code-full">
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#a5b4fc"></div>
-          heapSort() — 진입점
+          heapSort() — 진입점 (Build 방식 선택: 1=Bottom-Up, 2=Top-Down)
         </div>
-        <pre><span class="kw">private static void</span> <span class="fn">heapSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
+        <pre><span class="kw">private static void</span> <span class="fn">heapSort</span>(<span
+            class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
+            class="nm">selectNum</span>) {
   <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">arr</span>.length;
 
-  <span class="ck">// ① Build Max Heap</span>
-  <span class="ck">// 마지막 부모 노드(n/2-1)부터 루트(0)까지 heapify 수행 → O(n)</span>
-  <span class="ck">// 부모 인덱스 i → 왼쪽 자식 (2i+1), 오른쪽 자식 (2i+2)</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">n</span> / <span class="nu">2</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
-    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span class="nm">i</span>);
+  <span class="ck">// ① Build Max Heap — 방식 선택</span>
+  <span class="kw">switch</span> (<span class="nm">selectNum</span>) {
+    <span class="kw">case</span> <span class="nu">1</span>: <span class="ck">// Bottom-Up (Floyd) → O(n)</span>
+      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nm">n</span> / <span class="nu">2</span> - <span class="nu">1</span>; <span
+              class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
+        <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span
+              class="nm">i</span>);
+      }
+      <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="nu">2</span>: <span class="ck">// Top-Down (Insertion) → O(n log n)</span>
+      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+              class="nm">i</span>++) {
+        <span class="fn">siftUp</span>(<span class="nm">arr</span>, <span class="nm">i</span>);
+      }
+      <span class="kw">break</span>;
   }
 
   <span class="ck">// ② Sort: 루트(최댓값)를 마지막 원소와 교환</span>
   <span class="ck">// 힙 크기 1 감소 → heapify 반복 → O(n log n)</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">n</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt; <span class="nu">0</span>; <span class="nm">i</span>--) {
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nm">n</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt; <span
+              class="nu">0</span>; <span class="nm">i</span>--) {
     <span class="ck">// 루트 ↔ 마지막, 최댓값을 제자리로</span>
-    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nu">0</span>, <span class="nm">i</span>);
+    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nu">0</span>, <span
+              class="nm">i</span>);
     <span class="ck">// 축소된 힙에서 루트부터 재구성</span>
-    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">i</span>, <span class="nu">0</span>);
+    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">i</span>, <span
+              class="nu">0</span>);
   }
 }
 
-<span class="kw">private static void</span> <span class="fn">swap</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span class="nm">a</span>, <span class="ty">int</span> <span class="nm">b</span>) {
-  <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span class="nm">a</span>];
-  <span class="nm">arr</span>[<span class="nm">a</span>] = <span class="nm">arr</span>[<span class="nm">b</span>];
+<span class="kw">private static void</span> <span class="fn">swap</span>(<span class="ty">int</span>[] <span
+              class="nm">arr</span>, <span class="ty">int</span> <span class="nm">a</span>, <span
+              class="ty">int</span> <span class="nm">b</span>) {
+  <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span
+              class="nm">a</span>];
+  <span class="nm">arr</span>[<span class="nm">a</span>] = <span class="nm">arr</span>[<span
+              class="nm">b</span>];
   <span class="nm">arr</span>[<span class="nm">b</span>] = <span class="nm">temp</span>;
+}</pre>
+      </div>
+    </div>
+
+    <div class="code-dual">
+      <div class="code-panel" id="codePanelSiftUp">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fbbf24"></div>
+          siftUp() — Top-Down 삽입 방식
+        </div>
+        <pre><span class="ck">// 새로 삽입된 노드를 부모와 비교하며</span>
+<span class="ck">// 위쪽 방향으로 끌어올려 힙 속성 유지</span>
+<span class="ck">// 시간복잡도: O(log n), 전체 Build: O(n log n)</span>
+<span class="kw">private static void</span> <span class="fn">siftUp</span>(
+    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
+              class="nm">i</span>) {
+
+  <span class="ty">int</span> <span class="nm">child</span> = <span class="nm">i</span>;
+
+  <span class="kw">while</span> (<span class="nm">child</span> &gt; <span class="nu">0</span>) {
+    <span class="ty">int</span> <span class="nm">parent</span> = (<span
+              class="nm">child</span> - <span class="nu">1</span>) / <span class="nu">2</span>;
+
+    <span class="ck">// 부모가 자식보다 크거나 같으면 종료</span>
+    <span class="kw">if</span> (<span class="nm">arr</span>[<span
+              class="nm">parent</span>] &gt;= <span class="nm">arr</span>[<span
+              class="nm">child</span>]) { <span class="kw">break</span>; }
+
+    <span class="ck">// 부모 &lt; 자식 → Swap 후 한 칸 위로 이동</span>
+    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nm">parent</span>, <span
+              class="nm">child</span>);
+    <span class="nm">child</span> = <span class="nm">parent</span>;
+  }
 }</pre>
       </div>
 
@@ -359,23 +775,35 @@
 <span class="ck">// 만족하도록 아래 방향으로 재구성</span>
 <span class="ck">// 시간복잡도: O(log n)</span>
 <span class="kw">private static void</span> <span class="fn">heapify</span>(
-    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span class="nm">n</span>, <span class="ty">int</span> <span class="nm">i</span>) {
+    <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
+              class="nm">n</span>, <span class="ty">int</span> <span class="nm">i</span>) {
 
-  <span class="ty">int</span> <span class="nm">p</span> = <span class="nm">i</span>;           <span class="ck">// 최대값 후보 (처음엔 부모)</span>
-  <span class="ty">int</span> <span class="nm">l</span> = <span class="nm">i</span> * <span class="nu">2</span> + <span class="nu">1</span>; <span class="ck">// 왼쪽 자식 인덱스</span>
-  <span class="ty">int</span> <span class="nm">r</span> = <span class="nm">i</span> * <span class="nu">2</span> + <span class="nu">2</span>; <span class="ck">// 오른쪽 자식 인덱스</span>
+  <span class="ty">int</span> <span class="nm">p</span> = <span class="nm">i</span>;           <span
+              class="ck">// 최대값 후보 (처음엔 부모)</span>
+  <span class="ty">int</span> <span class="nm">l</span> = <span class="nm">i</span> * <span
+              class="nu">2</span> + <span class="nu">1</span>; <span class="ck">// 왼쪽 자식 인덱스</span>
+  <span class="ty">int</span> <span class="nm">r</span> = <span class="nm">i</span> * <span
+              class="nu">2</span> + <span class="nu">2</span>; <span class="ck">// 오른쪽 자식 인덱스</span>
 
   <span class="ck">// 왼쪽 자식이 부모보다 크면 후보 갱신</span>
-  <span class="kw">if</span> (<span class="nm">l</span> &lt; <span class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span class="nm">arr</span>[<span class="nm">l</span>]) { <span class="nm">p</span> = <span class="nm">l</span>; }
+  <span class="kw">if</span> (<span class="nm">l</span> &lt; <span
+              class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span
+              class="nm">arr</span>[<span class="nm">l</span>]) { <span class="nm">p</span> = <span
+              class="nm">l</span>; }
 
   <span class="ck">// 오른쪽 자식이 현재 후보보다 크면 후보 갱신</span>
-  <span class="kw">if</span> (<span class="nm">r</span> &lt; <span class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span class="nm">arr</span>[<span class="nm">r</span>]) { <span class="nm">p</span> = <span class="nm">r</span>; }
+  <span class="kw">if</span> (<span class="nm">r</span> &lt; <span
+              class="nm">n</span> &amp;&amp; <span class="nm">arr</span>[<span class="nm">p</span>] &lt; <span
+              class="nm">arr</span>[<span class="nm">r</span>]) { <span class="nm">p</span> = <span
+              class="nm">r</span>; }
 
   <span class="ck">// 부모가 자식보다 작으면 Swap 후 재귀</span>
   <span class="kw">if</span> (<span class="nm">i</span> != <span class="nm">p</span>) {
-    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nm">p</span>, <span class="nm">i</span>);
+    <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nm">p</span>, <span
+              class="nm">i</span>);
     <span class="ck">// 교환된 위치에서 재귀</span>
-    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span class="nm">p</span>);
+    <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span
+              class="nm">p</span>);
   }
 }</pre>
       </div>
@@ -385,12 +813,24 @@
 </div>
 </body>
 <script>
-  const speedMap   = {1:750, 2:500, 3:300, 4:200, 5:100, 6:50, 7:30, 8:20, 9:10, 10:0.001};
-  const speedNames = {1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게'};
+  const speedMap = {1: 750, 2: 500, 3: 300, 4: 200, 5: 100, 6: 50, 7: 30, 8: 20, 9: 10, 10: 0.001};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
 
-  let arr = [], steps = [], stepIdx = 0, playing = false, timer = null;
+  let arr = [], stepsBU = [], stepsTD = [], stepIdx = 0, maxLen = 0, playing = false, timer = null;
 
-  function getSize()  { return parseInt(document.getElementById('sizeSlider').value); }
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
   function randArr(n) {
@@ -404,8 +844,9 @@
 
   // ─────────────────────────────────────────────
   // Step generator — Build Heap + Sort 한 흐름
+  // mode: 'bottom-up' (heapify, Floyd) | 'top-down' (siftUp, Insertion)
   // ─────────────────────────────────────────────
-  function generateSteps(src) {
+  function generateSteps(src, mode) {
     const steps = [];
     const a = [...src];
     const n = a.length;
@@ -415,54 +856,97 @@
       steps.push({type, arr: [...a], sortedSet: new Set(sorted), msg, ...extra});
     }
 
-    // ── heapify (재귀, 스텝 기록) ──
+    // ── heapify (재귀, 스텝 기록) — Bottom-Up 방식 & Sort 단계 공통 ──
     function heapify(heapSize, i) {
       let p = i;
       const l = i * 2 + 1;
       const r = i * 2 + 2;
 
       push('heapify', {hi: i, l: l < heapSize ? l : -1, r: r < heapSize ? r : -1, heapSize},
-        `heapify(${i}): 부모 arr[${i}]=${a[i]}`
-        + (l < heapSize ? `  왼쪽[${l}]=${a[l]}` : '')
-        + (r < heapSize ? `  오른쪽[${r}]=${a[r]}` : ''));
+          `heapify(${i}): 부모 arr[${i}]=${a[i]}`
+          + (l < heapSize ? `  왼쪽[${l}]=${a[l]}` : '')
+          + (r < heapSize ? `  오른쪽[${r}]=${a[r]}` : ''));
 
-      if (l < heapSize && a[p] < a[l]) p = l;
-      if (r < heapSize && a[p] < a[r]) p = r;
+      if (l < heapSize && a[p] < a[l]) {
+        p = l;
+      }
+      if (r < heapSize && a[p] < a[r]) {
+        p = r;
+      }
 
       if (i !== p) {
         push('swap', {swapA: i, swapB: p, heapSize},
-          `Swap arr[${i}]=${a[i]} ↔ arr[${p}]=${a[p]}  (부모 < 자식)`);
+            `Swap arr[${i}]=${a[i]} ↔ arr[${p}]=${a[p]}  (부모 < 자식)`);
         [a[i], a[p]] = [a[p], a[i]];
         push('swapped', {hi: p, heapSize},
-          `Swap 완료 → 재귀 heapify(${p})`);
+            `Swap 완료 → 재귀 heapify(${p})`);
         heapify(heapSize, p);
       } else {
         push('no-swap', {hi: i, heapSize},
-          `arr[${i}]=${a[i]} 이 자식보다 크거나 같음 → Swap 불필요`);
+            `arr[${i}]=${a[i]} 이 자식보다 크거나 같음 → Swap 불필요`);
+      }
+    }
+
+    // ── siftUp (반복, 스텝 기록) — Top-Down 방식 ──
+    function siftUp(i) {
+      let child = i;
+
+      while (child > 0) {
+        const parent = Math.floor((child - 1) / 2);
+
+        push('siftup-compare', {hi: parent, ci: child, heapSize: i + 1},
+            `비교: 부모 arr[${parent}]=${a[parent]}  vs  자식 arr[${child}]=${a[child]}`);
+
+        if (a[parent] >= a[child]) {
+          push('siftup-stop', {hi: parent, ci: child, heapSize: i + 1},
+              `arr[${parent}] >= arr[${child}] → 종료 (부모가 더 크거나 같음)`);
+          break;
+        }
+
+        push('swap', {swapA: parent, swapB: child, heapSize: i + 1},
+            `Swap arr[${parent}]=${a[parent]} ↔ arr[${child}]=${a[child]}  (부모 < 자식)`);
+        [a[parent], a[child]] = [a[child], a[parent]];
+        push('siftup-moved', {hi: parent, heapSize: i + 1},
+            `Swap 완료 → 한 칸 위로 이동, child = ${parent}`);
+        child = parent;
       }
     }
 
     // ── ① Build Max Heap ──
-    push('build-start', {heapSize: n}, '① Build Max Heap 시작 — 마지막 부모부터 루트(0) 방향으로 heapify');
+    if (mode === 'top-down') {
+      push('build-start', {heapSize: 1},
+          '① Build Max Heap 시작 (Top-Down / Insertion) — index 1부터 순서대로 삽입 + siftUp');
 
-    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
-      push('build-iter', {hi: i, heapSize: n},
-        `Build Heap: heapify(${i}) 호출  (마지막 부모: ${Math.floor(n/2)-1}, 루트: 0)`);
-      heapify(n, i);
+      for (let i = 1; i < n; i++) {
+        push('build-iter', {hi: i, heapSize: i},
+            `Build Heap: siftUp(${i}) 호출 — 새 원소 arr[${i}]=${a[i]} 삽입`);
+        siftUp(i);
+      }
+    } else {
+      push('build-start', {heapSize: n},
+          '① Build Max Heap 시작 (Bottom-Up / Floyd) — 마지막 부모부터 루트(0) 방향으로 heapify');
+
+      for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+        push('build-iter', {hi: i, heapSize: n},
+            `Build Heap: heapify(${i}) 호출  (마지막 부모: ${Math.floor(n / 2) - 1}, 루트: 0)`);
+        heapify(n, i);
+      }
     }
 
     push('build-done', {heapSize: n},
-      '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 → ② Sort 단계 시작');
+        '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 → ② Sort 단계 시작');
 
-    // ── ② Sort ──
+    // ── ② Sort (두 방식 공통 — 항상 heapify 사용) ──
     for (let i = n - 1; i > 0; i--) {
       push('extract', {swapA: 0, swapB: i, heapSize: i + 1},
-        `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap → arr[${i}] 위치 확정`);
+          `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap → arr[${i}] 위치 확정`);
       [a[0], a[i]] = [a[i], a[0]];
       sorted.add(i);
       push('extracted', {heapSize: i},
-        `arr[${i}]=${a[i]} 정렬 확정 ✓  힙 크기 ${i+1} → ${i}  → heapify(0) 수행`);
-      if (i > 1) heapify(i, 0);
+          `arr[${i}]=${a[i]} 정렬 확정 ✓  힙 크기 ${i + 1} → ${i}  → heapify(0) 수행`);
+      if (i > 1) {
+        heapify(i, 0);
+      }
     }
 
     sorted.add(0);
@@ -472,12 +956,12 @@
   }
 
   // ─────────────────────────────────────────────
-  // Render
+  // Render — barAreaId/logId 로 대상 패널을 지정해 두 패널을 독립적으로 그림
   // ─────────────────────────────────────────────
-  function renderStep(step) {
-    const barArea = document.getElementById('barArea');
-    const log     = document.getElementById('log');
-    const maxVal  = Math.max(...step.arr);
+  function renderStep(step, barAreaId, logId) {
+    const barArea = document.getElementById(barAreaId);
+    const log = document.getElementById(logId);
+    const maxVal = Math.max(...step.arr);
     const showNum = step.arr.length <= 20;
     barArea.style.gridTemplateColumns = `repeat(${step.arr.length},1fr)`;
 
@@ -493,7 +977,8 @@
       }
 
       // 루트 강조 (sort 단계에서)
-      if (idx === 0 && (step.type === 'build-done' || step.type === 'extracted') && !step.sortedSet?.has(0)) {
+      if (idx === 0 && (step.type === 'build-done' || step.type === 'extracted')
+          && !step.sortedSet?.has(0)) {
         cls = 'bar root';
       }
 
@@ -504,8 +989,21 @@
       // 자식 노드
       if (step.type === 'heapify' &&
           ((step.l !== undefined && idx === step.l) ||
-           (step.r !== undefined && idx === step.r)) &&
+              (step.r !== undefined && idx === step.r)) &&
           idx >= 0 && idx < hs) {
+        cls = 'bar child';
+      }
+      // siftUp: 새로 삽입되어 위로 올라가는 원소
+      if (step.type === 'build-iter' && step.hi !== undefined && idx === step.hi) {
+        cls = 'bar child';
+      }
+      // siftUp: 부모/자식 비교, 종료, 이동
+      if ((step.type === 'siftup-compare' || step.type === 'siftup-stop'
+              || step.type === 'siftup-moved') && idx === step.hi) {
+        cls = 'bar parent';
+      }
+      if ((step.type === 'siftup-compare' || step.type === 'siftup-stop')
+          && idx === step.ci) {
         cls = 'bar child';
       }
       // swap 중
@@ -514,51 +1012,76 @@
         cls = 'bar swapping';
       }
 
-      const h  = Math.max(10, Math.round((v / maxVal) * 150));
+      const h = Math.max(10, Math.round((v / maxVal) * 150));
       const tc = (cls.includes('done') || cls.includes('sorted')) ? '#86efac'
-               : cls.includes('swapping') ? '#fcd34d'
-               : cls.includes('root')     ? '#93c5fd'
-               : cls.includes('parent')   ? '#67e8f9'
-               : cls.includes('child')    ? '#c4b5fd'
-               : cls.includes('range')    ? '#7ea3c4'
-               : '#a5b4fc';
+          : cls.includes('swapping') ? '#fcd34d'
+              : cls.includes('root') ? '#93c5fd'
+                  : cls.includes('parent') ? '#67e8f9'
+                      : cls.includes('child') ? '#c4b5fd'
+                          : cls.includes('range') ? '#7ea3c4'
+                              : '#a5b4fc';
 
-      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum ? v : ''}</span></div>`;
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum ? v
+          : ''}</span></div>`;
     }).join('');
 
     const tagMap = {
       'build-start': '<span class="phase-tag phase-build">Build Heap</span>',
-      'build-iter':  '<span class="phase-tag phase-build">Build</span>',
-      'heapify':     '<span class="phase-tag phase-heapify">Heapify</span>',
-      'swap':        '<span class="phase-tag phase-swap">Swap</span>',
-      'swapped':     '<span class="phase-tag phase-swap">Swap 완료</span>',
-      'no-swap':     '<span class="phase-tag phase-heapify">비교</span>',
-      'build-done':  '<span class="phase-tag phase-sort">힙 완성 ✓</span>',
-      'extract':     '<span class="phase-tag phase-swap">루트 추출</span>',
-      'extracted':   '<span class="phase-tag phase-sort">확정</span>',
-      'done':        '<span class="phase-tag phase-done">완료 ✓</span>',
+      'build-iter': '<span class="phase-tag phase-build">Build</span>',
+      'heapify': '<span class="phase-tag phase-heapify">Heapify</span>',
+      'swap': '<span class="phase-tag phase-swap">Swap</span>',
+      'swapped': '<span class="phase-tag phase-swap">Swap 완료</span>',
+      'no-swap': '<span class="phase-tag phase-heapify">비교</span>',
+      'siftup-compare': '<span class="phase-tag phase-heapify">비교</span>',
+      'siftup-stop': '<span class="phase-tag phase-heapify">종료</span>',
+      'siftup-moved': '<span class="phase-tag phase-swap">이동</span>',
+      'build-done': '<span class="phase-tag phase-sort">힙 완성 ✓</span>',
+      'extract': '<span class="phase-tag phase-swap">루트 추출</span>',
+      'extracted': '<span class="phase-tag phase-sort">확정</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
     };
     log.innerHTML = (tagMap[step.type] || '') + (step.msg || '');
   }
 
   // ─────────────────────────────────────────────
-  // State
+  // State — Bottom-Up / Top-Down 두 시뮬레이션을 동시에 진행
   // ─────────────────────────────────────────────
   function init() {
     stopPlay();
     const n = getSize();
     arr = randArr(n);
-    steps = generateSteps(arr);
+    stepsBU = generateSteps(arr, 'bottom-up');
+    stepsTD = generateSteps(arr, 'top-down');
+    maxLen = Math.max(stepsBU.length, stepsTD.length);
     stepIdx = 0;
-    renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), heapSize: n, msg: '시작 버튼을 누르세요.'});
-    document.getElementById('stepCounter').textContent = '—';
+
+    const initStep = {type: 'init', arr: [...arr], sortedSet: new Set(), heapSize: n,
+      msg: '시작 버튼을 누르세요.'};
+    renderStep(initStep, 'barAreaBU', 'logBU');
+    renderStep(initStep, 'barAreaTD', 'logTD');
+    document.getElementById('stepCounterBU').textContent = '—';
+    document.getElementById('stepCounterTD').textContent = '—';
     document.getElementById('btnPlay').disabled = false;
   }
 
   function tick() {
-    if (stepIdx >= steps.length) { stopPlay(); return; }
-    renderStep(steps[stepIdx]);
-    document.getElementById('stepCounter').textContent = `${stepIdx + 1} / ${steps.length}`;
+    if (stepIdx >= maxLen) {
+      stopPlay();
+      return;
+    }
+
+    // 두 시뮬레이션 중 이미 끝난 쪽은 마지막(완료) 상태를 유지해서 보여줌
+    const stepBU = stepsBU[Math.min(stepIdx, stepsBU.length - 1)];
+    const stepTD = stepsTD[Math.min(stepIdx, stepsTD.length - 1)];
+
+    renderStep(stepBU, 'barAreaBU', 'logBU');
+    renderStep(stepTD, 'barAreaTD', 'logTD');
+
+    document.getElementById('stepCounterBU').textContent =
+        `${Math.min(stepIdx + 1, stepsBU.length)} / ${stepsBU.length}`;
+    document.getElementById('stepCounterTD').textContent =
+        `${Math.min(stepIdx + 1, stepsTD.length)} / ${stepsTD.length}`;
+
     stepIdx++;
   }
 
@@ -569,8 +1092,13 @@
   }
 
   document.getElementById('btnPlay').addEventListener('click', () => {
-    if (playing) { stopPlay(); return; }
-    if (stepIdx >= steps.length) return;
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (stepIdx >= maxLen) {
+      return;
+    }
     playing = true;
     document.getElementById('btnPlay').textContent = '⏸ 일시정지';
     timer = setInterval(tick, speedMap[getSpeed()]);
@@ -590,7 +1118,10 @@
 
   document.getElementById('speedSlider').addEventListener('input', e => {
     document.getElementById('speedLabel').textContent = speedNames[e.target.value];
-    if (playing) { clearInterval(timer); timer = setInterval(tick, speedMap[getSpeed()]); }
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
   });
 
   init();

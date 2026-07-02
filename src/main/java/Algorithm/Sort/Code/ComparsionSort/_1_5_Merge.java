@@ -33,20 +33,25 @@ public class _1_5_Merge {
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.init();
+    int[] arr2 = arr.clone();
     int[] temp = new int[arr.length];
     isAllowPrint = a.isAllowPrint();
 
     System.out.println("Before: " + Arrays.toString(arr));
-
-    System.out.println("Merge Sort 방법 선택\n1: 공부용 정렬, 2: 배열 복사 부분이 개선된 정렬 ");
-    int selectNum = Integer.parseInt(br.readLine());
+    System.out.println("arr2 = " + Arrays.toString(arr2));
 
     long start = System.nanoTime();
 
-    mergeSort(arr, temp, selectNum, 0, arr.length - 1);
+    mergeSort(arr, temp, 1, 0, arr.length - 1);
+    String firstEnd = (System.nanoTime() - start) / 1_000_000.0 + "ms";
     System.out.println("==========================================================");
+    start = System.nanoTime();
+    mergeSort(arr2, temp, 2, 0, arr.length - 1);
+
+    String secondEnd = (System.nanoTime() - start) / 1_000_000.0 + "ms";
     System.out.println("result = " + Arrays.toString(arr));
-    System.out.println("Merge Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+    System.out.println("result = " + Arrays.toString(arr2));
+    System.out.println("Merge Sort\nNot Optimized | " + firstEnd + ", Optimized | " + secondEnd);
   }
 
   private static void mergeSort(int[] arr, int[] temp, int selectNum, int left, int right) {
