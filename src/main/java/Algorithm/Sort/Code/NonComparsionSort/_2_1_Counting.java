@@ -64,8 +64,7 @@ public class _2_1_Counting {
     // 누적합 이후 counting[i]는 그 값이 배치될 마지막 인덱스(+1) = "값 (i+min) 이하인 원소의 개수"
     for (int i = arr.length - 1; i >= 0; i--) {
       int num = arr[i];
-      counting[num - min]--;
-      output[counting[num - min]] = num;
+      output[--counting[num - min]] = num;
     }
 
     return output;
