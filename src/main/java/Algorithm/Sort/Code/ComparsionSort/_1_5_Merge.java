@@ -52,6 +52,8 @@ public class _1_5_Merge {
     System.out.println("result = " + Arrays.toString(arr));
     System.out.println("result = " + Arrays.toString(arr2));
     System.out.println("Merge Sort\nNot Optimized | " + firstEnd + ", Optimized | " + secondEnd);
+    if (!a.isSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
+    if (!a.isSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
   }
 
   private static void mergeSort(int[] arr, int[] temp, int selectNum, int left, int right) {

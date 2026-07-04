@@ -64,6 +64,8 @@ public class _1_6_Heap {
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("After Arr2: " + Arrays.toString(arr2));
     System.out.println("Heap Sort\nBottom-Up: " + firstEnd + ", Top-Down: " + secondEnd);
+    if (!a.isSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
+    if (!a.isSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
   }
 
   private static void heapSort(int[] arr, int selectNum) {

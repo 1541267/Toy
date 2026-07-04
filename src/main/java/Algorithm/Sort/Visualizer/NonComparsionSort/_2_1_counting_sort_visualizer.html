@@ -594,15 +594,17 @@
           <li><strong>Non-Comparison Sort</strong> — 값 자체를 인덱스로 사용, 비교(Comparison) 없음</li>
           <li>비교 정렬의 <strong>O(n log n) 하한</strong>을 우회 가능</li>
           <li>정렬하려는 값이 <strong>특정 범위</strong> 내에 있을 때 사용</li>
-          <li>등장 횟수를 세고(Counting) → 누적합(Prefix Sum) → 뒤에서부터 배치</li>
+          <li>값을 인덱스로 변환해 빈도를 누적하고 위치를 직접 계산하는 정렬</li>
+          <li>등장 횟수를 세고(Counting) -> 누적합(Prefix Sum) -> 뒤에서부터 배치</li>
           <li>k(범위)는 최댓값이 아니라 <strong class="hl">max - min + 1</strong></li>
+          <li>성능은 n이 아닌 k(값의 분포 범위)에 의해 결정</li>
         </ul>
       </div>
 
       <div class="note-card">
         <h3>⚡ 안정 vs 불안정</h3>
         <ul>
-          <li><strong>Stable(countingSort):</strong> 누적합 + 뒤에서부터 배치 → 동일 값 원소의 원래 순서 유지</li>
+          <li><strong>Stable(countingSort):</strong> 누적합 + 뒤에서부터 배치 -> 동일 값 원소의 원래 순서 유지</li>
           <li><strong>Unstable(간단 구현):</strong> count 개수만큼 앞에서부터 값만 채워 넣음</li>
           <li>Unstable 버전은 <strong class="hlw">원본 위치 정보를 아예 저장하지 않음</strong></li>
           <li>정수만 정렬할 땐 결과가 같아 보이지만, satellite data(딸린 필드)가 있으면 문제됨</li>
@@ -626,7 +628,7 @@
         <h3>❌ 단점</h3>
         <ul>
           <li>k(범위)가 클수록 <strong>Counting 배열 크기</strong>가 커져 메모리 낭비</li>
-          <li>k가 n보다 훨씬 크면 비효율적 (ex: 범위가 1조 → O(k))</li>
+          <li>k가 n보다 훨씬 크면 비효율적 (ex: 범위가 1조 -> O(k))</li>
           <li>실수(float), 문자열 등 값 자체를 인덱스로 못 쓰는 데이터엔 부적합</li>
           <li>음수 포함 시 min 오프셋 계산이 반드시 필요</li>
         </ul>
@@ -795,12 +797,12 @@
 
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) { <span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]++; }
 
-  <span class="ck">// 누적합: counting[i] → "값 (i+min) 이하 원소 개수"</span>
+  <span class="ck">// 누적합: counting[i] -> "값 (i+min) 이하 원소 개수"</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">range</span>; <span class="nm">i</span>++) {
     <span class="nm">counting</span>[<span class="nm">i</span>] += <span class="nm">counting</span>[<span class="nm">i</span> - <span class="nu">1</span>];
   }
 
-  <span class="ck">// 뒤에서부터 순회 + 위치 감소 배치 → 안정 정렬 보장</span>
+  <span class="ck">// 뒤에서부터 순회 + 위치 감소 배치 -> 안정 정렬 보장</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">arr</span>.length - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
     <span class="ty">int</span> <span class="nm">num</span> = <span class="nm">arr</span>[<span class="nm">i</span>];
     <span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]--;
@@ -817,7 +819,7 @@
           <div class="dot" style="background:#fcd34d"></div>
           unStableCountingSort() — Unstable
         </div>
-        <pre><span class="ck">// counting[i]번 등장한 요소를 배열 순서 참조 없이 삽입 → UnStable</span>
+        <pre><span class="ck">// counting[i]번 등장한 요소를 배열 순서 참조 없이 삽입 -> UnStable</span>
 <span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">unStableCountingSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
   <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span class="nu">0</span>];
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) {
@@ -833,7 +835,7 @@
   <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span class="ty">int</span>[<span class="nm">arr</span>.length];
   <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
   <span class="ck">// 누적합 없이, 등장 횟수만큼 값을 그대로 채워 넣음</span>
-  <span class="ck">// → 어떤 원소가 어디서 왔는지 정보가 없음</span>
+  <span class="ck">// -> 어떤 원소가 어디서 왔는지 정보가 없음</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">range</span>; <span class="nm">i</span>++) {
     <span class="kw">while</span> (<span class="nm">counting</span>[<span class="nm">i</span>] &gt; <span class="nu">0</span>) {
       <span class="nm">output</span>[<span class="nm">idx</span>++] = <span class="nm">i</span> + <span class="nm">min</span>;
@@ -911,7 +913,7 @@
     for (let i = 1; i < range; i++) {
       counting[i] += counting[i - 1];
       push('prefix', {countIdx: i},
-          `누적합: counting[${i}] += counting[${i - 1}] → ${counting[i]}  (값 ${i + min} 이하 원소 개수)`);
+          `누적합: counting[${i}] += counting[${i - 1}] -> ${counting[i]}  (값 ${i + min} 이하 원소 개수)`);
     }
 
     for (let i = n - 1; i >= 0; i--) {
@@ -920,7 +922,7 @@
       const pos = counting[v - min];
       output[pos] = {...arr[i]};
       push('place', {ai: i, countIdx: v - min, pos},
-          `arr[${i}] = ${v}${arr[i].tag}  →  counting[${v - min}]-- 후 output[${pos}] 배치`);
+          `arr[${i}] = ${v}${arr[i].tag}  ->  counting[${v - min}]-- 후 output[${pos}] 배치`);
     }
 
     push('done', {}, '정렬 완료! 동일 값 원소들의 원래 상대 순서가 그대로 유지됨');
@@ -965,12 +967,12 @@
       const v = i + min;
       while (counting[i] > 0) {
         counting[i]--;
-        // 알고리즘은 어떤 원소인지 알 방법이 없음 → 원본 순서와 무관하게(역순) 채워지는 것으로 예시화
+        // 알고리즘은 어떤 원소인지 알 방법이 없음 -> 원본 순서와 무관하게(역순) 채워지는 것으로 예시화
         const bucket = buckets[v];
         const elem = bucket.pop();
         output[idx] = {...elem};
         push('place', {countIdx: i, pos: idx},
-            `counting[${i}] 만큼 값 ${v} 채움 → output[${idx}] = ${v}  (실제로는 어떤 원소인지 알 수 없음)`);
+            `counting[${i}] 만큼 값 ${v} 채움 -> output[${idx}] = ${v}  (실제로는 어떤 원소인지 알 수 없음)`);
         idx++;
       }
     }

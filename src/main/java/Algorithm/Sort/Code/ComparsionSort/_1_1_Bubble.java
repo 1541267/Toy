@@ -44,5 +44,7 @@ public class _1_1_Bubble {
     System.out.println("After sort = " + Arrays.toString(arr));
     System.out.println("======================================");
     System.out.println("Buble Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+
+    if (!a.isSorted(arr)) {System.out.println("정렬 안돼있음");}
   }
 }

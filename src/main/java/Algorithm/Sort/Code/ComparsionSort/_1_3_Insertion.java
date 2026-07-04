@@ -43,5 +43,6 @@ public class _1_3_Insertion {
     System.out.println("After:  " + Arrays.toString(arr));
     System.out.println("==========================================================");
     System.out.println("Insertion Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
+    if (!a.isSorted(arr)) {System.out.println("정렬 안돼있음");}
   }
 }

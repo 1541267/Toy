@@ -1,0 +1,1619 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>기수 정렬(Radix Sort) 시각화</title>
+</head>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  /* ── Study Notes ── */
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-card {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.warn {
+    border-color: #78350f;
+    color: #fcd34d;
+    background: #1c1008;
+  }
+
+  /* ── Diff / usage note ── */
+  .diff-note {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+  }
+
+  .diff-note strong, .note-card strong {
+    color: #c7d2fe;
+  }
+
+  .hl {
+    color: #6ee7b7;
+    font-weight: 600;
+  }
+
+  .hlw {
+    color: #fcd34d;
+    font-weight: 600;
+  }
+
+  .hlx {
+    color: #f87171;
+    font-weight: 600;
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .cols ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  @media (max-width: 680px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+
+    .note-card[style*="span 2"] {
+      grid-column: span 1 !important;
+    }
+  }
+
+  /* ── Controls ── */
+  .controls-bar {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* ── Dual Panel ── */
+  .dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .panel-sub {
+    font-size: 0.72rem;
+    color: #7dd3fc;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    min-height: 1.1em;
+  }
+
+  .bar-group-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.4px;
+    margin: 0.7rem 0 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .bar-group-title:first-of-type {
+    margin-top: 0;
+  }
+
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 100px;
+    width: 100%;
+  }
+
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s, opacity 0.12s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
+  }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1.1;
+    overflow: hidden;
+  }
+
+  .bar span sub {
+    font-size: 7px;
+    color: #7dd3fc;
+  }
+
+  /* bar states — 원본/Output 값 배열 */
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.active {
+    background: #0f766e;
+  }
+
+  .bar.placed {
+    background: #b45309;
+  }
+
+  .bar.filled {
+    background: #16a34a;
+  }
+
+  .bar.done {
+    background: #ff0063;
+  }
+
+  .bar.empty {
+    background: transparent;
+    border: 1px dashed #334155;
+    height: 8px !important;
+  }
+
+  /* MSD: 현재 재귀 구간 밖의 원소는 흐리게 처리 */
+  .bar.dim {
+    opacity: 0.28;
+  }
+
+  /* bar states — Counting(자릿수) 배열 */
+  .bar.count-base {
+    background: #2d3a6e;
+  }
+
+  .bar.count-active {
+    background: #0f766e;
+  }
+
+  .bar.count-prefix {
+    background: #b45309;
+  }
+
+  .bar.count-consume {
+    background: #6d28d9;
+  }
+
+  .axis-row {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .axis-row span {
+    font-size: 8px;
+    color: #475569;
+    text-align: center;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Log */
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.74rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .phase-count {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-prefix {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-place {
+    background: #2e1065;
+    color: #c4b5fd;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
+
+  .phase-offset {
+    background: #3f1d1d;
+    color: #fca5a5;
+  }
+
+  .phase-flow {
+    background: #1e293b;
+    color: #93c5fd;
+  }
+
+  .phase-copy {
+    background: #0f3d2e;
+    color: #6ee7b7;
+  }
+
+  /* ── Code Blocks ── */
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-section-title.sub {
+    margin-top: 1.25rem;
+  }
+
+  .code-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .code-dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  .ck {
+    color: #6272a4;
+  }
+
+  /* comment */
+  .kw {
+    color: #bd93f9;
+  }
+
+  /* keyword */
+  .ty {
+    color: #8be9fd;
+  }
+
+  /* type */
+  .fn {
+    color: #50fa7b;
+  }
+
+  /* function */
+  .nm {
+    color: #ffb86c;
+  }
+
+  /* variable / param */
+  .st {
+    color: #f1fa8c;
+  }
+
+  /* string */
+  .nu {
+    color: #ff79c6;
+  }
+
+  /* number */
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>기수 정렬(Radix Sort) 시각화</h1>
+    <p>데이터를 구성하는 자릿수(Radix)로 Counting Sort를 반복 — LSD(하위 자리부터) vs MSD(상위 자리부터) 비교</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle" open>
+    <summary>📖 기수 정렬 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🔍 개념</h3>
+        <ul>
+          <li>데이터를 구성하는 기본 요소(<strong>Radix, 자릿수</strong>)를 이용해 정렬</li>
+          <li>입력값의 최대값이 클 때 <strong>Counting Sort의 비효율</strong>을 개선하기 위해 사용</li>
+          <li>자릿수 값 별로 정렬하므로 각 자리에서 나올 수 있는 값의 범위는 <strong>0~9로 고정</strong></li>
+          <li>내부적으로 <strong class="hl">Counting Sort를 자릿수 단위로 반복 호출</strong>하는 구조</li>
+          <li>안정 정렬(Stable), 자릿수가 없는 실수(부동소수점)는 정렬 불가</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">Time O(d · (n + b))</span>
+          <span class="badge warn">Space O(n + b)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>⚡ LSD vs MSD — 정렬 방향</h3>
+        <ul>
+          <li><strong>LSD(Least Significant Digit)</strong>: <strong class="hl">낮은(작은) 자리수</strong>부터
+            정렬
+          </li>
+          <li><strong>MSD(Most Significant Digit)</strong>: <strong class="hlw">높은(큰) 자리수</strong>부터
+            정렬
+          </li>
+          <li>LSD는 1600000과 1처럼 자릿수 차이가 크면 그 <strong>자릿수만큼 모두 비교</strong>해야 하는 단점</li>
+          <li>MSD는 마지막 자리수까지 확인할 필요 없이 <strong>상위 자릿수만으로 조기 종료</strong> 가능</li>
+          <li>LSD는 중간 정렬 결과를 알 수 없지만(10004 vs 70002), MSD는 중간에 상위 자릿수 순서를 바로 알 수 있음</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✅ LSD 장단점</h3>
+        <ul>
+          <li><strong class="hl">장점</strong></li>
+          <ul>
+            <li>구현 단순, 분기 없는 일관된 흐름(Branch-free)</li>
+            <li>항상 배열을 순차 접근 → <strong>캐시 지역성이 좋음</strong></li>
+            <li>데이터 분포와 무관하게 <strong>성능이 일정(예측 가능)</strong></li>
+          </ul>
+        </ul>
+        <ul>
+          <li><strong class="hlx">단점</strong></li>
+          <ul>
+            <li>자릿수(d)만큼 무조건 전부 순회, 상위 자릿수로 갈렸어도 활용 못 함</li>
+            <li>고정 길이 키에 적합, 가변 길이 키(문자열)엔 패딩 등 추가 처리 필요</li>
+          </ul>
+        </ul>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✅ MSD 장단점</h3>
+        <ul>
+          <li><strong class="hl">장점</strong>
+            <ul>
+              <li>상위 자릿수만으로 그룹이 좁혀지면 <strong>조기 종료</strong> 가능</li>
+              <li>가변 길이 키(문자열, prefix 비교)에 자연스럽게 적용, Top-K / 사전식 검색에 유리</li>
+            </ul>
+          <li><strong class="hlx">단점</strong>
+            <ul>
+              <li>재귀 호출과 그룹별 분기로 <strong>흐름이 일관되지 않음</strong></li>
+              <li>데이터 분포에 따라 성능 편차가 큼(최악의 경우 LSD와 비슷하거나 더 느림)</li>
+              <li>재귀 스택 공간 추가 필요, 경계 배열 관리 등 구현이 상대적으로 복잡</li>
+            </ul>
+        </ul>
+      </div>
+
+      <div class="note-card" style="grid-column: span 2;">
+        <h3>🎯 어느 상황에 적용하면 좋은가</h3>
+        <div class="cols" style="margin-top:0.2rem;">
+          <div>
+            <span class="hl">LSD가 유리한 경우</span>
+            <ul style="margin:0.4rem 0 0;">
+              <li>정수처럼 자릿수(길이)가 <strong>고정/균일</strong>한 데이터</li>
+              <li>성능 예측 가능성이 중요한 실시간/하드웨어성 구현</li>
+              <li>구현 단순성이 중요할 때, Branch-free 알고리즘이 필요할 때</li>
+            </ul>
+          </div>
+          <div>
+            <span class="hlw">MSD가 유리한 경우</span>
+            <ul style="margin:0.4rem 0 0;">
+              <li>문자열처럼 <strong>키 길이가 가변적</strong>인 데이터</li>
+              <li>상위 자릿수만으로 대부분 결정되는 랜덤 정수/텍스트</li>
+              <li>전체 정렬을 끝까지 하지 않고 <strong>상위 기준 순서/일부 결과</strong>만 필요할 때</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>배열 크기</label>
+      <input type="range" id="sizeSlider" min="6" max="160" value="30" step="1">
+      <span class="val" id="sizeLabel">30</span>
+    </div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btnPlay">▶ 시작</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">새 배열</button>
+    </div>
+  </div>
+
+  <!-- Dual Panel -->
+  <div class="dual">
+
+    <!-- Panel A: LSD -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#6ee7b7"></div>
+          lsdRadixSort() — LSD
+        </div>
+        <div class="panel-step" id="stepA">—</div>
+      </div>
+      <div class="panel-sub" id="subA">&nbsp;</div>
+
+      <div class="bar-group-title">① 배열 (하위 자리 → 상위 자리 순으로 반복 정렬)</div>
+      <div class="bar-area" id="arrA"></div>
+
+      <div class="bar-group-title">② 자릿수 Counting 배열 (0~9, 누적합)</div>
+      <div class="bar-area" id="countA"></div>
+      <div class="axis-row" id="axisA"></div>
+
+      <div class="bar-group-title">③ Output 배열</div>
+      <div class="bar-area" id="outA"></div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          처리 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          배치/갱신
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          배치 완료
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
+      </div>
+
+      <div class="log-box" id="logA">시작 버튼을 누르세요.</div>
+    </div>
+
+    <!-- Panel B: MSD -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#fcd34d"></div>
+          msdRadixSort() — MSD
+        </div>
+        <div class="panel-step" id="stepB">—</div>
+      </div>
+      <div class="panel-sub" id="subB">&nbsp;</div>
+
+      <div class="bar-group-title">① 배열 (진하게 표시된 구간 = 현재 재귀 처리 구간)</div>
+      <div class="bar-area" id="arrB"></div>
+
+      <div class="bar-group-title">② 자릿수 Counting 배열 (현재 구간 기준, 0~9)</div>
+      <div class="bar-area" id="countB"></div>
+      <div class="axis-row" id="axisB"></div>
+
+      <div class="bar-group-title">③ Output 배열 (구간 내 배치)</div>
+      <div class="bar-area" id="outB"></div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          처리 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          배치/갱신
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          배치 완료
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a;opacity:.3"></div>
+          현재 구간 밖(흐림)
+        </div>
+      </div>
+
+      <div class="log-box" id="logB">시작 버튼을 누르세요.</div>
+    </div>
+
+  </div>
+
+  <!-- Diff note: LSD vs MSD -->
+  <div class="diff-note">
+    <strong>lsdRadixSort() vs msdRadixSort() 차이</strong>
+    <div class="cols">
+      <div>
+        <span class="hl">LSD — 낮은 자리부터</span><br>
+        1의 자리 → 10의 자리 → 100의 자리 순으로 <strong>배열 전체</strong>에 대해 Counting Sort를 반복 적용.
+        각 라운드는 이전 라운드의 정렬 결과 위에서 안정적으로 동작하며, 자릿수(exponent)가 최댓값을 넘어서면 종료.
+        <strong class="hl">재귀 없이 반복문(while)</strong>만으로 동작.
+      </div>
+      <div>
+        <span class="hlw">MSD — 높은 자리부터</span><br>
+        가장 큰 자릿수를 기준으로 구간을 <strong>10개의 버킷(0~9)</strong>으로 나눈 뒤, 각 버킷(경계 배열 기준)에
+        대해 <strong class="hlx">한 자리씩 낮춰가며 재귀 호출</strong>. 구간의 크기가 1 이하가 되거나 더 볼 자릿수가
+        없으면 재귀 종료. 위 시각화에서 <strong>흐리게 표시된 막대</strong>는 현재 재귀에서 다루지 않는(다른 구간) 원소.
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드 — 공통 로직 먼저, 이후 LSD → MSD 순</div>
+
+    <!-- 공통: countSort + negativeValueCorrection -->
+    <div class="code-panel" style="margin-bottom:1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#7dd3fc"></div>
+        공통 로직 — countSort() &amp; negativeValueCorrection() (LSD/MSD가 함께 사용)
+      </div>
+      <pre><span class="ck">// 특정 자릿수를 기준으로 counting sort 수행</span>
+<span class="ck">// output, countArr 은 호출 전 1회 선언 한 배열을 계속 재사용</span>
+<span class="kw">private static</span> <span class="ty">int</span>[] <span
+            class="fn">countSort</span>(<span class="ty">int</span>[] <span
+            class="nm">arr</span>, <span class="ty">int</span> <span class="nm">start</span>, <span
+            class="ty">int</span> <span class="nm">end</span>, <span class="ty">long</span> <span
+            class="nm">exponent</span>, <span class="ty">int</span>[] <span
+            class="nm">countArr</span>, <span class="ty">int</span>[] <span class="nm">output</span>) {
+  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">end</span> - <span
+            class="nm">start</span>;
+
+  <span class="ck">// 이전 호출에서 남은 값 초기화</span>
+  <span class="nm">Arrays</span>.<span class="fn">fill</span>(<span
+            class="nm">countArr</span>, <span class="nu">0</span>, <span class="nu">10</span>, <span
+            class="nu">0</span>);
+
+  <span class="ck">// 빈도 계산, exp = 자릿수</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nm">start</span>; <span class="nm">i</span> &lt; <span
+            class="nm">end</span>; <span class="nm">i</span>++) { <span class="nm">countArr</span>[(<span
+            class="ty">int</span>) (<span class="nm">arr</span>[<span class="nm">i</span>] / <span
+            class="nm">exponent</span>) % <span class="nu">10</span>]++; }
+
+  <span class="ck">// 누적 합</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nu">10</span>; <span
+            class="nm">i</span>++) { <span class="nm">countArr</span>[<span class="nm">i</span>] += <span
+            class="nm">countArr</span>[<span class="nm">i</span> - <span class="nu">1</span>]; }
+
+  <span class="ck">// MSD의 재귀호출 에서 사용할 누적합 백업</span>
+  <span class="ty">int</span>[] <span class="nm">boundaryArr</span> = <span
+            class="nm">countArr</span>.<span class="fn">clone</span>();
+
+  <span class="ck">// 안정 정렬</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nm">end</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span
+            class="nm">start</span>; <span class="nm">i</span>--) {
+    <span class="ty">int</span> <span class="nm">digits</span> = (<span
+            class="ty">int</span>) (<span class="nm">arr</span>[<span class="nm">i</span>] / <span
+            class="nm">exponent</span>) % <span class="nu">10</span>;
+    <span class="nm">output</span>[--<span class="nm">countArr</span>[<span class="nm">digits</span>]] = <span
+            class="nm">arr</span>[<span class="nm">i</span>];
+  }
+
+  <span class="ck">// 원래 배열에 정렬된 결과 복사</span>
+  <span class="nm">System</span>.<span class="fn">arraycopy</span>(<span
+            class="nm">output</span>, <span class="nu">0</span>, <span class="nm">arr</span>, <span
+            class="nm">start</span>, <span class="nm">range</span>);
+
+  <span class="kw">return</span> <span class="nm">boundaryArr</span>;
+}
+
+<span class="kw">static</span> <span class="ty">int</span> <span
+            class="fn">negativeValueCorrection</span>(<span class="ty">int</span>[] <span
+            class="nm">arr</span>, <span class="ty">int</span> <span class="nm">min</span>, <span
+            class="ty">boolean</span> <span class="nm">isRollback</span>, <span
+            class="ty">int</span> <span class="nm">offset</span>) {
+  <span class="kw">if</span> (<span class="nm">isRollback</span>) {
+    <span class="ck">// 음수 보정 롤백</span>
+    <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) { <span
+            class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length; <span
+            class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] -= <span
+            class="nm">offset</span>; } }
+  } <span class="kw">else</span> {
+    <span class="ck">// 음수 보정 (전체를 양수로)</span>
+    <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) {
+      <span class="nm">offset</span> = -<span class="nm">min</span>;
+      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length; <span
+            class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] += <span
+            class="nm">offset</span>; }
+    }
+  }
+  <span class="kw">return</span> <span class="nm">offset</span>;
+}</pre>
+    </div>
+
+    <!-- LSD -->
+    <div class="code-panel" style="margin-bottom:1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#6ee7b7"></div>
+        lsdRadixSort() — LSD
+      </div>
+      <pre><span class="ck">// LSD(가장 낮은 수 부터 정렬)</span>
+<span class="kw">private static</span> <span class="ty">void</span> <span
+            class="fn">lsdRadixSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span
+            class="ty">int</span> <span class="nm">n</span>) {
+  <span class="kw">if</span> (<span class="nm">arr</span>.length == <span
+            class="nu">0</span>) {<span class="kw">return</span>;}
+  <span class="ty">int</span> <span class="nm">max</span> = <span class="nm">arr</span>[<span
+            class="nu">0</span>], <span class="nm">min</span> = <span class="nm">arr</span>[<span
+            class="nu">0</span>];
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+            class="nm">arr</span>) {
+    <span class="nm">max</span> = <span class="nm">Math</span>.<span class="fn">max</span>(<span
+            class="nm">max</span>, <span class="nm">num</span>);
+    <span class="nm">min</span> = <span class="nm">Math</span>.<span class="fn">min</span>(<span
+            class="nm">min</span>, <span class="nm">num</span>);
+  }
+
+  <span class="ty">int</span> <span class="nm">offset</span> = <span class="fn">negativeValueCorrection</span>(<span
+            class="nm">arr</span>, <span class="nm">min</span>, <span class="kw">false</span>, <span
+            class="nu">0</span>);
+
+  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
+            class="ty">int</span>[<span class="nm">n</span>];
+  <span class="ty">int</span>[] <span class="nm">countArr</span> = <span class="kw">new</span> <span
+            class="ty">int</span>[<span class="nu">10</span>];
+
+  <span class="ck">// 최댓값을 나눴을 때 0이 나오면 모든 숫자가 i의 아래</span>
+  <span class="kw">for</span> (<span class="ty">long</span> <span class="nm">exponent</span> = <span
+            class="nu">1</span>; (<span class="nm">max</span> / <span class="nm">exponent</span>) &gt; <span
+            class="nu">0</span>; <span class="nm">exponent</span> *= <span
+            class="nu">10</span>) {<span class="fn">countSort</span>(<span
+            class="nm">arr</span>, <span class="nu">0</span>, <span class="nm">n</span>, <span
+            class="nm">exponent</span>, <span class="nm">countArr</span>, <span
+            class="nm">output</span>);}
+  <span class="fn">negativeValueCorrection</span>(<span class="nm">arr</span>, <span
+            class="nm">min</span>, <span class="kw">true</span>, <span class="nm">offset</span>);
+}</pre>
+    </div>
+
+    <!-- MSD -->
+    <div class="code-panel">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#fcd34d"></div>
+        msdRadixSort() &amp; runMSDRadixSort() — MSD
+      </div>
+      <pre><span class="kw">static</span> <span class="ty">void</span> <span
+          class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span
+          class="ty">int</span> <span class="nm">n</span>) {
+  <span class="kw">if</span> (<span class="nm">arr</span>.length == <span
+            class="nu">0</span>) {<span class="kw">return</span>;}
+
+  <span class="ck">// 음수 보정 offset</span>
+  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
+            class="nu">0</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+            class="nm">arr</span>) {<span class="nm">min</span> = <span class="nm">Math</span>.<span
+            class="fn">min</span>(<span class="nm">min</span>, <span class="nm">num</span>);}
+  <span class="ty">int</span> <span class="nm">offset</span> = <span class="fn">negativeValueCorrection</span>(<span
+            class="nm">arr</span>, <span class="nm">min</span>, <span class="kw">false</span>, <span
+            class="nu">0</span>);
+
+  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
+            class="ty">int</span>[<span class="nm">n</span>];
+  <span class="ty">int</span>[] <span class="nm">countArr</span> = <span class="kw">new</span> <span
+            class="ty">int</span>[<span class="nu">10</span>];
+
+  <span class="fn">runMSDRadixSort</span>(<span class="nm">arr</span>, <span
+            class="nu">0</span>, <span class="nm">n</span>, <span
+            class="fn">getMaxDigits</span>(<span class="nm">arr</span>), <span
+            class="nm">countArr</span>, <span class="nm">output</span>);
+
+  <span class="fn">negativeValueCorrection</span>(<span class="nm">arr</span>, <span
+            class="nm">min</span>, <span class="kw">true</span>, <span class="nm">offset</span>);
+}
+
+<span class="ck">// MSD</span>
+<span class="ck">// 큰 자릿수 부터 Counting Sort 하여 누적합 counting이 되는 범위를 새 그룹의 범위로 설정 &amp; 재귀호출</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">runMSDRadixSort</span>(<span
+            class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
+            class="nm">start</span>, <span class="ty">int</span> <span class="nm">end</span>, <span
+            class="ty">int</span> <span class="nm">maxDigits</span>, <span
+            class="ty">int</span>[] <span class="nm">countArr</span>, <span class="ty">int</span>[] <span
+            class="nm">output</span>) {
+  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">end</span> - <span
+            class="nm">start</span>;
+  <span class="kw">if</span> (<span class="nm">range</span> &lt;= <span class="nu">1</span> || <span
+            class="nm">maxDigits</span> &lt; <span class="nu">0</span>) {<span
+            class="kw">return</span>;}
+
+  <span class="ck">// 자릿수 계산</span>
+  <span class="ty">long</span> <span class="nm">exponent</span> = (<span
+            class="ty">long</span>) <span class="nm">Math</span>.<span class="fn">pow</span>(<span
+            class="nu">10</span>, <span class="nm">maxDigits</span>);
+
+  <span class="ck">// 재귀호출 실행 전 사용 할 누적합 백업</span>
+  <span class="ty">int</span>[] <span class="nm">boundaryArr</span> = <span
+            class="fn">countSort</span>(<span class="nm">arr</span>, <span class="nm">start</span>, <span
+            class="nm">end</span>, <span class="nm">exponent</span>, <span
+            class="nm">countArr</span>, <span class="nm">output</span>);
+
+  <span class="ck">// 각 버킷마다 재귀호출 실행</span>
+  <span class="ty">int</span> <span class="nm">nextStart</span> = <span class="nm">start</span>;
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nu">10</span>; <span
+            class="nm">i</span>++) {
+    <span class="ty">int</span> <span class="nm">nextEnd</span> = <span
+            class="nm">start</span> + <span class="nm">boundaryArr</span>[<span class="nm">i</span>];
+
+    <span class="kw">if</span> (<span class="nm">nextEnd</span> &gt; <span
+            class="nm">nextStart</span>) {<span class="fn">runMSDRadixSort</span>(<span class="nm">arr</span>, <span
+            class="nm">nextStart</span>, <span class="nm">nextEnd</span>, <span
+            class="nm">maxDigits</span> - <span class="nu">1</span>, <span
+            class="nm">countArr</span>, <span class="nm">output</span>);}
+    <span class="nm">nextStart</span> = <span class="nm">nextEnd</span>;
+  }
+}
+
+<span class="kw">private static</span> <span class="ty">int</span> <span
+            class="fn">getMaxDigits</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
+  <span class="ck">// 자릿수 계산</span>
+  <span class="ty">int</span> <span class="nm">max</span> = <span class="nu">0</span>;
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">v</span> : <span
+            class="nm">arr</span>) {<span class="nm">max</span> = <span class="nm">Math</span>.<span
+            class="fn">max</span>(<span class="nm">max</span>, <span class="nm">v</span>);}
+
+  <span class="ty">int</span> <span class="nm">digits</span> = <span class="nu">0</span>;
+  <span class="kw">while</span> (<span class="nm">max</span> &gt; <span class="nu">0</span>) {
+    <span class="nm">max</span> /= <span class="nu">10</span>;
+    <span class="nm">digits</span>++;
+  }
+
+  <span class="kw">return</span> <span class="nm">digits</span> - <span class="nu">1</span>;
+}</pre>
+    </div>
+
+  </div>
+
+</div><!-- /page -->
+</body>
+<script>
+  // ─────────────────────────────────────────────
+  // Speed map
+  // ─────────────────────────────────────────────
+  const speedMap = {1: 800, 2: 500, 3: 300, 4: 180, 5: 100, 6: 55, 7: 30, 8: 15, 9: 6, 10: 0.5};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
+
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ─────────────────────────────────────────────
+  // Array helpers — 자릿수가 여러 개 나오도록 넓은 범위 + 음수 보정 시연을 위해 음수도 일부 포함
+  // 각 원소에는 tag(a, b, c ...)를 붙여 "동일 값 원소들의 원래 순서"를 시각적으로 추적 (Stable 확인용)
+  // ─────────────────────────────────────────────
+  function randArr(n) {
+    const lo = -20, hi = 180;
+    const values = Array.from({length: n}, () => lo + Math.floor(Math.random() * (hi - lo + 1)));
+    const seen = {};
+    return values.map(v => {
+      seen[v] = seen[v] || 0;
+      const tag = String.fromCharCode(97 + seen[v]);
+      seen[v]++;
+      return {value: v, tag};
+    });
+  }
+
+  const digitNames = ['1', '10', '100', '1,000', '10,000'];
+
+  function digitLabelOf(level) {
+    return (digitNames[level] !== undefined ? digitNames[level] : Math.pow(10, level)) + '의 자리';
+  }
+
+  // ─────────────────────────────────────────────
+  // Step generators
+  // ─────────────────────────────────────────────
+
+  /* ── lsdRadixSort() ── */
+  function genLSD(base) {
+    const steps = [];
+    const arr = base.map(x => ({...x}));
+    const n = arr.length;
+    let min = arr[0].value, max = arr[0].value;
+    arr.forEach(e => {
+      if (e.value < min) {
+        min = e.value;
+      }
+      if (e.value > max) {
+        max = e.value;
+      }
+    });
+
+    function push(type, extra, msg, countArr, outputArr) {
+      steps.push({
+        type, arr: arr.map(e => ({...e})), countArr: [...countArr],
+        output: outputArr.map(e => e ? {...e} : null),
+        segStart: 0, segEnd: n, msg, ...extra
+      });
+    }
+
+    push('init', {}, `초기 배열, min=${min}, max=${max}`, new Array(10).fill(0),
+        new Array(n).fill(null));
+
+    let offset = 0;
+    if (min < 0) {
+      offset = -min;
+      for (let i = 0; i < n; i++) {
+        arr[i].value += offset;
+      }
+      max += offset;
+      push('offset', {offset}, `음수 보정: min(${min}) < 0 이므로 모든 원소에 offset(+${offset}) 적용`,
+          new Array(10).fill(0), new Array(n).fill(null));
+    }
+
+    let output = new Array(n).fill(null);
+    let exponent = 1, passIdx = 0;
+
+    while (Math.floor(max / exponent) > 0) {
+      const countArr = new Array(10).fill(0);
+      output = new Array(n).fill(null);
+      const digitLabel = digitLabelOf(passIdx);
+      push('pass-init', {exponent, digitLabel},
+          `[Pass ${passIdx + 1}] ${digitLabel} 기준으로 배열 전체를 Counting Sort`, countArr, output);
+
+      for (let i = 0; i < n; i++) {
+        const d = Math.floor(arr[i].value / exponent) % 10;
+        countArr[d]++;
+        push('count', {ai: i, countIdx: d, exponent, digitLabel},
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} → ${digitLabel} 숫자는 ${d} → countArr[${d}]++`,
+            countArr, output);
+      }
+
+      for (let i = 1; i < 10; i++) {
+        countArr[i] += countArr[i - 1];
+        push('prefix', {countIdx: i, exponent, digitLabel},
+            `누적합: countArr[${i}] += countArr[${i - 1}] → ${countArr[i]}`, countArr, output);
+      }
+
+      for (let i = n - 1; i >= 0; i--) {
+        const d = Math.floor(arr[i].value / exponent) % 10;
+        countArr[d]--;
+        const pos = countArr[d];
+        output[pos] = {...arr[i]};
+        push('place', {ai: i, countIdx: d, pos, exponent, digitLabel},
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} → countArr[${d}]-- 후 output[${pos}]에 배치`,
+            countArr, output);
+      }
+
+      for (let i = 0; i < n; i++) {
+        arr[i] = output[i];
+      }
+      push('copy', {exponent, digitLabel},
+          `${digitLabel} 기준 정렬 완료 → output을 arr에 복사 (System.arraycopy)`, countArr, output);
+
+      exponent *= 10;
+      passIdx++;
+    }
+
+    if (offset > 0) {
+      for (let i = 0; i < n; i++) {
+        arr[i].value -= offset;
+      }
+      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 → 원래 값으로 복원`,
+          new Array(10).fill(0), arr.map(e => ({...e})));
+    }
+
+    push('done', {}, '정렬 완료! 자릿수만큼 Counting Sort를 반복해 완전히 정렬됨', new Array(10).fill(0),
+        arr.map(e => ({...e})));
+    return steps;
+  }
+
+  /* ── msdRadixSort() / runMSDRadixSort() ── */
+  function genMSD(base) {
+    const steps = [];
+    const arr = base.map(x => ({...x}));
+    const n = arr.length;
+    let min = arr[0].value;
+    arr.forEach(e => {
+      if (e.value < min) {
+        min = e.value;
+      }
+    });
+
+    function push(type, extra, msg, countArr, outputFull, segStart, segEnd) {
+      steps.push({
+        type, arr: arr.map(e => ({...e})), countArr: [...countArr],
+        output: outputFull.map(e => e ? {...e} : null),
+        segStart, segEnd, msg, ...extra
+      });
+    }
+
+    push('init', {}, `초기 배열, min=${min}`, new Array(10).fill(0), new Array(n).fill(null), 0, n);
+
+    let offset = 0;
+    if (min < 0) {
+      offset = -min;
+      for (let i = 0; i < n; i++) {
+        arr[i].value += offset;
+      }
+      push('offset', {offset}, `음수 보정: min(${min}) < 0 이므로 모든 원소에 offset(+${offset}) 적용`,
+          new Array(10).fill(0), new Array(n).fill(null), 0, n);
+    }
+
+    let maxVal = 0;
+    arr.forEach(e => {
+      if (e.value > maxVal) {
+        maxVal = e.value;
+      }
+    });
+    let digits = 0, tmp = maxVal;
+    while (tmp > 0) {
+      tmp = Math.floor(tmp / 10);
+      digits++;
+    }
+    const maxDigits = digits - 1;
+
+    let outputDisplay = arr.map(e => ({...e}));
+
+    push('start', {maxDigits},
+        `getMaxDigits(arr) = ${maxDigits} → 최상위 자릿수(${digitLabelOf(maxDigits)})부터 재귀 시작`,
+        new Array(10).fill(0), outputDisplay, 0, n);
+
+    function run(start, end, digitLevel) {
+      const range = end - start;
+      if (range <= 1 || digitLevel < 0) {
+        if (range === 1) {
+          push('segment-done', {digitLevel}, `구간 [${start}, ${end}) 원소 1개 → 더 나눌 필요 없음 (재귀 종료)`,
+              new Array(10).fill(0), outputDisplay, start, end);
+        }
+        return;
+      }
+      const exponent = Math.pow(10, digitLevel);
+      const digitLabel = digitLabelOf(digitLevel);
+      const countArr = new Array(10).fill(0);
+
+      push('segment-init', {exponent, digitLabel, digitLevel},
+          `구간 [${start}, ${end})를 ${digitLabel} 기준으로 Counting Sort (재귀 호출)`, countArr,
+          outputDisplay, start, end);
+
+      for (let i = start; i < end; i++) {
+        const d = Math.floor(arr[i].value / exponent) % 10;
+        countArr[d]++;
+        push('count', {ai: i, countIdx: d, exponent, digitLabel},
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} → ${digitLabel} 숫자는 ${d} → countArr[${d}]++`,
+            countArr, outputDisplay, start, end);
+      }
+
+      for (let i = 1; i < 10; i++) {
+        countArr[i] += countArr[i - 1];
+        push('prefix', {countIdx: i, exponent, digitLabel},
+            `누적합: countArr[${i}] += countArr[${i - 1}] → ${countArr[i]} (구간 내 상대 위치)`, countArr,
+            outputDisplay, start, end);
+      }
+
+      const boundary = countArr.slice();
+      const localOutput = new Array(range).fill(null);
+      for (let i = end - 1; i >= start; i--) {
+        const d = Math.floor(arr[i].value / exponent) % 10;
+        countArr[d]--;
+        const localPos = countArr[d];
+        localOutput[localPos] = {...arr[i]};
+        const globalPos = start + localPos;
+        outputDisplay[globalPos] = {...arr[i]};
+        push('place', {ai: i, countIdx: d, pos: globalPos, exponent, digitLabel},
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} → countArr[${d}]-- 후 output[${localPos}] (전체 기준 ${globalPos})에 배치`,
+            countArr, outputDisplay, start, end);
+      }
+
+      for (let i = 0; i < range; i++) {
+        arr[start + i] = localOutput[i];
+      }
+      outputDisplay = arr.map(e => ({...e}));
+      push('copy', {exponent, digitLabel, boundary: boundary.join(', ')},
+          `${digitLabel} 기준 구간 정렬 완료 → arr[${start}..${end - 1}] 반영, 버킷 경계: [${boundary.join(
+              ', ')}]`,
+          countArr, outputDisplay, start, end);
+
+      let nextStart = start;
+      for (let i = 0; i < 10; i++) {
+        const nextEnd = start + boundary[i];
+        if (nextEnd > nextStart) {
+          run(nextStart, nextEnd, digitLevel - 1);
+        }
+        nextStart = nextEnd;
+      }
+    }
+
+    run(0, n, maxDigits);
+
+    if (offset > 0) {
+      for (let i = 0; i < n; i++) {
+        arr[i].value -= offset;
+      }
+      outputDisplay = arr.map(e => ({...e}));
+      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 → 원래 값으로 복원`,
+          new Array(10).fill(0), outputDisplay, 0, n);
+    }
+
+    push('done', {}, '정렬 완료! 상위 자릿수부터 재귀적으로 구간을 좁혀가며 정렬됨', new Array(10).fill(0),
+        arr.map(e => ({...e})), 0, n);
+    return steps;
+  }
+
+  // ─────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────
+  function labelOf(e) {
+    return `<span>${e.value}<sub>${e.tag}</sub></span>`;
+  }
+
+  function renderValueBars(containerId, items, dispMax, segStart, segEnd, highlightFn) {
+    const el = document.getElementById(containerId);
+    el.style.gridTemplateColumns = `repeat(${items.length},1fr)`;
+    el.innerHTML = items.map((e, idx) => {
+      if (!e) {
+        return `<div class="bar empty"></div>`;
+      }
+      let cls = highlightFn(idx);
+      if (segStart !== undefined && (idx < segStart || idx >= segEnd)) {
+        cls += ' dim';
+      }
+      const h = Math.max(14, Math.round((Math.max(e.value, 1) / dispMax) * 90));
+      return `<div class="bar ${cls}" style="height:${h}px">${labelOf(e)}</div>`;
+    }).join('');
+  }
+
+  function renderCountBars(barId, axisId, countArr, maxCount, highlightFn) {
+    const el = document.getElementById(barId);
+    const axis = document.getElementById(axisId);
+    el.style.gridTemplateColumns = `repeat(10,1fr)`;
+    axis.style.gridTemplateColumns = `repeat(10,1fr)`;
+    el.innerHTML = countArr.map((c, idx) => {
+      const cls = highlightFn(idx);
+      const h = Math.max(6, Math.round((c / maxCount) * 90));
+      return `<div class="bar ${cls}" style="height:${h}px"><span>${c}</span></div>`;
+    }).join('');
+    axis.innerHTML = countArr.map((c, idx) => `<span>자리값 ${idx}</span>`).join('');
+  }
+
+  function renderStep(step, ids, dispMax, n) {
+    renderValueBars(ids.arr, step.arr, dispMax, step.segStart, step.segEnd, (idx) => {
+      if (step.type === 'count' && idx === step.ai) {
+        return 'bar active';
+      }
+      if (step.type === 'place' && idx === step.ai) {
+        return 'bar placed';
+      }
+      return 'bar normal';
+    });
+
+    renderCountBars(ids.count, ids.axis, step.countArr, n, (idx) => {
+      if (step.type === 'count' && idx === step.countIdx) {
+        return 'bar count-active';
+      }
+      if (step.type === 'prefix' && idx === step.countIdx) {
+        return 'bar count-prefix';
+      }
+      if (step.type === 'place' && idx === step.countIdx) {
+        return 'bar count-consume';
+      }
+      return 'bar count-base';
+    });
+
+    renderValueBars(ids.out, step.output, dispMax, step.segStart, step.segEnd, (idx) => {
+      if (step.type === 'done') {
+        return 'bar done';
+      }
+      if (step.type === 'place' && idx === step.pos) {
+        return 'bar placed';
+      }
+      const el = step.output[idx];
+      return el ? 'bar filled' : 'bar normal';
+    });
+
+    const tagMap = {
+      'init': '',
+      'offset': '<span class="phase-tag phase-offset">음수 보정</span>',
+      'start': '<span class="phase-tag phase-flow">시작</span>',
+      'pass-init': '<span class="phase-tag phase-flow">Pass 시작</span>',
+      'segment-init': '<span class="phase-tag phase-flow">구간(재귀) 시작</span>',
+      'segment-done': '<span class="phase-tag phase-flow">재귀 종료</span>',
+      'count': '<span class="phase-tag phase-count">Counting</span>',
+      'prefix': '<span class="phase-tag phase-prefix">누적합</span>',
+      'place': '<span class="phase-tag phase-place">배치</span>',
+      'copy': '<span class="phase-tag phase-copy">복사</span>',
+      'rollback': '<span class="phase-tag phase-offset">보정 롤백</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    };
+    document.getElementById(ids.log).innerHTML = (tagMap[step.type] || '') + (step.msg || '');
+
+    const sub = document.getElementById(ids.sub);
+    if (step.digitLabel) {
+      sub.textContent = `현재 자릿수: ${step.digitLabel}` + (ids.isSeg
+          ? ` · 구간 [${step.segStart}, ${step.segEnd})` : '');
+    } else if (ids.isSeg && step.segStart !== undefined) {
+      sub.textContent = `구간 [${step.segStart}, ${step.segEnd})`;
+    } else {
+      sub.innerHTML = '&nbsp;';
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────
+  let stepsA = [], stepsB = [], idxA = 0, idxB = 0;
+  let playing = false, timer = null;
+  let dispMaxA = 1, dispMaxB = 1;
+
+  const idsA = {
+    arr: 'arrA',
+    count: 'countA',
+    axis: 'axisA',
+    out: 'outA',
+    log: 'logA',
+    sub: 'subA',
+    isSeg: false
+  };
+  const idsB = {
+    arr: 'arrB',
+    count: 'countB',
+    axis: 'axisB',
+    out: 'outB',
+    log: 'logB',
+    sub: 'subB',
+    isSeg: true
+  };
+
+  function computeDispMax(steps) {
+    let m = 1;
+    steps.forEach(s => s.arr.forEach(e => {
+      if (e && e.value > m) {
+        m = e.value;
+      }
+    }));
+    return m;
+  }
+
+  function init() {
+    stopPlay();
+    const n = getSize();
+    const base = randArr(n);
+    stepsA = genLSD(base);
+    stepsB = genMSD(base);
+    dispMaxA = computeDispMax(stepsA);
+    dispMaxB = computeDispMax(stepsB);
+    idxA = 0;
+    idxB = 0;
+
+    const emptyOutA = {
+      type: 'init', arr: stepsA[0].arr, countArr: stepsA[0].countArr, output: stepsA[0].output,
+      segStart: 0, segEnd: n, msg: '시작 버튼을 누르세요.'
+    };
+    const emptyOutB = {
+      type: 'init', arr: stepsB[0].arr, countArr: stepsB[0].countArr, output: stepsB[0].output,
+      segStart: 0, segEnd: n, msg: '시작 버튼을 누르세요.'
+    };
+
+    renderStep(emptyOutA, idsA, dispMaxA, n);
+    renderStep(emptyOutB, idsB, dispMaxB, n);
+    document.getElementById('stepA').textContent = '—';
+    document.getElementById('stepB').textContent = '—';
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+    document.getElementById('btnPlay').disabled = false;
+  }
+
+  function tick() {
+    const n = getSize();
+    const doneA = idxA >= stepsA.length;
+    const doneB = idxB >= stepsB.length;
+    if (doneA && doneB) {
+      stopPlay();
+      return;
+    }
+    if (!doneA) {
+      renderStep(stepsA[idxA], idsA, dispMaxA, n);
+      document.getElementById('stepA').textContent = `${idxA + 1} / ${stepsA.length}`;
+      idxA++;
+    }
+    if (!doneB) {
+      renderStep(stepsB[idxB], idsB, dispMaxB, n);
+      document.getElementById('stepB').textContent = `${idxB + 1} / ${stepsB.length}`;
+      idxB++;
+    }
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  // ─────────────────────────────────────────────
+  // Event listeners
+  // ─────────────────────────────────────────────
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (idxA >= stepsA.length && idxB >= stepsB.length) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', init);
+
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  init();
+</script>
+</html>
