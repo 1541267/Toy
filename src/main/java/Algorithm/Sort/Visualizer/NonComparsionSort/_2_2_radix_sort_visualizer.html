@@ -155,6 +155,12 @@
     background: #1c1008;
   }
 
+  .badge.bad {
+    border-color: #7f1d1d;
+    color: #fca5a5;
+    background: #1c0808;
+  }
+
   /* ── Diff / usage note ── */
   .diff-note {
     background: #1a1f2e;
@@ -570,6 +576,7 @@
     overflow: hidden;
   }
 
+  W
   .code-panel-header {
     display: flex;
     align-items: center;
@@ -660,10 +667,6 @@
           <li>내부적으로 <strong class="hl">Counting Sort를 자릿수 단위로 반복 호출</strong>하는 구조</li>
           <li>안정 정렬(Stable), 자릿수가 없는 실수(부동소수점)는 정렬 불가</li>
         </ul>
-        <div class="complexity-row">
-          <span class="badge good">Time O(d · (n + b))</span>
-          <span class="badge warn">Space O(n + b)</span>
-        </div>
       </div>
 
       <div class="note-card">
@@ -684,10 +687,36 @@
       <div class="note-card">
         <h3>✅ LSD 장단점</h3>
         <ul>
+          <li>안정 정렬, 구현 단순, 실제로 가장 많이 쓰임</li>
+          <li><strong class="hl">시간복잡도</strong>
+            <ul>
+              <li>
+                d = 자릿수(10진수 고정), 각 반복 마다 Counting Sort = O(n + b) => O(d * (n + b))
+              </li>
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">AVG O(d * (n + b))</span>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li><strong class="hl">공간복잡도</strong>
+            <ul>
+              <li>output 배열 = O(n), counting 배열 O(b) => O(n + b) => O(n + b)
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">O(n + b)</span>
+                </div>
+              </li>
+          </li>
+        </ul>
+        </li>
+        </ul>
+        <ul>
           <li><strong class="hl">장점</strong></li>
           <ul>
             <li>구현 단순, 분기 없는 일관된 흐름(Branch-free)</li>
-            <li>항상 배열을 순차 접근 → <strong>캐시 지역성이 좋음</strong></li>
+            <li>항상 배열을 순차 접근 -> <strong>캐시 지역성이 좋음</strong></li>
             <li>데이터 분포와 무관하게 <strong>성능이 일정(예측 가능)</strong></li>
           </ul>
         </ul>
@@ -698,12 +727,35 @@
             <li>고정 길이 키에 적합, 가변 길이 키(문자열)엔 패딩 등 추가 처리 필요</li>
           </ul>
         </ul>
-        </ul>
       </div>
 
       <div class="note-card">
         <h3>✅ MSD 장단점</h3>
         <ul>
+          <li> 조기종료 가능, 작은 bucket은 삽입 정렬로 수정 가능</li>
+          <li> prefix 기반 분할(QuickSort 느낌), 재귀 구조, 부분 정렬 -> 불필요한 자릿수 탐색을 줄일 수 있음</li>
+          <li><strong class="hl">시간복잡도</strong>
+            <ul>
+              <li> avg = 각 단계에서 n개를 나누고 각 bucket을 재귀적으로 처리(b = 재귀호출 비용), O(n * b)</li>
+              <li> worst = 재귀가 깊어지면 결국 모든 digit를 다 탐색, O(n * b)</li>
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">AVG O(d * (n + b))</span>
+                  <span class="badge bad">Worst O(n * b)</span>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li><strong class="hl">공간복잡도</strong></li>
+          <ul>
+            <li> bucket 배열 & 재귀 stack, O(n + b + d)</li>
+            <li> 보통 d는 매우 작거나 log 범위라 실질적으로 O(n + b)</li>
+            <li>
+              <div class="complexity-row">
+                <span class="badge good">AVG O(n + b + d) or O(n + b)</span>
+              </div>
+            </li>
+          </ul>
           <li><strong class="hl">장점</strong>
             <ul>
               <li>상위 자릿수만으로 그룹이 좁혀지면 <strong>조기 종료</strong> 가능</li>
@@ -776,7 +828,7 @@
       </div>
       <div class="panel-sub" id="subA">&nbsp;</div>
 
-      <div class="bar-group-title">① 배열 (하위 자리 → 상위 자리 순으로 반복 정렬)</div>
+      <div class="bar-group-title">① 배열 (하위 자리 -> 상위 자리 순으로 반복 정렬)</div>
       <div class="bar-area" id="arrA"></div>
 
       <div class="bar-group-title">② 자릿수 Counting 배열 (0~9, 누적합)</div>
@@ -871,7 +923,7 @@
     <div class="cols">
       <div>
         <span class="hl">LSD — 낮은 자리부터</span><br>
-        1의 자리 → 10의 자리 → 100의 자리 순으로 <strong>배열 전체</strong>에 대해 Counting Sort를 반복 적용.
+        1의 자리 -> 10의 자리 -> 100의 자리 순으로 <strong>배열 전체</strong>에 대해 Counting Sort를 반복 적용.
         각 라운드는 이전 라운드의 정렬 결과 위에서 안정적으로 동작하며, 자릿수(exponent)가 최댓값을 넘어서면 종료.
         <strong class="hl">재귀 없이 반복문(while)</strong>만으로 동작.
       </div>
@@ -886,11 +938,11 @@
 
   <!-- Code Blocks -->
   <div class="code-section">
-    <div class="code-section-title">📄 소스 코드 — 공통 로직 먼저, 이후 LSD → MSD 순</div>
+    <div class="code-section-title">📄 소스 코드 — 공통 로직 먼저, 이후 LSD -> MSD 순</div>
 
     <!-- 공통: countSort + negativeValueCorrection -->
     <div class="code-panel" style="margin-bottom:1rem;">
-      <div class="code-panel-header">
+      <div class="code-panel-header" style="padding: 0.8rem;">
         <div class="dot" style="background:#7dd3fc"></div>
         공통 로직 — countSort() &amp; negativeValueCorrection() (LSD/MSD가 함께 사용)
       </div>
@@ -913,14 +965,16 @@
   <span class="ck">// 빈도 계산, exp = 자릿수</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
             class="nm">start</span>; <span class="nm">i</span> &lt; <span
-            class="nm">end</span>; <span class="nm">i</span>++) { <span class="nm">countArr</span>[(<span
+            class="nm">end</span>; <span class="nm">i</span>++) { <span
+            class="nm">countArr</span>[(<span
             class="ty">int</span>) (<span class="nm">arr</span>[<span class="nm">i</span>] / <span
             class="nm">exponent</span>) % <span class="nu">10</span>]++; }
 
   <span class="ck">// 누적 합</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
             class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nu">10</span>; <span
-            class="nm">i</span>++) { <span class="nm">countArr</span>[<span class="nm">i</span>] += <span
+            class="nm">i</span>++) { <span class="nm">countArr</span>[<span
+            class="nm">i</span>] += <span
             class="nm">countArr</span>[<span class="nm">i</span> - <span class="nu">1</span>]; }
 
   <span class="ck">// MSD의 재귀호출 에서 사용할 누적합 백업</span>
@@ -955,7 +1009,8 @@
     <span class="ck">// 음수 보정 롤백</span>
     <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) { <span
             class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
-            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length; <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span
+            class="nm">arr</span>.length; <span
             class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] -= <span
             class="nm">offset</span>; } }
   } <span class="kw">else</span> {
@@ -963,7 +1018,8 @@
     <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) {
       <span class="nm">offset</span> = -<span class="nm">min</span>;
       <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
-            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length; <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span
+            class="nm">arr</span>.length; <span
             class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] += <span
             class="nm">offset</span>; }
     }
@@ -1025,7 +1081,8 @@
         msdRadixSort() &amp; runMSDRadixSort() — MSD
       </div>
       <pre><span class="kw">static</span> <span class="ty">void</span> <span
-          class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span
+          class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span
+          class="nm">arr</span>, <span
           class="ty">int</span> <span class="nm">n</span>) {
   <span class="kw">if</span> (<span class="nm">arr</span>.length == <span
             class="nu">0</span>) {<span class="kw">return</span>;}
@@ -1060,7 +1117,8 @@
             class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
             class="nm">start</span>, <span class="ty">int</span> <span class="nm">end</span>, <span
             class="ty">int</span> <span class="nm">maxDigits</span>, <span
-            class="ty">int</span>[] <span class="nm">countArr</span>, <span class="ty">int</span>[] <span
+            class="ty">int</span>[] <span class="nm">countArr</span>, <span
+            class="ty">int</span>[] <span
             class="nm">output</span>) {
   <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">end</span> - <span
             class="nm">start</span>;
@@ -1075,7 +1133,8 @@
 
   <span class="ck">// 재귀호출 실행 전 사용 할 누적합 백업</span>
   <span class="ty">int</span>[] <span class="nm">boundaryArr</span> = <span
-            class="fn">countSort</span>(<span class="nm">arr</span>, <span class="nm">start</span>, <span
+            class="fn">countSort</span>(<span class="nm">arr</span>, <span
+            class="nm">start</span>, <span
             class="nm">end</span>, <span class="nm">exponent</span>, <span
             class="nm">countArr</span>, <span class="nm">output</span>);
 
@@ -1088,7 +1147,8 @@
             class="nm">start</span> + <span class="nm">boundaryArr</span>[<span class="nm">i</span>];
 
     <span class="kw">if</span> (<span class="nm">nextEnd</span> &gt; <span
-            class="nm">nextStart</span>) {<span class="fn">runMSDRadixSort</span>(<span class="nm">arr</span>, <span
+            class="nm">nextStart</span>) {<span class="fn">runMSDRadixSort</span>(<span
+            class="nm">arr</span>, <span
             class="nm">nextStart</span>, <span class="nm">nextEnd</span>, <span
             class="nm">maxDigits</span> - <span class="nu">1</span>, <span
             class="nm">countArr</span>, <span class="nm">output</span>);}
@@ -1217,14 +1277,14 @@
         const d = Math.floor(arr[i].value / exponent) % 10;
         countArr[d]++;
         push('count', {ai: i, countIdx: d, exponent, digitLabel},
-            `arr[${i}] = ${arr[i].value}${arr[i].tag} → ${digitLabel} 숫자는 ${d} → countArr[${d}]++`,
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} -> ${digitLabel} 숫자는 ${d} -> countArr[${d}]++`,
             countArr, output);
       }
 
       for (let i = 1; i < 10; i++) {
         countArr[i] += countArr[i - 1];
         push('prefix', {countIdx: i, exponent, digitLabel},
-            `누적합: countArr[${i}] += countArr[${i - 1}] → ${countArr[i]}`, countArr, output);
+            `누적합: countArr[${i}] += countArr[${i - 1}] -> ${countArr[i]}`, countArr, output);
       }
 
       for (let i = n - 1; i >= 0; i--) {
@@ -1233,7 +1293,7 @@
         const pos = countArr[d];
         output[pos] = {...arr[i]};
         push('place', {ai: i, countIdx: d, pos, exponent, digitLabel},
-            `arr[${i}] = ${arr[i].value}${arr[i].tag} → countArr[${d}]-- 후 output[${pos}]에 배치`,
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} -> countArr[${d}]-- 후 output[${pos}]에 배치`,
             countArr, output);
       }
 
@@ -1241,7 +1301,7 @@
         arr[i] = output[i];
       }
       push('copy', {exponent, digitLabel},
-          `${digitLabel} 기준 정렬 완료 → output을 arr에 복사 (System.arraycopy)`, countArr, output);
+          `${digitLabel} 기준 정렬 완료 -> output을 arr에 복사 (System.arraycopy)`, countArr, output);
 
       exponent *= 10;
       passIdx++;
@@ -1251,7 +1311,7 @@
       for (let i = 0; i < n; i++) {
         arr[i].value -= offset;
       }
-      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 → 원래 값으로 복원`,
+      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 -> 원래 값으로 복원`,
           new Array(10).fill(0), arr.map(e => ({...e})));
     }
 
@@ -1308,14 +1368,14 @@
     let outputDisplay = arr.map(e => ({...e}));
 
     push('start', {maxDigits},
-        `getMaxDigits(arr) = ${maxDigits} → 최상위 자릿수(${digitLabelOf(maxDigits)})부터 재귀 시작`,
+        `getMaxDigits(arr) = ${maxDigits} -> 최상위 자릿수(${digitLabelOf(maxDigits)})부터 재귀 시작`,
         new Array(10).fill(0), outputDisplay, 0, n);
 
     function run(start, end, digitLevel) {
       const range = end - start;
       if (range <= 1 || digitLevel < 0) {
         if (range === 1) {
-          push('segment-done', {digitLevel}, `구간 [${start}, ${end}) 원소 1개 → 더 나눌 필요 없음 (재귀 종료)`,
+          push('segment-done', {digitLevel}, `구간 [${start}, ${end}) 원소 1개 -> 더 나눌 필요 없음 (재귀 종료)`,
               new Array(10).fill(0), outputDisplay, start, end);
         }
         return;
@@ -1332,14 +1392,14 @@
         const d = Math.floor(arr[i].value / exponent) % 10;
         countArr[d]++;
         push('count', {ai: i, countIdx: d, exponent, digitLabel},
-            `arr[${i}] = ${arr[i].value}${arr[i].tag} → ${digitLabel} 숫자는 ${d} → countArr[${d}]++`,
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} -> ${digitLabel} 숫자는 ${d} -> countArr[${d}]++`,
             countArr, outputDisplay, start, end);
       }
 
       for (let i = 1; i < 10; i++) {
         countArr[i] += countArr[i - 1];
         push('prefix', {countIdx: i, exponent, digitLabel},
-            `누적합: countArr[${i}] += countArr[${i - 1}] → ${countArr[i]} (구간 내 상대 위치)`, countArr,
+            `누적합: countArr[${i}] += countArr[${i - 1}] -> ${countArr[i]} (구간 내 상대 위치)`, countArr,
             outputDisplay, start, end);
       }
 
@@ -1353,7 +1413,7 @@
         const globalPos = start + localPos;
         outputDisplay[globalPos] = {...arr[i]};
         push('place', {ai: i, countIdx: d, pos: globalPos, exponent, digitLabel},
-            `arr[${i}] = ${arr[i].value}${arr[i].tag} → countArr[${d}]-- 후 output[${localPos}] (전체 기준 ${globalPos})에 배치`,
+            `arr[${i}] = ${arr[i].value}${arr[i].tag} -> countArr[${d}]-- 후 output[${localPos}] (전체 기준 ${globalPos})에 배치`,
             countArr, outputDisplay, start, end);
       }
 
@@ -1362,7 +1422,7 @@
       }
       outputDisplay = arr.map(e => ({...e}));
       push('copy', {exponent, digitLabel, boundary: boundary.join(', ')},
-          `${digitLabel} 기준 구간 정렬 완료 → arr[${start}..${end - 1}] 반영, 버킷 경계: [${boundary.join(
+          `${digitLabel} 기준 구간 정렬 완료 -> arr[${start}..${end - 1}] 반영, 버킷 경계: [${boundary.join(
               ', ')}]`,
           countArr, outputDisplay, start, end);
 
@@ -1383,7 +1443,7 @@
         arr[i].value -= offset;
       }
       outputDisplay = arr.map(e => ({...e}));
-      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 → 원래 값으로 복원`,
+      push('rollback', {offset}, `음수 보정 롤백: 모든 원소에서 offset(${offset}) 제거 -> 원래 값으로 복원`,
           new Array(10).fill(0), outputDisplay, 0, n);
     }
 

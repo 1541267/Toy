@@ -17,7 +17,7 @@ package Algorithm.Sort.Code.ComparsionSort;
 // 최댓값 or 최솟값을 여러번 꺼내야 하는 경우 ex) 게임 랭킹, 우선순위 큐, 스케줄러 등
 
 // Bottom-Up (Floyd 방식)
-//  이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)
+// 이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)
 
 // Top-Down (Insertion 방식)
 // 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)
@@ -44,7 +44,7 @@ public class _1_6_Heap {
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     ArrGenerator a = new ArrGenerator();
 
-    int[] arr = a.init();
+    int[] arr = a.initInteger();
     int[] arr2 = arr.clone();
 
     isAllowPrint = a.isAllowPrint();
@@ -64,8 +64,8 @@ public class _1_6_Heap {
     System.out.println("After Arr: " + Arrays.toString(arr));
     System.out.println("After Arr2: " + Arrays.toString(arr2));
     System.out.println("Heap Sort\nBottom-Up: " + firstEnd + ", Top-Down: " + secondEnd);
-    if (!a.isSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
-    if (!a.isSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
   }
 
   private static void heapSort(int[] arr, int selectNum) {

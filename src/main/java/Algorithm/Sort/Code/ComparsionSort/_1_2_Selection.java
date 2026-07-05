@@ -22,7 +22,7 @@ public class _1_2_Selection {
 
     ArrGenerator a = new ArrGenerator();
 
-    int[] arr = a.init();
+    int[] arr = a.initInteger();
     isAllowPrint = a.isAllowPrint();
 
     System.out.println("Before Sort arr = " + Arrays.toString(arr));
@@ -47,7 +47,7 @@ public class _1_2_Selection {
     System.out.println("After Sort arr = " + Arrays.toString(arr));
     System.out.println("======================================");
     System.out.println("_2_Selection Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
-    if (!a.isSorted(arr)) {System.out.println("정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr)) {System.out.println("정렬 안돼있음");}
 
   }
 }

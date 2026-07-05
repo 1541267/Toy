@@ -25,25 +25,36 @@ public class ArrGenerator {
     }
   }
 
-  static int[] arr = new int[n];
+  static int[] integerArr = new int[n];
+  static double[] doubleArr = new double[n];
 
   public ArrGenerator() {
     RandomGenerator rg = RandomGeneratorFactory.getDefault().create();
 
     // HashSet<Integer> temp = new HashSet<>();
     ArrayList<Integer> temp = new ArrayList<>();
+    ArrayList<Double> temp2 = new ArrayList<>();
 
     while (temp.size() != n) {temp.add(rg.nextInt(1, n * 6));}
+    while (temp2.size() != n) {temp2.add(rg.nextDouble(0, 1));}
 
-    int i = 0;
-    for (Integer num : temp) {arr[i++] = num;}
+    int i = 0, j = 0;
+    for (Integer num : temp) {integerArr[i++] = num;}
+    for (Double num : temp2) {doubleArr[j++] = num;}
   }
 
-  public int[] init() {return arr;}
-
+  public int[] initInteger() {return integerArr;}
+  public double[] initDouble() {return doubleArr;}
   public boolean isAllowPrint() {return isAllowPrint;}
 
-  public boolean isSorted(int[] arr) {
+  public boolean isIntegerArrSorted(int[] arr) {
+    for (int i = 1; i < arr.length; i++) {
+      if (arr[i - 1] > arr[i]) {return false;}
+    }
+    return true;
+  }
+
+  public boolean isDoubleArrSorted(double[] arr) {
     for (int i = 1; i < arr.length; i++) {
       if (arr[i - 1] > arr[i]) {return false;}
     }

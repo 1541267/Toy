@@ -15,7 +15,7 @@ public class _1_Array {
 	public static void main(String[] args) throws IOException {
 
 		ArrGenerator a = new ArrGenerator();
-		int[] arr = a.init();
+		int[] arr = a.initInteger();
 		int select = 0;
 
 		while (select != -1) {

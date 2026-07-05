@@ -1,0 +1,1527 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>버킷 정렬(Bucket Sort) 시각화</title>
+</head>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  /* ── Study Notes ── */
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-card {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.warn {
+    border-color: #78350f;
+    color: #fcd34d;
+    background: #1c1008;
+  }
+
+  .badge.bad {
+    border-color: #7f1d1d;
+    color: #fca5a5;
+    background: #1c0808;
+  }
+
+  /* ── Diff / usage note ── */
+  .diff-note {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+  }
+
+  .diff-note strong, .note-card strong {
+    color: #c7d2fe;
+  }
+
+  .hl {
+    color: #6ee7b7;
+    font-weight: 600;
+  }
+
+  .hlw {
+    color: #fcd34d;
+    font-weight: 600;
+  }
+
+  .hlx {
+    color: #f87171;
+    font-weight: 600;
+  }
+
+  .cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .cols ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  @media (max-width: 680px) {
+    .cols {
+      grid-template-columns: 1fr;
+    }
+
+    .note-card[style*="span 2"] {
+      grid-column: span 1 !important;
+    }
+  }
+
+  /* ── Controls ── */
+  .controls-bar {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* ── Dual Panel ── */
+  .dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .panel-sub {
+    font-size: 0.72rem;
+    color: #7dd3fc;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+    min-height: 1.1em;
+  }
+
+  .bar-group-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 0.4px;
+    margin: 0.7rem 0 0.35rem;
+    text-transform: uppercase;
+  }
+
+  .bar-group-title:first-of-type {
+    margin-top: 0;
+  }
+
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 100px;
+    width: 100%;
+  }
+
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s, opacity 0.12s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
+  }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1.1;
+    overflow: hidden;
+  }
+
+  .bar span sub {
+    font-size: 7px;
+    color: #7dd3fc;
+  }
+
+  /* bar states — 원본/결과 배열 */
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.active {
+    background: #0f766e;
+  }
+
+  .bar.placed {
+    background: #b45309;
+  }
+
+  .bar.filled {
+    background: #16a34a;
+  }
+
+  .bar.done {
+    background: #ff0063;
+  }
+
+  .bar.empty {
+    background: transparent;
+    border: 1px dashed #334155;
+    height: 8px !important;
+  }
+
+  /* ── 버킷 영역 ── */
+  .bucket-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    min-height: 118px;
+    width: 100%;
+  }
+
+  .bucket {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-height: 16px;
+    border: 1px dashed #2d3552;
+    border-radius: 3px;
+    background: #10131d;
+    padding: 1px;
+    gap: 1px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .bucket.active {
+    border: 1px solid #6366f1;
+    background: #1e2433;
+  }
+
+  .bucket.sorted {
+    border-color: #065f46;
+  }
+
+  .chip {
+    background: #4c4e9a;
+    color: #e2e8f0;
+    font-size: 7.5px;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 2px;
+    padding: 1.5px 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: background 0.12s;
+  }
+
+  .chip sub {
+    font-size: 6px;
+    color: #a5b4fc;
+  }
+
+  .chip.new {
+    background: #16a34a;
+  }
+
+  .chip.temp {
+    background: #b45309;
+  }
+
+  .chip.cmp {
+    background: #0f766e;
+  }
+
+  .chip.shift {
+    background: #6d28d9;
+  }
+
+  .chip.inserted {
+    background: #16a34a;
+  }
+
+  .bucket-axis {
+    font-size: 7px;
+    color: #334155;
+    text-align: center;
+    margin-top: 1px;
+  }
+
+  .axis-row {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .axis-row span {
+    font-size: 8px;
+    color: #475569;
+    text-align: center;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.68rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Log */
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.74rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .phase-dist {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-cmp {
+    background: #0f3d3a;
+    color: #5eead4;
+  }
+
+  .phase-shift {
+    background: #2e1065;
+    color: #c4b5fd;
+  }
+
+  .phase-insert {
+    background: #052e16;
+    color: #4ade80;
+  }
+
+  .phase-gather {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
+
+  .phase-flow {
+    background: #1e293b;
+    color: #93c5fd;
+  }
+
+  /* ── Code Blocks ── */
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-section-title.sub {
+    margin-top: 1.25rem;
+  }
+
+  .code-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .code-dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  .ck {
+    color: #6272a4;
+  }
+
+  /* comment */
+  .kw {
+    color: #bd93f9;
+  }
+
+  /* keyword */
+  .ty {
+    color: #8be9fd;
+  }
+
+  /* type */
+  .fn {
+    color: #50fa7b;
+  }
+
+  /* function */
+  .nm {
+    color: #ffb86c;
+  }
+
+  /* variable / param */
+  .st {
+    color: #f1fa8c;
+  }
+
+  /* string */
+  .nu {
+    color: #ff79c6;
+  }
+
+  /* number */
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>버킷 정렬(Bucket Sort) 시각화</h1>
+    <p>데이터를 n개의 버킷으로 분산 → 각 버킷 내부를 Insertion Sort로 정렬 → 순서대로 합침 — 정수 vs 실수(0~1) 비교</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle" open>
+    <summary>📖 버킷 정렬 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🔍 개념</h3>
+        <ul>
+          <li>데이터를 여러 개의 <strong>버킷(bucket)</strong>으로 분산한 뒤 각 버킷 내부에서 정렬을 수행하고, 버킷을 순서대로 합쳐 완성</li>
+          <li>핵심은 값을 <strong class="hl">index로 변환(mapping)</strong>하는 것 — 값의 상대적 위치를 기준으로 버킷에 배치
+          </li>
+          <li>bucketIdx = <strong class="hl">(num - min) / (max - min) × (n - 1)</strong> → 어떤 값이든
+            0~n-1 범위로 압축(정규화)
+          </li>
+          <li>버킷 내부 데이터는 매우 적다는 가정 하에 보통 <strong>Insertion Sort</strong>를 사용 (캐시 친화적·구현 단순)</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">Best/Avg O(n + k)</span>
+          <span class="badge bad">Worst O(n²)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>🪣 버킷 자료구조 선택</h3>
+        <ul>
+          <li><strong>List&lt;List&lt;&gt;&gt;</strong>: index 기반 접근으로 <strong
+              class="hl">O(1)</strong>, cache
+            locality가 좋아 성능 우수 (기본 선택)
+          </li>
+          <li><strong>Map&lt;Integer, List&lt;T&gt;&gt;</strong>: 동적 버킷 생성 가능하지만 HashMap은 <strong
+              class="hlx">순서 보장 X</strong> + 해시 오버헤드 존재
+          </li>
+          <li><strong>TreeMap</strong>: key 순서는 보장되지만 <strong class="hlx">O(log n)</strong> 오버헤드 추가
+          </li>
+          <li>분산 → 정렬 → 수집, 3단계로 이뤄짐 (각 버킷은 균등 크기로 n개 생성)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚡ O(n)에 가까워지는 조건</h3>
+        <ul>
+          <li>데이터가 <strong class="hl">균등 분포(uniform distribution)</strong>일 때</li>
+          <li>각 버킷에 들어가는 원소 수가 <strong class="hl">O(1)</strong>에 가까울 때</li>
+          <li>버킷 내부 정렬 비용이 작을 때 (Insertion Sort 적합)</li>
+          <li><strong class="hlx">Worst</strong>: 모든 데이터가 하나의 버킷에 몰리는 경우 → 내부 정렬이 O(n²)이면 일반 정렬보다
+            느려질 수 있음
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🎯 실수 버킷의 부동소수점 오차</h3>
+        <ul>
+          <li>실수 정렬에서 부동소수점 오차로 인해 <strong class="hlx">bucketIdx == n</strong>이 나올 수 있음</li>
+          <li>따라서 <strong class="hl">bucketIdx = Math.min(bucketIdx, n - 1)</strong>로 클램핑(clamp) 조정
+            필요
+          </li>
+          <li>정수 버전은 정수 나눗셈 특성상 이 문제가 발생하지 않아 클램핑이 불필요</li>
+          <li>범위 정규화: 서로 다른 범위의 데이터를 동일한 버킷 구조에 넣기 위한 과정</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="grid-column: span 2;">
+        <h3>🎯 정수 vs 실수 — 어느 쪽에 잘 맞는가</h3>
+        <div class="cols" style="margin-top:0.2rem;">
+          <div>
+            <span class="hlw">정수(Integer)에서 사용 시</span>
+            <ul style="margin:0.4rem 0 0;">
+              <li>정수도 사용 가능하지만 <strong>범위가 너무 크면</strong> 버킷 크기 설정에 문제 발생 가능</li>
+              <li>예: 1~1,000,000처럼 입력 범위가 너무 크면 <strong class="hlx">메모리 낭비</strong></li>
+              <li>부동소수점 오차가 없어 클램핑(min(idx, n-1)) 불필요</li>
+            </ul>
+          </div>
+          <div>
+            <span class="hl">실수(Double, 0~1)에서 사용 시</span>
+            <ul style="margin:0.4rem 0 0;">
+              <li>연속적인 값이 일정 범위 내에 균등 분포할 때 <strong class="hl">가장 잘 작동</strong></li>
+              <li>0~1 범위처럼 <strong>O(n)에 가까운 성능</strong> 가능, 버킷당 원소 수가 적어짐</li>
+              <li>부동소수점 오차 보정을 위한 클램핑이 반드시 필요</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>배열 크기 (= 버킷 개수)</label>
+      <input type="range" id="sizeSlider" min="6" max="30" value="30" step="1">
+      <span class="val" id="sizeLabel">30</span>
+    </div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btnPlay">▶ 시작</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">새 배열</button>
+    </div>
+  </div>
+
+  <!-- Dual Panel -->
+  <div class="dual">
+
+    <!-- Panel A: Integer -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#6ee7b7"></div>
+          bucketSortIntegerVer() — 정수
+        </div>
+        <div class="panel-step" id="stepA">—</div>
+      </div>
+      <div class="panel-sub" id="subA">&nbsp;</div>
+
+      <div class="bar-group-title">① 원본 배열</div>
+      <div class="bar-area" id="arrA"></div>
+
+      <div class="bar-group-title">② 버킷 (분산 → 내부 Insertion Sort)</div>
+      <div class="bucket-area" id="bucketA"></div>
+
+      <div class="bar-group-title">③ 결과 배열 (수집)</div>
+      <div class="bar-area" id="outA"></div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          분산/삽입
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          비교 대상(temp)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          비교 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#6d28d9"></div>
+          이동(shift)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
+      </div>
+
+      <div class="log-box" id="logA">시작 버튼을 누르세요.</div>
+    </div>
+
+    <!-- Panel B: Double -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <div class="dot" style="background:#fcd34d"></div>
+          bucketSortDoubleVer() — 실수(0~1)
+        </div>
+        <div class="panel-step" id="stepB">—</div>
+      </div>
+      <div class="panel-sub" id="subB">&nbsp;</div>
+
+      <div class="bar-group-title">① 원본 배열</div>
+      <div class="bar-area" id="arrB"></div>
+
+      <div class="bar-group-title">② 버킷 (분산 → 내부 Insertion Sort)</div>
+      <div class="bucket-area" id="bucketB"></div>
+
+      <div class="bar-group-title">③ 결과 배열 (수집)</div>
+      <div class="bar-area" id="outB"></div>
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          분산/삽입
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          비교 대상(temp)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          비교 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#6d28d9"></div>
+          이동(shift)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
+      </div>
+
+      <div class="log-box" id="logB">시작 버튼을 누르세요.</div>
+    </div>
+
+  </div>
+
+  <!-- Diff note: Integer vs Double -->
+  <div class="diff-note">
+    <strong>bucketSortIntegerVer() vs bucketSortDoubleVer() 차이</strong>
+    <div class="cols">
+      <div>
+        <span class="hl">정수(Integer) 버전</span><br>
+        bucketIdx = (long)(num - min) × (n - 1) / range 로 계산 (range = max - min + 1). 정수 나눗셈은 항상
+        <strong
+            class="hl">0~n-1 범위 안에 정확히 떨어지므로</strong> 클램핑이 필요 없음. 대신 데이터 범위가 매우 크면(예: 1~1,000,000)
+        버킷 크기 설정에 문제가
+        생기고 메모리가 낭비될 수 있음.
+      </div>
+      <div>
+        <span class="hlw">실수(Double) 버전</span><br>
+        bucketIdx = (num - min) / (max - min) × (n - 1) 로 정규화 후 <strong class="hlx">부동소수점
+        오차</strong> 때문에
+        bucketIdx가 n이 되어버릴 수 있어 <strong class="hlw">Math.min(bucketIdx, n - 1)</strong> 클램핑이 필수.
+        0~1처럼 균등하게
+        분포된 실수에서 O(n)에 가장 근접한 성능을 냄.
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드 — 공통 Insertion Sort 먼저, 이후 정수 → 실수 순</div>
+
+    <!-- 공통: insertionSort -->
+    <div class="code-panel" style="margin-bottom:1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#7dd3fc"></div>
+        공통 로직 — insertionSortInteger() &amp; insertionSortDouble() (버킷 내부 정렬)
+      </div>
+      <pre><span class="ck">// 버킷 내부는 원소가 매우 적다는 가정 하에 Insertion Sort 사용</span>
+<span class="ck">// cache 친화적이고 구현이 단순하며, 적은 데이터에서는 quick/merge sort보다 빠름</span>
+<span class="kw">static</span> <span class="ty">void</span> <span
+            class="fn">insertionSortInteger</span>(<span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt; <span
+            class="nm">list</span>) {
+  <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">list</span>.<span
+            class="fn">size</span>();
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+            class="nm">i</span>++) {
+    <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">list</span>.<span
+            class="fn">get</span>(<span class="nm">i</span>);
+    <span class="ty">int</span> <span class="nm">prev</span> = <span class="nm">i</span> - <span
+            class="nu">1</span>;
+
+    <span class="kw">while</span> (<span class="nm">prev</span> &gt;= <span class="nu">0</span> &amp;&amp; <span
+            class="nm">list</span>.<span class="fn">get</span>(<span
+            class="nm">prev</span>) &gt; <span class="nm">temp</span>) {
+      <span class="nm">list</span>.<span class="fn">set</span>(<span class="nm">prev</span> + <span
+            class="nu">1</span>, <span class="nm">list</span>.<span class="fn">get</span>(<span
+            class="nm">prev</span>));
+      <span class="nm">prev</span>--;
+    }
+
+    <span class="nm">list</span>.<span class="fn">set</span>(<span class="nm">prev</span> + <span
+            class="nu">1</span>, <span class="nm">temp</span>);
+  }
+}
+
+<span class="ck">// double 버전도 비교 연산자만 동일하게 재사용, 로직은 완전히 같음</span>
+<span class="kw">static</span> <span class="ty">void</span> <span
+            class="fn">insertionSortDouble</span>(<span class="ty">List</span>&lt;<span class="ty">Double</span>&gt; <span
+            class="nm">list</span>) {
+  <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">list</span>.<span
+            class="fn">size</span>();
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+            class="nm">i</span>++) {
+    <span class="ty">double</span> <span class="nm">temp</span> = <span class="nm">list</span>.<span
+            class="fn">get</span>(<span class="nm">i</span>);
+    <span class="ty">int</span> <span class="nm">prev</span> = <span class="nm">i</span> - <span
+            class="nu">1</span>;
+
+    <span class="kw">while</span> (<span class="nm">prev</span> &gt;= <span class="nu">0</span> &amp;&amp; <span
+            class="nm">list</span>.<span class="fn">get</span>(<span
+            class="nm">prev</span>) &gt; <span class="nm">temp</span>) {
+      <span class="nm">list</span>.<span class="fn">set</span>(<span class="nm">prev</span> + <span
+            class="nu">1</span>, <span class="nm">list</span>.<span class="fn">get</span>(<span
+            class="nm">prev</span>));
+      <span class="nm">prev</span>--;
+    }
+
+    <span class="nm">list</span>.<span class="fn">set</span>(<span class="nm">prev</span> + <span
+            class="nu">1</span>, <span class="nm">temp</span>);
+  }
+}</pre>
+    </div>
+
+    <!-- Integer / Double -->
+    <div class="code-dual">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#6ee7b7"></div>
+          bucketSortIntegerVer() — 정수
+        </div>
+        <pre><span class="kw">private static</span> <span class="ty">void</span> <span class="fn">bucketSortIntegerVer</span>(<span
+            class="ty">int</span>[] <span class="nm">arr</span>) {
+  <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">arr</span>.length;
+  <span class="kw">if</span> (<span class="nm">n</span> &lt;= <span class="nu">1</span>) {<span
+              class="kw">return</span>;}
+
+  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">val</span> : <span
+              class="nm">arr</span>) {
+    <span class="kw">if</span> (<span class="nm">val</span> &lt; <span class="nm">min</span>) {<span
+              class="nm">min</span> = <span class="nm">val</span>;}
+    <span class="kw">if</span> (<span class="nm">val</span> &gt; <span class="nm">max</span>) {<span
+              class="nm">max</span> = <span class="nm">val</span>;}
+  }
+  <span class="kw">if</span> (<span class="nm">max</span> == <span class="nm">min</span>) {<span
+              class="kw">return</span>;}
+
+  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">max</span> - <span
+              class="nm">min</span> + <span class="nu">1</span>;
+
+  <span class="ck">// List&lt;List&lt;&gt;&gt;가 기본, index 접근 O(1) &amp; cache 친화적</span>
+  <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt;&gt; <span
+              class="nm">buckets</span> = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+              class="nm">i</span>++) {<span class="nm">buckets</span>.<span
+              class="fn">add</span>(<span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;());}
+
+  <span class="ck">// 분산 단계: bucketIdx = (num - min) * (n - 1) / range</span>
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) {
+    <span class="ty">int</span> <span class="nm">bucketIdx</span> = (<span class="ty">int</span>) ((<span
+              class="ty">long</span>) (<span class="nm">num</span> - <span class="nm">min</span>) * (<span
+              class="nm">n</span> - <span class="nu">1</span>) / <span class="nm">range</span>);
+    <span class="nm">buckets</span>.<span class="fn">get</span>(<span
+              class="nm">bucketIdx</span>).<span class="fn">add</span>(<span class="nm">num</span>);
+  }
+
+  <span class="ck">// 정렬 단계: 각 버킷 내부는 Insertion Sort</span>
+  <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Integer</span>&gt; <span class="nm">bucket</span> : <span class="nm">buckets</span>) {<span
+              class="fn">insertionSortInteger</span>(<span class="nm">bucket</span>);}
+
+  <span class="ck">// 수집 단계: 버킷을 순서대로 합침</span>
+  <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
+  <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Integer</span>&gt; <span class="nm">bucket</span> : <span class="nm">buckets</span>) {
+    <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">num</span> : <span
+              class="nm">bucket</span>) {<span class="nm">arr</span>[<span class="nm">idx</span>++] = <span
+              class="nm">num</span>;}
+  }
+}</pre>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          bucketSortDoubleVer() — 실수
+        </div>
+        <pre><span class="kw">static</span> <span class="ty">void</span> <span class="fn">bucketSortDoubleVer</span>(<span
+            class="ty">double</span>[] <span class="nm">arr</span>) {
+  <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">arr</span>.length;
+  <span class="kw">if</span> (<span class="nm">n</span> &lt;= <span class="nu">1</span>) {<span
+              class="kw">return</span>;}
+
+  <span class="ck">// 0 ~ 1 범위 위한 정규화</span>
+  <span class="ty">double</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+              class="nm">i</span>++) {
+    <span class="nm">max</span> = <span class="nm">Math</span>.<span class="fn">max</span>(<span
+              class="nm">max</span>, <span class="nm">arr</span>[<span class="nm">i</span>]);
+    <span class="nm">min</span> = <span class="nm">Math</span>.<span class="fn">min</span>(<span
+              class="nm">min</span>, <span class="nm">arr</span>[<span class="nm">i</span>]);
+  }
+  <span class="kw">if</span> (<span class="nm">max</span> == <span class="nm">min</span>) {<span
+              class="kw">return</span>;}
+
+  <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Double</span>&gt;&gt; <span
+              class="nm">buckets</span> = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+              class="nm">i</span>++) {<span class="nm">buckets</span>.<span
+              class="fn">add</span>(<span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;());}
+
+  <span class="ck">// 분산 단계: 범위 정규화로 이뤄진 버킷 인덱스로 분산</span>
+  <span class="kw">for</span> (<span class="ty">double</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) {
+    <span class="ty">int</span> <span class="nm">bucketIdx</span> = (<span class="ty">int</span>) ((<span
+              class="nm">num</span> - <span class="nm">min</span>) / (<span class="nm">max</span> - <span
+              class="nm">min</span>) * (<span class="nm">n</span> - <span class="nu">1</span>));
+    <span class="ck">// 부동소수점 오차 보정: bucketIdx == n 가능성 차단</span>
+    <span class="nm">bucketIdx</span> = <span class="nm">Math</span>.<span
+              class="fn">min</span>(<span class="nm">bucketIdx</span>, <span
+              class="nm">n</span> - <span class="nu">1</span>);
+    <span class="nm">buckets</span>.<span class="fn">get</span>(<span
+              class="nm">bucketIdx</span>).<span class="fn">add</span>(<span class="nm">num</span>);
+  }
+
+  <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Double</span>&gt; <span class="nm">bucket</span> : <span
+              class="nm">buckets</span>) {<span class="fn">insertionSortDouble</span>(<span
+              class="nm">bucket</span>);}
+
+  <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
+  <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Double</span>&gt; <span class="nm">bucket</span> : <span
+              class="nm">buckets</span>) {
+    <span class="kw">for</span> (<span class="ty">Double</span> <span class="nm">num</span> : <span
+              class="nm">bucket</span>) {<span class="nm">arr</span>[<span class="nm">idx</span>++] = <span
+              class="nm">num</span>;}
+  }
+}</pre>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /page -->
+</body>
+<script>
+  // ─────────────────────────────────────────────
+  // Speed map
+  // ─────────────────────────────────────────────
+  const speedMap = {1: 800, 2: 500, 3: 300, 4: 180, 5: 100, 6: 55, 7: 30, 8: 15, 9: 6, 10: 0.5};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
+
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ─────────────────────────────────────────────
+  // Array helpers
+  // 각 원소에는 tag(a, b, c ...)를 붙여 "동일 값 원소들의 원래 순서"를 추적
+  // ─────────────────────────────────────────────
+  function randIntArr(n) {
+    const lo = -8, hi = 45;
+    const values = Array.from({length: n}, () => lo + Math.floor(Math.random() * (hi - lo + 1)));
+    const seen = {};
+    return values.map(v => {
+      seen[v] = seen[v] || 0;
+      const tag = String.fromCharCode(97 + seen[v]);
+      seen[v]++;
+      return {value: v, tag};
+    });
+  }
+
+  function randDoubleArr(n) {
+    const values = Array.from({length: n}, () => Math.round(Math.random() * 1000) / 1000);
+    const seen = {};
+    return values.map(v => {
+      const key = v.toFixed(3);
+      seen[key] = seen[key] || 0;
+      const tag = String.fromCharCode(97 + seen[key]);
+      seen[key]++;
+      return {value: v, tag};
+    });
+  }
+
+  function fmt(v, isDouble) { return isDouble ? v.toFixed(2) : String(v); }
+
+  // ─────────────────────────────────────────────
+  // Step generators (공통 로직을 정수/실수 각각에 적용)
+  // ─────────────────────────────────────────────
+  function genBucketSort(base, isDouble) {
+    const steps = [];
+    const arr = base.map(x => ({...x}));
+    const n = arr.length;
+
+    function push(type, extra, msg, buckets, output, hbi) {
+      steps.push({
+        type,
+        arr: arr.map(e => ({...e})),
+        buckets: buckets.map(b => b.map(e => ({...e}))),
+        output: output.map(e => e ? {...e} : null),
+        msg, hbi, ...extra
+      });
+    }
+
+    const buckets = Array.from({length: n}, () => []);
+    const output = new Array(n).fill(null);
+
+    if (n <= 1) {
+      push('done', {}, '원소가 1개 이하 → 정렬 불필요', buckets, output, -1);
+      return steps;
+    }
+
+    let min = arr[0].value, max = arr[0].value;
+    arr.forEach(e => {
+      if (e.value < min) { min = e.value; }
+      if (e.value > max) { max = e.value; }
+    });
+
+    push('init', {}, `초기 배열, min=${fmt(min, isDouble)}, max=${fmt(max, isDouble)}`, buckets, output,
+        -1);
+
+    if (max === min) {
+      push('done', {}, '모든 값이 동일(max == min) → 정렬 불필요, 조기 종료', buckets, output, -1);
+      return steps;
+    }
+
+    const range = isDouble ? (max - min) : (max - min + 1);
+    push('range', {}, isDouble
+        ? `정규화 준비: (num - min) / (max - min) 로 0~1 스케일 변환, 버킷 개수 n=${n}개`
+        : `range = max - min + 1 = ${range}, 버킷 개수 n=${n}개 준비`, buckets, output, -1);
+
+    // ── 분산 단계 ──
+    for (let i = 0; i < n; i++) {
+      const num = arr[i].value;
+      let bucketIdx;
+      let formula;
+      if (isDouble) {
+        bucketIdx = Math.floor((num - min) / (max - min) * (n - 1));
+        const clamped = Math.min(bucketIdx, n - 1);
+        formula = `bucketIdx = floor((${fmt(num, true)}-${fmt(min, true)})/(${fmt(max, true)}-${fmt(
+            min, true)})×${n - 1}) = ${bucketIdx}`;
+        if (clamped !== bucketIdx) {
+          formula += ` → clamp(min, n-1) = ${clamped}`;
+        }
+        bucketIdx = clamped;
+      } else {
+        bucketIdx = Math.floor((num - min) * (n - 1) / range);
+        formula = `bucketIdx = floor((${num}-${min})×${n - 1}/${range}) = ${bucketIdx}`;
+      }
+      buckets[bucketIdx].push({...arr[i]});
+      push('distribute', {ai: i, bi: bucketIdx},
+          `arr[${i}] = ${fmt(num, isDouble)}${arr[i].tag} → ${formula}`, buckets, output,
+          bucketIdx);
+    }
+
+    push('distribute-done', {}, '분산 완료 → 각 버킷 내부 정렬(Insertion Sort) 시작', buckets, output, -1);
+
+    // ── 정렬 단계 (버킷별 Insertion Sort) ──
+    for (let bi = 0; bi < n; bi++) {
+      const bucket = buckets[bi];
+      if (bucket.length <= 1) { continue; }
+
+      push('bucket-start', {bi}, `버킷[${bi}] 내부 정렬 시작 (원소 ${bucket.length}개)`, buckets, output, bi);
+
+      for (let i = 1; i < bucket.length; i++) {
+        const temp = {...bucket[i]};
+        let prev = i - 1;
+
+        push('compare', {bi, i, prev},
+            `버킷[${bi}]: temp=${fmt(temp.value, isDouble)}${temp.tag} vs list[${prev}]=${fmt(
+                bucket[prev].value, isDouble)}${bucket[prev].tag} 비교`,
+            buckets, output, bi);
+
+        while (prev >= 0 && bucket[prev].value > temp.value) {
+          bucket[prev + 1] = {...bucket[prev]};
+          push('shift', {bi, from: prev, to: prev + 1},
+              `버킷[${bi}]: list[${prev}](${fmt(bucket[prev].value, isDouble)}) > temp(${fmt(
+                  temp.value, isDouble)}) → list[${prev + 1}]로 이동`,
+              buckets, output, bi);
+          prev--;
+          if (prev >= 0) {
+            push('compare', {bi, i, prev},
+                `버킷[${bi}]: temp=${fmt(temp.value, isDouble)}${temp.tag} vs list[${prev}]=${fmt(
+                    bucket[prev].value, isDouble)}${bucket[prev].tag} 비교`,
+                buckets, output, bi);
+          }
+        }
+        bucket[prev + 1] = temp;
+        push('insert', {bi, pos: prev + 1},
+            `버킷[${bi}]: temp=${fmt(temp.value, isDouble)}${temp.tag} → list[${prev + 1}]에 삽입`,
+            buckets, output, bi);
+      }
+      push('bucket-done', {bi}, `버킷[${bi}] 정렬 완료`, buckets, output, bi);
+    }
+
+    push('sort-done', {}, '모든 버킷 내부 정렬 완료 → 순서대로 수집 시작', buckets, output, -1);
+
+    // ── 수집 단계 ──
+    let idx = 0;
+    for (let bi = 0; bi < n; bi++) {
+      for (const num of buckets[bi]) {
+        output[idx] = {...num};
+        push('gather', {bi, idx},
+            `버킷[${bi}]의 ${fmt(num.value, isDouble)}${num.tag} → arr[${idx}]에 배치`, buckets, output,
+            bi);
+        idx++;
+      }
+    }
+
+    push('done', {}, '정렬 완료! 버킷을 순서대로 합쳐 최종 결과 완성', buckets, output, -1);
+    return steps;
+  }
+
+  // ─────────────────────────────────────────────
+  // Render
+  // ─────────────────────────────────────────────
+  function labelOf(e, isDouble) {
+    return `<span>${fmt(e.value, isDouble)}<sub>${e.tag}</sub></span>`;
+  }
+
+  function renderValueBars(containerId, items, dispMax, isDouble, highlightFn) {
+    const el = document.getElementById(containerId);
+    el.style.gridTemplateColumns = `repeat(${items.length},1fr)`;
+    el.innerHTML = items.map((e, idx) => {
+      if (!e) { return `<div class="bar empty"></div>`; }
+      const cls = highlightFn(idx);
+      const h = Math.max(14,
+          Math.round((Math.max(Math.abs(e.value), isDouble ? 0.02 : 1) / dispMax) * 90));
+      return `<div class="bar ${cls}" style="height:${h}px">${labelOf(e, isDouble)}</div>`;
+    }).join('');
+  }
+
+  function chipClass(step, bi, ei) {
+    if (bi !== step.bi) { return ''; }
+    switch (step.type) {
+      case 'distribute':
+        if (ei === step.buckets[bi].length - 1) { return 'new'; }
+        break;
+      case 'compare':
+        if (ei === step.i) { return 'temp'; }
+        if (ei === step.prev) { return 'cmp'; }
+        break;
+      case 'shift':
+        if (ei === step.to) { return 'shift'; }
+        break;
+      case 'insert':
+        if (ei === step.pos) { return 'inserted'; }
+        break;
+    }
+    return '';
+  }
+
+  function renderBuckets(containerId, step, isDouble) {
+    const el = document.getElementById(containerId);
+    const buckets = step.buckets;
+    el.style.gridTemplateColumns = `repeat(${buckets.length},1fr)`;
+    el.innerHTML = buckets.map((b, bi) => {
+      const isActive = bi === step.hbi;
+      const isSorted = (step.type === 'sort-done' || step.type === 'done' ||
+          step.type === 'gather' || step.type === 'distribute-done' && false);
+      const chips = b.map((e, ei) => {
+        const cls = chipClass(step, bi, ei);
+        return `<div class="chip ${cls}">${fmt(e.value, isDouble)}<sub>${e.tag}</sub></div>`;
+      }).join('');
+      const bucketCls = 'bucket' + (isActive ? ' active' : '');
+      return `<div class="${bucketCls}">${chips}</div>`;
+    }).join('');
+  }
+
+  function renderStep(step, ids, dispMaxArr, dispMaxOut, isDouble) {
+    renderValueBars(ids.arr, step.arr, dispMaxArr, isDouble, (idx) => {
+      if (step.type === 'distribute' && idx === step.ai) { return 'bar active'; }
+      return 'bar normal';
+    });
+
+    renderBuckets(ids.bucket, step, isDouble);
+
+    renderValueBars(ids.out, step.output, dispMaxOut, isDouble, (idx) => {
+      if (step.type === 'done') { return 'bar done'; }
+      if (step.type === 'gather' && idx === step.idx) { return 'bar placed'; }
+      const el = step.output[idx];
+      return el ? 'bar filled' : 'bar normal';
+    });
+
+    const tagMap = {
+      'init': '',
+      'range': '<span class="phase-tag phase-flow">준비</span>',
+      'distribute': '<span class="phase-tag phase-dist">분산</span>',
+      'distribute-done': '<span class="phase-tag phase-flow">분산 완료</span>',
+      'bucket-start': '<span class="phase-tag phase-flow">버킷 정렬 시작</span>',
+      'compare': '<span class="phase-tag phase-cmp">비교</span>',
+      'shift': '<span class="phase-tag phase-shift">이동</span>',
+      'insert': '<span class="phase-tag phase-insert">삽입</span>',
+      'bucket-done': '<span class="phase-tag phase-flow">버킷 완료</span>',
+      'sort-done': '<span class="phase-tag phase-flow">전체 정렬 완료</span>',
+      'gather': '<span class="phase-tag phase-gather">수집</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    };
+    document.getElementById(ids.log).innerHTML = (tagMap[step.type] || '') + (step.msg || '');
+
+    const sub = document.getElementById(ids.sub);
+    if (step.hbi !== undefined && step.hbi >= 0) {
+      sub.textContent = `현재 처리 중인 버킷: [${step.hbi}]`;
+    } else {
+      sub.innerHTML = '&nbsp;';
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────
+  let stepsA = [], stepsB = [], idxA = 0, idxB = 0;
+  let playing = false, timer = null;
+  let dispMaxArrA = 1, dispMaxOutA = 1, dispMaxArrB = 1, dispMaxOutB = 1;
+
+  const idsA = {arr: 'arrA', bucket: 'bucketA', out: 'outA', log: 'logA', sub: 'subA'};
+  const idsB = {arr: 'arrB', bucket: 'bucketB', out: 'outB', log: 'logB', sub: 'subB'};
+
+  function computeDispMax(steps, field) {
+    let m = 1;
+    steps.forEach(s => s[field].forEach(e => {
+      if (e && Math.abs(e.value) > m) { m = Math.abs(e.value); }
+    }));
+    return m;
+  }
+
+  function init() {
+    stopPlay();
+    const n = getSize();
+    const baseInt = randIntArr(n);
+    const baseDbl = randDoubleArr(n);
+
+    stepsA = genBucketSort(baseInt, false);
+    stepsB = genBucketSort(baseDbl, true);
+
+    dispMaxArrA = computeDispMax(stepsA, 'arr');
+    dispMaxOutA = dispMaxArrA;
+    dispMaxArrB = computeDispMax(stepsB, 'arr');
+    dispMaxOutB = dispMaxArrB;
+
+    idxA = 0;
+    idxB = 0;
+
+    renderStep(stepsA[0], idsA, dispMaxArrA, dispMaxOutA, false);
+    renderStep(stepsB[0], idsB, dispMaxArrB, dispMaxOutB, true);
+
+    document.getElementById('stepA').textContent = '—';
+    document.getElementById('stepB').textContent = '—';
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+    document.getElementById('btnPlay').disabled = false;
+  }
+
+  function tick() {
+    const doneA = idxA >= stepsA.length;
+    const doneB = idxB >= stepsB.length;
+    if (doneA && doneB) {
+      stopPlay();
+      return;
+    }
+    if (!doneA) {
+      renderStep(stepsA[idxA], idsA, dispMaxArrA, dispMaxOutA, false);
+      document.getElementById('stepA').textContent = `${idxA + 1} / ${stepsA.length}`;
+      idxA++;
+    }
+    if (!doneB) {
+      renderStep(stepsB[idxB], idsB, dispMaxArrB, dispMaxOutB, true);
+      document.getElementById('stepB').textContent = `${idxB + 1} / ${stepsB.length}`;
+      idxB++;
+    }
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  // ─────────────────────────────────────────────
+  // Event listeners
+  // ─────────────────────────────────────────────
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (idxA >= stepsA.length && idxB >= stepsB.length) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', init);
+
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  init();
+</script>
+</html>

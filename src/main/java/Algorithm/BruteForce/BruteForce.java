@@ -13,7 +13,7 @@ public class BruteForce {
 	public static void main(String[] args) {
 		ArrGenerator a = new ArrGenerator();
 
-		arr = a.init();
+		arr = a.initInteger();
 		n = arr.length;
 		used = new boolean[n];
 		newArr = new int[n];

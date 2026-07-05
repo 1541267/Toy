@@ -19,7 +19,7 @@ public class _1_3_Insertion {
   public static void main(String[] args) throws IOException {
     ArrGenerator a = new ArrGenerator();
 
-    int[] arr = a.init();
+    int[] arr = a.initInteger();
     isAllowPrint = a.isAllowPrint();
 
     System.out.println("Before: " + Arrays.toString(arr));
@@ -43,6 +43,6 @@ public class _1_3_Insertion {
     System.out.println("After:  " + Arrays.toString(arr));
     System.out.println("==========================================================");
     System.out.println("Insertion Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
-    if (!a.isSorted(arr)) {System.out.println("정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr)) {System.out.println("정렬 안돼있음");}
   }
 }

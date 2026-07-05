@@ -896,9 +896,16 @@
   <span class="ck">// 반면 오른쪽 잔여(temp[j ~ right])는</span>
   <span class="ck">// k 가 j 위치에 도달하기 전엔 arr 에 원래 값이 그대로 남아 있음</span>
   <span class="ck">// → 별도 복사 불필요, 왼쪽만 처리하면 됨</span>
-  <span class="kw">while</span> (<span class="nm">i</span> &lt;= <span class="nm">mid</span>) {
-    <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">temp</span>[<span
-              class="nm">i</span>++];
+  <span class="kw">while</span> (<span class="nm">i</span> &lt;= <span class="nm">mid</span>) {<span
+              class="nm">arr</span>[<span class="nm">k</span>++] = <span
+              class="nm">temp</span>[<span
+              class="nm">i</span>++];}
+  <span class="ck">// 오른쪽 복사, 생략 가능</span>
+  <span class="kw">while</span> (<span class="nm">j</span> &lt;= <span
+              class="nm">right</span>) {<span class="nm">arr</span>[<span
+              class="nm">k</span>++] = <span
+              class="nm">temp</span>[<span
+              class="nm">j</span>++];}
   }
 }</pre>
       </div>

@@ -23,7 +23,7 @@ public class _2_1_Counting {
   public static void main(String[] args) {
     ArrGenerator a = new ArrGenerator();
 
-    int[] arr = a.init();
+    int[] arr = a.initInteger();
     int[] arr2 = arr.clone();
     isAllowPrint = a.isAllowPrint();
     System.out.println("Before Arr: " + Arrays.toString(arr));
@@ -40,8 +40,8 @@ public class _2_1_Counting {
     System.out.println("after arr2 = " + Arrays.toString(arr2));
     System.out.println("==========================================================");
     System.out.println("Counting Sort\nStable Sort: " + firstEnd + ", 간단 구현 Unstable Sort: " + secondEnd);
-    if (!a.isSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
-    if (!a.isSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr)) {System.out.println("arr 정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr2)) {System.out.println("arr2 정렬 안돼있음");}
   }
 
   public static int[] countingSort(int[] arr) {

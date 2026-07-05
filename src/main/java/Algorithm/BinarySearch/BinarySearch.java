@@ -17,7 +17,7 @@ public class BinarySearch {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		ArrGenerator a = new ArrGenerator();
 
-		int[] arr = a.init();
+		int[] arr = a.initInteger();
 
 		long startTime = System.nanoTime();
 		System.out.println("arr = " + Arrays.toString(arr));

@@ -18,7 +18,7 @@ public class _1_1_Bubble {
   public static void main(String[] args) throws IOException {
     ArrGenerator a = new ArrGenerator();
 
-    int[] arr = a.init();
+    int[] arr = a.initInteger();
     isAllowPrint = a.isAllowPrint();
 
     System.out.println("Before sort = " + Arrays.toString(arr));
@@ -45,6 +45,6 @@ public class _1_1_Bubble {
     System.out.println("======================================");
     System.out.println("Buble Sort | " + (System.nanoTime() - start) / 1_000_000.0 + "ms");
 
-    if (!a.isSorted(arr)) {System.out.println("정렬 안돼있음");}
+    if (!a.isIntegerArrSorted(arr)) {System.out.println("정렬 안돼있음");}
   }
 }
