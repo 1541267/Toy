@@ -2,33 +2,29 @@ package Algorithm.Sort.Code.ComparsionSort;
 
 // 힙 정렬: 완전 이진 트리 형태의 Heap(힙) 자료구조를 이용한 정렬 방식
 // 시간 복잡도: Best: O(n log n), Worst: O(n log n), Avg: O(n log n)
-// 최대 힙(Max Heap)을 구성하여 루트(배열의 첫 번째 요소)에 최댓값을 위치시킨 뒤 마지막 요소와 Swap
+// 최대 힙(Max Heap)을 구성하여(Heap Build) 루트(배열의 첫 번째 요소)에 최댓값을 위치시킨 뒤 마지막 요소와 Swap(Extract)
 // Heap 의 크기가 1이 될 때까지 감소시키며 Heapify & Swap 반복하며 오름차순 정렬
 
 // 장점: 시간복잡도 모두 O(n log n), 제자리 정렬 O(1)의 공간 복잡도, 부분 정렬에 효율적(가장 큰 or 작은) k개의 요소만 필요할 때
 // Heap 자료구조를 사용하는 우선순위 큐(Priority Queue)의 원리를 이해
 // 최악의 경우에도 O(n log n)이 보장되어 성능 예측이 중요한 환경에 적합 or 메모리 제약이 있는 환경에서 유용
-
-// 단점: 불안정 정렬, 구현 복잡, 캐시 지역성 낮음(메모리 접근이 불규칙, 캐시 효율성이 낮음)
-// 실제 구현에서 상수 요소가 높음 같은 O(n log n) 퀵 정렬, 합병 정렬에 비해 더 많은 연산 필요
 // 입력 데이터의 상태(정렬 여부)에 관계없이 항상 비슷한 수행 시간을 가짐
+
+// 단점: 불안정 정렬, 구현 복잡, 캐시 지역성 낮음(메모리 접근이 불규칙, 캐시 효율성이 낮음), 분기 패턴(branch prediction)이 불규칙
+// 비교/연산 상수계수(2 log n depth) 때문에 느림 = 멀리 점프하는 접근 ex)root -> leat -> 다른 subtree -> 다시 root 과정, 거의 random acess(tree jump)
+// Heapify 하나당 depth = O(log n) & extract를 n번 수행 2 log n 수준의 비교/이동이 반복
+// 때문에 같은 O(n log n) 퀵 정렬, 합병 정렬에 비해 더 많은 연산 필요 -> 퀵 정렬은 특히 연속된 메모리 접근으로 캐시 친화적이기 때문에 차이가 더 큼
 
 // 최악의 성능 보장이 필요할 때 사용 O(n log n)
 // 최댓값 or 최솟값을 여러번 꺼내야 하는 경우 ex) 게임 랭킹, 우선순위 큐, 스케줄러 등
 
-// Bottom-Up (Floyd 방식)
+// Bottom-Up Build (Floyd 방식),일괄 구성 기반 (heap sort, batch processing)
 // 이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)
+// -> 배열 -> Heap 변환, Heap Sort 구현
 
-// Top-Down (Insertion 방식)
+// Top-Down Build (Insertion 방식), 삽입 기반 (Priority Queue, streaming system)
 // 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)
-
-// 차이 핵심
-// Top-Down: 삽입 기반 (Priority Queue, streaming system)
-// Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)
-
-// 실제 사용:
-// Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현
-// Top-Down: Priority Queue, 실시간 top-K, 스케줄링
+// -> Priority Queue, 실시간 top-K, 스케줄링
 
 import Algorithm.Sort.ArrGenerator;
 import java.io.BufferedReader;
@@ -41,7 +37,6 @@ public class _1_6_Heap {
   static boolean isAllowPrint;
 
   public static void main(String[] args) throws IOException {
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     ArrGenerator a = new ArrGenerator();
 
     int[] arr = a.initInteger();
@@ -80,6 +75,7 @@ public class _1_6_Heap {
 
     switch (selectNum) {
       case 1:
+        // bottom-up build (floyd)
         for (int i = n / 2 - 1; i >= 0; i--) {
           if (isAllowPrint) {
             System.out.println("----------------------------------------------------------");
@@ -91,6 +87,7 @@ public class _1_6_Heap {
         }
         break;
       case 2:
+        // top-down build (Insertion)
         for (int i = 1; i < n; i++) {
           if (isAllowPrint) {
             System.out.println("----------------------------------------------------------");

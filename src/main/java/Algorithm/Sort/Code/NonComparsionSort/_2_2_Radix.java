@@ -1,6 +1,6 @@
 package Algorithm.Sort.Code.NonComparsionSort;
 
-// 기수(Radix) 정렬: 데이터를 구성하는 기본 요소(Radix)를 이용해 정렬을 진행하는 방식, 아래의 방법은 LSD
+// 기수(Radix) 정렬: 데이터를 구성하는 기본 요소(Radix)를 이용해 정렬을 진행하는 방식, 분할 정복은 아님, 아래의 방법은 LSD
 // 입력 데이터의 최대값에 따라 Counting Sort의 비효율성을 개선하기 위해 Radix Sort 사용 가능
 // ex) 자릿수의 값 별로 정렬 하므로 나올 수 있는 값의 최대 사이즈는 9
 // 공간복잡도: output 배열(n) & countArr(b) LSD = O(n + b), MDS는 추가로 재귀 호출 스택(스택 깊이는 최대 자릿수 d) 필요로 O(n + b + d)
@@ -77,37 +77,46 @@ public class _2_2_Radix {
   // LSD(가장 낮은 수 부터 정렬)
   private static void lsdRadixSort(int[] arr, int n) {
     if (arr.length == 0) {return;}
-    int max = arr[0], min = arr[0];
+    int max = arr[0], offset = arr[0];
 
     for (int num : arr) {
       max = Math.max(max, num);
-      min = Math.min(min, num);
+      offset = Math.min(offset, num);
     }
 
-    int offset = negativeValueCorrection(arr, min, false, 0);
+    max -= offset;
+
+    negativeValueCorrection(arr, false, -offset);
 
     int[] output = new int[n];
     int[] countArr = new int[10];
 
     // 최댓값을 나눴을 때 0이 나오면 모든 숫자가 i의 아래
     for (long exponent = 1; (max / exponent) > 0; exponent *= 10) {countSort(arr, 0, n, exponent, countArr, output);}
-    negativeValueCorrection(arr, min, true, offset);
+    negativeValueCorrection(arr, true, -offset);
   }
 
   static void msdRadixSort(int[] arr, int n) {
     if (arr.length == 0) {return;}
 
     // 음수 보정 offset
-    int min = arr[0];
-    for (int num : arr) {min = Math.min(min, num);}
-    int offset = negativeValueCorrection(arr, min, false, 0);
+    int max = arr[0], offset = arr[0];
+    for (int num : arr) {
+      max = Math.max(max, num);
+      offset = Math.min(offset, num);
+    }
+
+    negativeValueCorrection(arr, false, -offset);
+
+    // 음수 보정으로 인해 max 값 갱신
+    max -= offset;
 
     int[] output = new int[n];
     int[] countArr = new int[10];
 
-    runMSDRadixSort(arr, 0, n, getMaxDigits(arr), countArr, output);
+    runMSDRadixSort(arr, 0, n, getMaxDigits(max), countArr, output);
 
-    negativeValueCorrection(arr, min, true, offset);
+    negativeValueCorrection(arr, true, -offset);
   }
 
   // MSD
@@ -138,7 +147,7 @@ public class _2_2_Radix {
     int range = end - start;
 
     // 이전 호출에서 남은 값 초기화
-    Arrays.fill(countArr, 0, 10, 0);
+    Arrays.fill(countArr, 0);
 
     // 빈도 계산, exp = 자릿수
     for (int i = start; i < end; i++) {countArr[(int) (arr[i] / exponent) % 10]++;}
@@ -163,11 +172,8 @@ public class _2_2_Radix {
   }
 
 
-  private static int getMaxDigits(int[] arr) {
+  private static int getMaxDigits(int max) {
     // 자릿수 계산
-    int max = 0;
-    for (int v : arr) {max = Math.max(max, v);}
-
     int digits = 0;
     while (max > 0) {
       max /= 10;
@@ -177,17 +183,12 @@ public class _2_2_Radix {
     return digits - 1;
   }
 
-  static int negativeValueCorrection(int[] arr, int min, boolean isRollback, int offset) {
+  static void negativeValueCorrection(int[] arr, boolean isRollback, int offset) {
     if (isRollback) {
       // 음수 보정 롤백
-      if (min < 0) {for (int i = 0; i < arr.length; i++) {arr[i] -= offset;}}
+      for (int i = 0; i < arr.length; i++) {arr[i] -= offset;}
     } else {
-      // 음수 보정 (전체를 양수로)
-      if (min < 0) {
-        offset = -min;
-        for (int i = 0; i < arr.length; i++) {arr[i] += offset;}
-      }
+      for (int i = 0; i < arr.length; i++) {arr[i] += offset;}
     }
-    return offset;
   }
 }

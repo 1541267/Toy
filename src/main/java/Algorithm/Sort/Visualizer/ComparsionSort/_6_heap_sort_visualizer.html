@@ -538,42 +538,13 @@
         <h3>🔍 개념</h3>
         <ul>
           <li><strong>완전 이진 트리</strong> 형태의 Heap 자료구조를 이용한 정렬</li>
-          <li>최대 힙(Max Heap)을 구성해 루트(배열의 첫 번째 요소)에 최댓값을 위치</li>
+          <li>최대 힙(Max Heap)을 구성(Build)해 루트(배열의 첫 번째 요소)에 최댓값을 위치(Extract)</li>
           <li>루트와 마지막 원소를 Swap 후 힙 크기 1 감소</li>
-          <li>힙 크기가 1이 될 때까지 <strong>Heapify &amp; Swap 반복</strong> → 오름차순 정렬</li>
-          <li>부모 인덱스 <strong>i</strong> → 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong>
+          <li>힙 크기가 1이 될 때까지 <strong>Heapify &amp; Swap 반복</strong> -> 오름차순 정렬</li>
+          <li>부모 인덱스 <strong>i</strong> -> 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong>
           </li>
           <li>최댓값/최솟값을 여러 번 꺼내야 할 때 사용 (게임 랭킹, 우선순위 큐, 스케줄러)</li>
           <li>최악의 성능 보장이 필요할 때 적합 — 항상 O(n log n)</li>
-        </ul>
-      </div>
-
-      <div class="note-card">
-        <h3>✅ 장점</h3>
-        <ul>
-          <li>Best/Avg/Worst 모두 <strong>O(n log n)</strong> 시간 보장</li>
-          <li><strong>제자리 정렬</strong> — O(1) 추가 공간</li>
-          <li>부분 정렬에 효율적 (가장 큰/작은 k개 원소 추출)</li>
-          <li>우선순위 큐(Priority Queue) 원리 이해에 최적</li>
-          <li>메모리 제약 환경에서 유용</li>
-        </ul>
-        <div class="complexity-row">
-          <span class="badge good">Best O(n log n)</span>
-          <span class="badge good">Avg O(n log n)</span>
-          <span class="badge good">Worst O(n log n)</span>
-          <span class="badge">Space O(1)</span>
-        </div>
-      </div>
-
-      <div class="note-card">
-        <h3>⚠️ 단점</h3>
-        <ul>
-          <li><strong>불안정 정렬</strong> — 동일 값의 원래 순서 보장 안 됨</li>
-          <li>구현이 복잡하고 상수 요소가 높음</li>
-          <li><strong>캐시 지역성 낮음</strong> — 배열을 이진 트리처럼 사용해 멀리 떨어진 인덱스를 반복 접근</li>
-          <li>부모(0) → 자식(1,2) → 손자(3,4,5,6) 처럼 불규칙한 메모리 접근 → CPU Cache 히트율 낮음</li>
-          <li>같은 O(n log n)인 Quick Sort에 비해 실제로는 느린 경우가 많음</li>
-          <li>입력 데이터 상태(정렬 여부)에 관계없이 항상 비슷한 수행 시간</li>
         </ul>
       </div>
 
@@ -593,13 +564,59 @@
             <li> Top-Down: 삽입 기반 (Priority Queue, streaming system)</li>
             <li> Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)</li>
           </ul>
+          <li>실제 사용</li>
           <ul>
-            <li> 실제 사용:</li>
             <li> Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현</li>
             <li> Top-Down: Priority Queue, 실시간 top-K, 스케줄링</li>
           </ul>
         </ul>
       </div>
+
+      <div class="note-card">
+        <h3>✅ 장점</h3>
+        <ul>
+          <li>Best/Avg/Worst 모두 <strong>O(n log n)</strong> 시간 보장</li>
+          <li>입력 데이터의 상태(정렬 여부)에 관계없이 항상 비슷한 수행 시간을 가짐</li>
+          <li><strong>제자리 정렬</strong> — O(1) 추가 공간</li>
+          <li>부분 정렬에 효율적 (가장 큰/작은 k개 원소 추출)</li>
+          <li>우선순위 큐(Priority Queue) 원리 이해에 최적</li>
+          <li>메모리 제약 환경에서 유용</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">Best O(n log n)</span>
+          <span class="badge good">Avg O(n log n)</span>
+          <span class="badge good">Worst O(n log n)</span>
+          <span class="badge">Space O(1)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>⚠️ 단점</h3>
+        <ul>
+          <li><strong>불안정 정렬</strong> — 동일 값의 원래 순서 보장 안 됨</li>
+          <li>구현이 복잡하고 상수 요소가 높음</li>
+          <li><strong>캐시 지역성 낮음</strong> — 멀리 떨어진 인덱스를 반복 접근</li>
+          <li>부모(0) -> 자식(1,2) -> 손자(3,4,5,6) 처럼 불규칙한 메모리 접근 -> CPU Cache 히트율 낮음</li>
+          <li><strong>캐시 지역성 낮음</strong>
+            <ul>
+              <li>배열을 이진 트리처럼 사용해 비교/연산 상수계수(2 log n depth) 때문에 느림 = 멀리 떨어진 인덱스를 반복 접근
+              </li>
+              <li>
+                <strong>ex)</strong> root -> leat -> 다른 subtree -> 다시 root 과정, 거의 random acess(tree
+                jump)
+              </li>
+            </ul>
+          </li>
+          <li>때문에 같은 O(n log n) 퀵 정렬, 합병 정렬에 비해 더 많은 연산 필요
+            <ul>
+              <li>Heapify 하나당 depth = O(log n) & extract를 n번 수행 2 log n 수준의 비교/이동이 반복</li>
+              <li>퀵 정렬은 특히 연속된 메모리 접근으로 캐시 친화적이기 때문에 Heap Sort가 느린 경우가 많음</li>
+
+            </ul>
+          </li>
+        </ul>
+      </div>
+
 
     </div>
   </details>
@@ -627,7 +644,7 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fbbf24"></div>
-          Bottom-Up (Floyd) — Build → Sort
+          Bottom-Up (Floyd) — Build -> Sort
         </div>
         <div class="panel-step" id="stepCounterBU">—</div>
       </div>
@@ -639,7 +656,7 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#67e8f9"></div>
-          Top-Down (Insertion) — Build → Sort
+          Top-Down (Insertion) — Build -> Sort
         </div>
         <div class="panel-step" id="stepCounterTD">—</div>
       </div>
@@ -691,15 +708,16 @@
 
   <span class="ck">// ① Build Max Heap — 방식 선택</span>
   <span class="kw">switch</span> (<span class="nm">selectNum</span>) {
-    <span class="kw">case</span> <span class="nu">1</span>: <span class="ck">// Bottom-Up (Floyd) → O(n)</span>
+    <span class="kw">case</span> <span class="nu">1</span>: <span class="ck">// Bottom-Up (Floyd) -> O(n)</span>
       <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
               class="nm">n</span> / <span class="nu">2</span> - <span class="nu">1</span>; <span
               class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
-        <span class="fn">heapify</span>(<span class="nm">arr</span>, <span class="nm">n</span>, <span
+        <span class="fn">heapify</span>(<span class="nm">arr</span>, <span
+              class="nm">n</span>, <span
               class="nm">i</span>);
       }
       <span class="kw">break</span>;
-    <span class="kw">case</span> <span class="nu">2</span>: <span class="ck">// Top-Down (Insertion) → O(n log n)</span>
+    <span class="kw">case</span> <span class="nu">2</span>: <span class="ck">// Top-Down (Insertion) -> O(n log n)</span>
       <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
               class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
               class="nm">i</span>++) {
@@ -709,7 +727,7 @@
   }
 
   <span class="ck">// ② Sort: 루트(최댓값)를 마지막 원소와 교환</span>
-  <span class="ck">// 힙 크기 1 감소 → heapify 반복 → O(n log n)</span>
+  <span class="ck">// 힙 크기 1 감소 -> heapify 반복 -> O(n log n)</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
               class="nm">n</span> - <span class="nu">1</span>; <span class="nm">i</span> &gt; <span
               class="nu">0</span>; <span class="nm">i</span>--) {
@@ -758,7 +776,7 @@
               class="nm">parent</span>] &gt;= <span class="nm">arr</span>[<span
               class="nm">child</span>]) { <span class="kw">break</span>; }
 
-    <span class="ck">// 부모 &lt; 자식 → Swap 후 한 칸 위로 이동</span>
+    <span class="ck">// 부모 &lt; 자식 -> Swap 후 한 칸 위로 이동</span>
     <span class="fn">swap</span>(<span class="nm">arr</span>, <span class="nm">parent</span>, <span
               class="nm">child</span>);
     <span class="nm">child</span> = <span class="nm">parent</span>;
@@ -879,11 +897,11 @@
             `Swap arr[${i}]=${a[i]} ↔ arr[${p}]=${a[p]}  (부모 < 자식)`);
         [a[i], a[p]] = [a[p], a[i]];
         push('swapped', {hi: p, heapSize},
-            `Swap 완료 → 재귀 heapify(${p})`);
+            `Swap 완료 -> 재귀 heapify(${p})`);
         heapify(heapSize, p);
       } else {
         push('no-swap', {hi: i, heapSize},
-            `arr[${i}]=${a[i]} 이 자식보다 크거나 같음 → Swap 불필요`);
+            `arr[${i}]=${a[i]} 이 자식보다 크거나 같음 -> Swap 불필요`);
       }
     }
 
@@ -899,7 +917,7 @@
 
         if (a[parent] >= a[child]) {
           push('siftup-stop', {hi: parent, ci: child, heapSize: i + 1},
-              `arr[${parent}] >= arr[${child}] → 종료 (부모가 더 크거나 같음)`);
+              `arr[${parent}] >= arr[${child}] -> 종료 (부모가 더 크거나 같음)`);
           break;
         }
 
@@ -907,7 +925,7 @@
             `Swap arr[${parent}]=${a[parent]} ↔ arr[${child}]=${a[child]}  (부모 < 자식)`);
         [a[parent], a[child]] = [a[child], a[parent]];
         push('siftup-moved', {hi: parent, heapSize: i + 1},
-            `Swap 완료 → 한 칸 위로 이동, child = ${parent}`);
+            `Swap 완료 -> 한 칸 위로 이동, child = ${parent}`);
         child = parent;
       }
     }
@@ -934,16 +952,16 @@
     }
 
     push('build-done', {heapSize: n},
-        '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 → ② Sort 단계 시작');
+        '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 -> ② Sort 단계 시작');
 
     // ── ② Sort (두 방식 공통 — 항상 heapify 사용) ──
     for (let i = n - 1; i > 0; i--) {
       push('extract', {swapA: 0, swapB: i, heapSize: i + 1},
-          `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap → arr[${i}] 위치 확정`);
+          `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap -> arr[${i}] 위치 확정`);
       [a[0], a[i]] = [a[i], a[0]];
       sorted.add(i);
       push('extracted', {heapSize: i},
-          `arr[${i}]=${a[i]} 정렬 확정 ✓  힙 크기 ${i + 1} → ${i}  → heapify(0) 수행`);
+          `arr[${i}]=${a[i]} 정렬 확정 ✓  힙 크기 ${i + 1} -> ${i}  -> heapify(0) 수행`);
       if (i > 1) {
         heapify(i, 0);
       }
@@ -999,7 +1017,7 @@
       }
       // siftUp: 부모/자식 비교, 종료, 이동
       if ((step.type === 'siftup-compare' || step.type === 'siftup-stop'
-              || step.type === 'siftup-moved') && idx === step.hi) {
+          || step.type === 'siftup-moved') && idx === step.hi) {
         cls = 'bar parent';
       }
       if ((step.type === 'siftup-compare' || step.type === 'siftup-stop')
@@ -1055,8 +1073,10 @@
     maxLen = Math.max(stepsBU.length, stepsTD.length);
     stepIdx = 0;
 
-    const initStep = {type: 'init', arr: [...arr], sortedSet: new Set(), heapSize: n,
-      msg: '시작 버튼을 누르세요.'};
+    const initStep = {
+      type: 'init', arr: [...arr], sortedSet: new Set(), heapSize: n,
+      msg: '시작 버튼을 누르세요.'
+    };
     renderStep(initStep, 'barAreaBU', 'logBU');
     renderStep(initStep, 'barAreaTD', 'logTD');
     document.getElementById('stepCounterBU').textContent = '—';

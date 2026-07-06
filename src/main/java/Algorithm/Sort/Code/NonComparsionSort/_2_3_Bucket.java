@@ -5,14 +5,22 @@ package Algorithm.Sort.Code.NonComparsionSort;
 // -> worst = 모든 데이터가 하나의 bucket에 몰리는 경우, 내부 정렬이 O(n²)인 경우 일반 정렬 알고리즘 보다 느려질 수 있음
 //
 // - 버킷
-//  -> List<Integer, List<<>>: index 기반 접근으로 O(1), cache locality 가 좋아 성능 우수
+//  -> List<List<<>>: index 기반 접근으로 O(1), cache locality 가 좋아 성능 우수
 //  -> Map<Integer, List<<>>: 동적 버킷이 생성 가능하지만 HashMap은 순서 보장 X & 해시 오버헤드 존재
 //  -> & TreeMap은 key 순서가 보장되지만 O(log n) 오버헤드 추가
 // 분산 단계: n개의 균등한 크기의 버킷으로 나눔, 정렬 단계: 각 버킷 내부를 다른 정렬 알고리즘 으로 정렬, 수집 단계: 모든 버킷을 순서대로 합쳐 배열 생성
 //
 // 핵심: bucket sort 핵심은 값을 index로 변환 (mapping)
-// bucketIdx = (num - min) / (max - min) * (n - 1) -> 어떤 값이던 0 ~ n-1 범위로 압축
+// doubleVer -> bucketIdx = (num - min) / (max - min) * (n - 1) 
+// -> (num - min) / (max - min) : 전체 범위에서 몇 % 위치인지, (n - 1) : bucket 개수만큼 늘림(0 ~ 1 좌표를 bucket 칸 번호로 변환)
+// integerVer -> bucketIdx = (int) ((long) (num - min) * (n - 1) / max - min + 1)
+// -> (num - min) : 기준을 0부터 시작으로 맞추기
+// -> ~ / range(max - min + 1) 전체 길이 나누기(정규화: 해당 값의 백분율 위치)
+// -> double 과 동일하게 bucket index로 변환 & 어떤 값이던 0 ~ n - 1 범위로 압축
+// 두 과정 동일하게 n - 1 곱하는 과정은 bucket index 를 0 ~ n - 1 로 만드는 과정 ex) 0.0 ~ 1.0 -> 0 ~ n-1
 // 범위정규화: 서로 다른 범위의 데이터를 동일한 bucket 구조에 넣기 위한 과정, 값의 상대적 위치를 기준으로 bucket에 배치
+// -> 나머지 과정은 동일
+
 // 성능이 O(n)에 가까워지는 조건
 // -> 데이터가 균등 분포(uniform distribution)일 때
 // -> 각 bucket에 들어가는 원소 수가 O(1)에 가까울 때
@@ -95,6 +103,7 @@ public class _2_3_Bucket {
     // 정렬 단계, 버킷 내부는 삽입 정렬이 기본적으로 많이 쓰임, 소규모라 O(n)에 가까움
     for (List<Integer> bucket : buckets) {insertionSortInteger(bucket);}
     // for (Entry<Integer, List<Integer>> entry : buckets.entrySet()) {
+    //   insertionSortInteger(entry.getValue());
     //   insertionSortInteger(entry.getValue());
     // }
 

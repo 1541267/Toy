@@ -596,7 +596,8 @@
           <li>정렬하려는 값이 <strong>특정 범위</strong> 내에 있을 때 사용</li>
           <li>값을 인덱스로 변환해 빈도를 누적하고 위치를 직접 계산하는 정렬</li>
           <li>등장 횟수를 세고(Counting) -> 누적합(Prefix Sum) -> 뒤에서부터 배치</li>
-          <li>k(범위)는 최댓값이 아니라 <strong class="hl">max - min + 1</strong></li>
+          <li>countArr[i]는 값이 min + 1 이하인 원소의 개수</li>
+          <li>k(값의 범위)는 최댓값이 아니라 <strong class="hl">max - min + 1</strong></li>
           <li>성능은 n이 아닌 k(값의 분포 범위)에 의해 결정</li>
         </ul>
       </div>
@@ -633,7 +634,7 @@
           <li>음수 포함 시 min 오프셋 계산이 반드시 필요</li>
         </ul>
         <div class="complexity-row">
-          <span class="badge warn">Space O(k)</span>
+          <span class="badge warn">Space O(n + k)</span>
         </div>
       </div>
 
@@ -775,7 +776,6 @@
     <div class="code-section-title">📄 소스 코드</div>
 
     <div class="code-dual">
-
       <!-- countingSort() -->
       <div class="code-panel">
         <div class="code-panel-header">

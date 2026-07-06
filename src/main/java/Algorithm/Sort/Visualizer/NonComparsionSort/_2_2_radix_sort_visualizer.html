@@ -576,7 +576,6 @@
     overflow: hidden;
   }
 
-  W
   .code-panel-header {
     display: flex;
     align-items: center;
@@ -702,7 +701,7 @@
           </li>
           <li><strong class="hl">공간복잡도</strong>
             <ul>
-              <li>output 배열 = O(n), counting 배열 O(b) => O(n + b) => O(n + b)
+              <li>output 배열 = O(n), counting 배열 O(b) => O(n + b)
               <li>
                 <div class="complexity-row">
                   <span class="badge good">O(n + b)</span>
@@ -732,7 +731,6 @@
       <div class="note-card">
         <h3>✅ MSD 장단점</h3>
         <ul>
-          <li> 조기종료 가능, 작은 bucket은 삽입 정렬로 수정 가능</li>
           <li> prefix 기반 분할(QuickSort 느낌), 재귀 구조, 부분 정렬 -> 불필요한 자릿수 탐색을 줄일 수 있음</li>
           <li><strong class="hl">시간복잡도</strong>
             <ul>
@@ -748,6 +746,7 @@
           </li>
           <li><strong class="hl">공간복잡도</strong></li>
           <ul>
+            <li>작은 bucket은 삽입 정렬로 수정 가능</li>
             <li> bucket 배열 & 재귀 stack, O(n + b + d)</li>
             <li> 보통 d는 매우 작거나 log 범위라 실질적으로 O(n + b)</li>
             <li>
@@ -959,8 +958,7 @@
 
   <span class="ck">// 이전 호출에서 남은 값 초기화</span>
   <span class="nm">Arrays</span>.<span class="fn">fill</span>(<span
-            class="nm">countArr</span>, <span class="nu">0</span>, <span class="nu">10</span>, <span
-            class="nu">0</span>);
+            class="nm">countArr</span>, <span class="nu">0</span>);
 
   <span class="ck">// 빈도 계산, exp = 자릿수</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
@@ -1000,169 +998,189 @@
   <span class="kw">return</span> <span class="nm">boundaryArr</span>;
 }
 
-<span class="kw">static</span> <span class="ty">int</span> <span
+<span class="kw">static</span> <span class="ty">void</span> <span
             class="fn">negativeValueCorrection</span>(<span class="ty">int</span>[] <span
-            class="nm">arr</span>, <span class="ty">int</span> <span class="nm">min</span>, <span
+            class="nm">arr</span>, <span
             class="ty">boolean</span> <span class="nm">isRollback</span>, <span
             class="ty">int</span> <span class="nm">offset</span>) {
   <span class="kw">if</span> (<span class="nm">isRollback</span>) {
     <span class="ck">// 음수 보정 롤백</span>
-    <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) { <span
-            class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
             class="nu">0</span>; <span class="nm">i</span> &lt; <span
             class="nm">arr</span>.length; <span
             class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] -= <span
-            class="nm">offset</span>; } }
+            class="nm">offset</span>; }
   } <span class="kw">else</span> {
-    <span class="ck">// 음수 보정 (전체를 양수로)</span>
-    <span class="kw">if</span> (<span class="nm">min</span> &lt; <span class="nu">0</span>) {
-      <span class="nm">offset</span> = -<span class="nm">min</span>;
-      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+    <span class="ck">// 음수 보정 (전체를 offset 만큼 이동시켜 양수로)</span>
+    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
             class="nu">0</span>; <span class="nm">i</span> &lt; <span
             class="nm">arr</span>.length; <span
             class="nm">i</span>++) { <span class="nm">arr</span>[<span class="nm">i</span>] += <span
             class="nm">offset</span>; }
-    }
   }
-  <span class="kw">return</span> <span class="nm">offset</span>;
 }</pre>
     </div>
-
-    <!-- LSD -->
-    <div class="code-panel" style="margin-bottom:1rem;">
-      <div class="code-panel-header">
-        <div class="dot" style="background:#6ee7b7"></div>
-        lsdRadixSort() — LSD
-      </div>
-      <pre><span class="ck">// LSD(가장 낮은 수 부터 정렬)</span>
+    <div class="code-dual">
+      <!-- LSD -->
+      <div class="code-panel" style="margin-bottom:1rem;">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#6ee7b7"></div>
+          lsdRadixSort() — LSD
+        </div>
+        <pre><span class="ck">// LSD(가장 낮은 수 부터 정렬)</span>
 <span class="kw">private static</span> <span class="ty">void</span> <span
-            class="fn">lsdRadixSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>, <span
-            class="ty">int</span> <span class="nm">n</span>) {
+              class="fn">lsdRadixSort</span>(<span class="ty">int</span>[] <span
+              class="nm">arr</span>, <span
+              class="ty">int</span> <span class="nm">n</span>) {
   <span class="kw">if</span> (<span class="nm">arr</span>.length == <span
-            class="nu">0</span>) {<span class="kw">return</span>;}
+              class="nu">0</span>) {<span class="kw">return</span>;}
   <span class="ty">int</span> <span class="nm">max</span> = <span class="nm">arr</span>[<span
-            class="nu">0</span>], <span class="nm">min</span> = <span class="nm">arr</span>[<span
-            class="nu">0</span>];
+              class="nu">0</span>], <span class="nm">offset</span> = <span
+              class="nm">arr</span>[<span
+              class="nu">0</span>];
 
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
-            class="nm">arr</span>) {
+              class="nm">arr</span>) {
     <span class="nm">max</span> = <span class="nm">Math</span>.<span class="fn">max</span>(<span
-            class="nm">max</span>, <span class="nm">num</span>);
-    <span class="nm">min</span> = <span class="nm">Math</span>.<span class="fn">min</span>(<span
-            class="nm">min</span>, <span class="nm">num</span>);
+              class="nm">max</span>, <span class="nm">num</span>);
+    <span class="nm">offset</span> = <span class="nm">Math</span>.<span class="fn">min</span>(<span
+              class="nm">offset</span>, <span class="nm">num</span>);
   }
 
-  <span class="ty">int</span> <span class="nm">offset</span> = <span class="fn">negativeValueCorrection</span>(<span
-            class="nm">arr</span>, <span class="nm">min</span>, <span class="kw">false</span>, <span
-            class="nu">0</span>);
+  <span class="ck">// 음수 보정 후 실제 최댓값 기준으로 자릿수를 다시 계산 (offset = min)</span>
+  <span class="nm">max</span> -= <span class="nm">offset</span>;
+
+  <span class="fn">negativeValueCorrection</span>(<span
+              class="nm">arr</span>, <span class="kw">false</span>, -<span class="nm">offset</span>);
 
   <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
-            class="ty">int</span>[<span class="nm">n</span>];
+              class="ty">int</span>[<span class="nm">n</span>];
   <span class="ty">int</span>[] <span class="nm">countArr</span> = <span class="kw">new</span> <span
-            class="ty">int</span>[<span class="nu">10</span>];
+              class="ty">int</span>[<span class="nu">10</span>];
 
   <span class="ck">// 최댓값을 나눴을 때 0이 나오면 모든 숫자가 i의 아래</span>
   <span class="kw">for</span> (<span class="ty">long</span> <span class="nm">exponent</span> = <span
-            class="nu">1</span>; (<span class="nm">max</span> / <span class="nm">exponent</span>) &gt; <span
-            class="nu">0</span>; <span class="nm">exponent</span> *= <span
-            class="nu">10</span>) {<span class="fn">countSort</span>(<span
-            class="nm">arr</span>, <span class="nu">0</span>, <span class="nm">n</span>, <span
-            class="nm">exponent</span>, <span class="nm">countArr</span>, <span
-            class="nm">output</span>);}
-  <span class="fn">negativeValueCorrection</span>(<span class="nm">arr</span>, <span
-            class="nm">min</span>, <span class="kw">true</span>, <span class="nm">offset</span>);
-}</pre>
-    </div>
+              class="nu">1</span>; (<span class="nm">max</span> / <span class="nm">exponent</span>) &gt; <span
+              class="nu">0</span>; <span class="nm">exponent</span> *= <span
+              class="nu">10</span>) {
+      <span class="fn">countSort</span>(<span
+              class="nm">arr</span>, <span class="nu">0</span>, <span class="nm">n</span>, <span
+              class="nm">exponent</span>, <span class="nm">countArr</span>, <span
+              class="nm">output</span>);
+  }
 
-    <!-- MSD -->
-    <div class="code-panel">
-      <div class="code-panel-header">
-        <div class="dot" style="background:#fcd34d"></div>
-        msdRadixSort() &amp; runMSDRadixSort() — MSD
+  <span class="ck">// 음수 보정 복원</span>
+  <span class="fn">negativeValueCorrection</span>(<span
+              class="nm">arr</span>, <span class="kw">true</span>, -<span class="nm">offset</span>);
+}</pre>
       </div>
-      <pre><span class="kw">static</span> <span class="ty">void</span> <span
-          class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span
-          class="nm">arr</span>, <span
-          class="ty">int</span> <span class="nm">n</span>) {
+
+      <!-- MSD -->
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          msdRadixSort() &amp; runMSDRadixSort() — MSD
+        </div>
+        <pre><span class="kw">static</span> <span class="ty">void</span> <span
+            class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span
+            class="nm">arr</span>, <span
+            class="ty">int</span> <span class="nm">n</span>) {
   <span class="kw">if</span> (<span class="nm">arr</span>.length == <span
-            class="nu">0</span>) {<span class="kw">return</span>;}
+              class="nu">0</span>) {<span class="kw">return</span>;}
 
   <span class="ck">// 음수 보정 offset</span>
-  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
-            class="nu">0</span>];
+  <span class="ty">int</span> <span class="nm">max</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>], <span class="nm">offset</span> = <span
+              class="nm">arr</span>[<span
+              class="nu">0</span>];
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
-            class="nm">arr</span>) {<span class="nm">min</span> = <span class="nm">Math</span>.<span
-            class="fn">min</span>(<span class="nm">min</span>, <span class="nm">num</span>);}
-  <span class="ty">int</span> <span class="nm">offset</span> = <span class="fn">negativeValueCorrection</span>(<span
-            class="nm">arr</span>, <span class="nm">min</span>, <span class="kw">false</span>, <span
-            class="nu">0</span>);
+              class="nm">arr</span>) {
+    <span class="nm">max</span> = <span class="nm">Math</span>.<span class="fn">max</span>(<span
+              class="nm">max</span>, <span class="nm">num</span>);
+    <span class="nm">offset</span> = <span class="nm">Math</span>.<span
+              class="fn">min</span>(<span class="nm">offset</span>, <span class="nm">num</span>);
+  }
+
+  <span class="fn">negativeValueCorrection</span>(<span
+              class="nm">arr</span>, <span class="kw">false</span>, -<span class="nm">offset</span>);
+
+  <span class="ck">// 음수 보정으로 인해 실제 최댓값이 바뀌었으므로 갱신 (offset = min)</span>
+  <span class="nm">max</span> -= <span class="nm">offset</span>;
 
   <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
-            class="ty">int</span>[<span class="nm">n</span>];
+              class="ty">int</span>[<span class="nm">n</span>];
   <span class="ty">int</span>[] <span class="nm">countArr</span> = <span class="kw">new</span> <span
-            class="ty">int</span>[<span class="nu">10</span>];
+              class="ty">int</span>[<span class="nu">10</span>];
 
   <span class="fn">runMSDRadixSort</span>(<span class="nm">arr</span>, <span
-            class="nu">0</span>, <span class="nm">n</span>, <span
-            class="fn">getMaxDigits</span>(<span class="nm">arr</span>), <span
-            class="nm">countArr</span>, <span class="nm">output</span>);
+              class="nu">0</span>, <span class="nm">n</span>, <span
+              class="fn">getMaxDigits</span>(<span class="nm">max</span>), <span
+              class="nm">countArr</span>, <span class="nm">output</span>);
 
-  <span class="fn">negativeValueCorrection</span>(<span class="nm">arr</span>, <span
-            class="nm">min</span>, <span class="kw">true</span>, <span class="nm">offset</span>);
+  <span class="ck">// 음수 보정 복원</span>
+  <span class="fn">negativeValueCorrection</span>(<span
+              class="nm">arr</span>, <span class="kw">true</span>, -<span class="nm">offset</span>);
 }
 
-<span class="ck">// MSD</span>
-<span class="ck">// 큰 자릿수 부터 Counting Sort 하여 누적합 counting이 되는 범위를 새 그룹의 범위로 설정 &amp; 재귀호출</span>
-<span class="kw">static</span> <span class="ty">void</span> <span class="fn">runMSDRadixSort</span>(<span
-            class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
-            class="nm">start</span>, <span class="ty">int</span> <span class="nm">end</span>, <span
-            class="ty">int</span> <span class="nm">maxDigits</span>, <span
-            class="ty">int</span>[] <span class="nm">countArr</span>, <span
-            class="ty">int</span>[] <span
-            class="nm">output</span>) {
+<span class="ck">// MSD - 큰 자릿수 부터 Counting Sort 하여</span>
+<span class="ck">// 누적합 counting이 되는 범위를 새 그룹의 범위로 설정 &amp; 재귀호출</span>
+<span class="kw">static</span> <span class="ty">void</span> <span class="fn">runMSDRadixSort</span>(
+        <span class="ty">int</span>[] <span class="nm">arr</span>,
+        <span class="ty">int</span> <span class="nm">start</span>,
+        <span class="ty">int</span> <span class="nm">end</span>,
+        <span class="ty">int</span> <span class="nm">maxDigits</span>,
+        <span class="ty">int</span>[] <span class="nm">countArr</span>,
+        <span class="ty">int</span>[] <span
+              class="nm">output</span>) {
+
   <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">end</span> - <span
-            class="nm">start</span>;
+              class="nm">start</span>;
   <span class="kw">if</span> (<span class="nm">range</span> &lt;= <span class="nu">1</span> || <span
-            class="nm">maxDigits</span> &lt; <span class="nu">0</span>) {<span
-            class="kw">return</span>;}
+              class="nm">maxDigits</span> &lt; <span class="nu">0</span>) {<span
+              class="kw">return</span>;}
 
   <span class="ck">// 자릿수 계산</span>
   <span class="ty">long</span> <span class="nm">exponent</span> = (<span
-            class="ty">long</span>) <span class="nm">Math</span>.<span class="fn">pow</span>(<span
-            class="nu">10</span>, <span class="nm">maxDigits</span>);
+              class="ty">long</span>) <span class="nm">Math</span>.<span class="fn">pow</span>(<span
+              class="nu">10</span>, <span class="nm">maxDigits</span>);
 
   <span class="ck">// 재귀호출 실행 전 사용 할 누적합 백업</span>
   <span class="ty">int</span>[] <span class="nm">boundaryArr</span> = <span
-            class="fn">countSort</span>(<span class="nm">arr</span>, <span
-            class="nm">start</span>, <span
-            class="nm">end</span>, <span class="nm">exponent</span>, <span
-            class="nm">countArr</span>, <span class="nm">output</span>);
+              class="fn">countSort</span>(<span class="nm">arr</span>, <span
+              class="nm">start</span>, <span
+              class="nm">end</span>, <span class="nm">exponent</span>, <span
+              class="nm">countArr</span>, <span class="nm">output</span>);
 
   <span class="ck">// 각 버킷마다 재귀호출 실행</span>
   <span class="ty">int</span> <span class="nm">nextStart</span> = <span class="nm">start</span>;
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
-            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nu">10</span>; <span
-            class="nm">i</span>++) {
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nu">10</span>; <span
+              class="nm">i</span>++) {
     <span class="ty">int</span> <span class="nm">nextEnd</span> = <span
-            class="nm">start</span> + <span class="nm">boundaryArr</span>[<span class="nm">i</span>];
+              class="nm">start</span> + <span class="nm">boundaryArr</span>[<span
+              class="nm">i</span>];
 
     <span class="kw">if</span> (<span class="nm">nextEnd</span> &gt; <span
-            class="nm">nextStart</span>) {<span class="fn">runMSDRadixSort</span>(<span
-            class="nm">arr</span>, <span
-            class="nm">nextStart</span>, <span class="nm">nextEnd</span>, <span
-            class="nm">maxDigits</span> - <span class="nu">1</span>, <span
-            class="nm">countArr</span>, <span class="nm">output</span>);}
+              class="nm">nextStart</span>) {
+        <span class="fn">runMSDRadixSort</span>(<span
+              class="nm">arr</span>, <span
+              class="nm">nextStart</span>, <span class="nm">nextEnd</span>, <span
+              class="nm">maxDigits</span> - <span class="nu">1</span>, <span
+              class="nm">countArr</span>, <span class="nm">output</span>);
+    }
     <span class="nm">nextStart</span> = <span class="nm">nextEnd</span>;
   }
 }
 
 <span class="kw">private static</span> <span class="ty">int</span> <span
-            class="fn">getMaxDigits</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
+              class="fn">getMaxDigits</span>(<span class="ty">int</span>[] <span
+              class="nm">arr</span>) {
   <span class="ck">// 자릿수 계산</span>
   <span class="ty">int</span> <span class="nm">max</span> = <span class="nu">0</span>;
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">v</span> : <span
-            class="nm">arr</span>) {<span class="nm">max</span> = <span class="nm">Math</span>.<span
-            class="fn">max</span>(<span class="nm">max</span>, <span class="nm">v</span>);}
+              class="nm">arr</span>) {<span class="nm">max</span> = <span
+              class="nm">Math</span>.<span
+              class="fn">max</span>(<span class="nm">max</span>, <span class="nm">v</span>);}
 
   <span class="ty">int</span> <span class="nm">digits</span> = <span class="nu">0</span>;
   <span class="kw">while</span> (<span class="nm">max</span> &gt; <span class="nu">0</span>) {
@@ -1172,8 +1190,8 @@
 
   <span class="kw">return</span> <span class="nm">digits</span> - <span class="nu">1</span>;
 }</pre>
+      </div>
     </div>
-
   </div>
 
 </div><!-- /page -->

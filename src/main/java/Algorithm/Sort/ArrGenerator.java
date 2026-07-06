@@ -35,7 +35,7 @@ public class ArrGenerator {
     ArrayList<Integer> temp = new ArrayList<>();
     ArrayList<Double> temp2 = new ArrayList<>();
 
-    while (temp.size() != n) {temp.add(rg.nextInt(1, n * 6));}
+    while (temp.size() != n) {temp.add(rg.nextInt(-n * 6, n * 6));}
     while (temp2.size() != n) {temp2.add(rg.nextDouble(0, 1));}
 
     int i = 0, j = 0;
