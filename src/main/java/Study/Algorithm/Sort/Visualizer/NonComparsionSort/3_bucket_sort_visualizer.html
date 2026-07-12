@@ -704,7 +704,7 @@
 
   <!-- Header -->
   <div class="header">
-    <h1>버킷 정렬(Bucket Sort) 시각화</h1>
+    <h1 onclick="history.back()">버킷 정렬(Bucket Sort) 시각화</h1>
     <p>데이터를 n개의 버킷으로 분산 → 각 버킷 내부를 Insertion Sort로 정렬 → 순서대로 합침 — 정수 vs 실수(0~1) 비교</p>
   </div>
 
@@ -721,7 +721,7 @@
           </li>
           <li>
             <strong class="hl">bucketIdx Integer Ver</strong>
-             - (num - min) / (max - min) × (n - 1)
+            - (num - min) / (max - min) × (n - 1)
             <ul>
               <li>어떤 값이든 0~n-1 범위로 압축(정규화)</li>
             </ul>

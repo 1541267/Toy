@@ -6,79 +6,468 @@
   <title>선택 정렬 시각화</title>
 </head>
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
-  body { margin: 0; background: #0f1117; color: #e2e8f0; font-family: 'Segoe UI', system-ui, sans-serif; }
-  .page { max-width: 960px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; }
-  .header { text-align: center; margin-bottom: 2rem; }
-  .header h1 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.5px; margin: 0 0 0.3rem; color: #f8fafc; }
-  .header p  { font-size: 0.82rem; color: #64748b; margin: 0; }
-  .notes-toggle { background: #1e2433; border: 1px solid #2d3552; border-radius: 10px; margin-bottom: 1.5rem; overflow: hidden; }
-  .notes-toggle summary { padding: 0.75rem 1.1rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; color: #94a3b8; letter-spacing: 0.3px; list-style: none; display: flex; align-items: center; gap: 8px; user-select: none; }
-  .notes-toggle summary::before { content: '▶'; font-size: 9px; transition: transform 0.2s; color: #6366f1; }
-  .notes-toggle[open] summary::before { transform: rotate(90deg); }
-  .notes-toggle summary::-webkit-details-marker { display: none; }
-  .notes-body { padding: 0 1.1rem 1.1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width: 680px) { .notes-body { grid-template-columns: 1fr; } }
-  .note-card { background: #141824; border: 1px solid #252d45; border-radius: 8px; padding: 0.85rem 1rem; }
-  .note-card h3 { margin: 0 0 0.55rem; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: #6366f1; }
-  .note-card ul { margin: 0; padding-left: 1.1rem; font-size: 0.79rem; color: #94a3b8; line-height: 1.75; }
-  .note-card ul li { margin-bottom: 0.1rem; }
-  .note-card ul li strong { color: #c7d2fe; }
-  .complexity-row { display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap; }
-  .badge { background: #1e2433; border: 1px solid #334155; border-radius: 5px; padding: 2px 9px; font-size: 0.73rem; color: #a5b4fc; font-weight: 600; }
-  .badge.good { border-color: #065f46; color: #6ee7b7; background: #022c22; }
-  .badge.bad  { border-color: #7f1d1d; color: #fca5a5; background: #1c0a0a; }
-  .controls-bar { background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px; padding: 0.9rem 1.1rem; margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
-  .ctrl-group { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #64748b; }
-  .ctrl-group label { color: #94a3b8; font-weight: 500; white-space: nowrap; }
-  .ctrl-group input[type=range] { width: 100px; accent-color: #6366f1; }
-  .ctrl-group .val { font-weight: 600; color: #e2e8f0; min-width: 32px; font-size: 0.8rem; }
-  .btn-row { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
-  .btn { cursor: pointer; font-size: 0.78rem; font-weight: 600; padding: 6px 14px; border-radius: 7px; border: 1px solid #334155; background: #1e2433; color: #cbd5e1; transition: background 0.15s; white-space: nowrap; }
-  .btn:hover { background: #273047; }
-  .btn.primary { background: #4f46e5; border-color: #6366f1; color: #fff; }
-  .btn.primary:hover { background: #4338ca; }
-  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
-  .viz-panel { background: #1a1f2e; border: 1px solid #2d3552; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
-  .panel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .panel-title { font-size: 0.8rem; font-weight: 700; color: #c7d2fe; display: flex; align-items: center; gap: 6px; }
-  .panel-title .dot { width: 8px; height: 8px; border-radius: 50%; }
-  .panel-step { font-size: 0.7rem; color: #475569; }
-  .bar-area { display: grid; align-items: flex-end; gap: 2px; height: 160px; margin-bottom: 0.75rem; width: 100%; }
-  .bar { border-radius: 3px 3px 0 0; transition: height 0.12s, background 0.12s; display: flex; align-items: flex-end; justify-content: center; min-width: 1px; }
-  .bar span { font-size: 9px; font-weight: 600; margin-bottom: 2px; line-height: 1; overflow: hidden; }
-  .bar.normal    { background: #4c4e9a; }
-  .bar.target    { background: #1d4ed8; }
-  .bar.minval    { background: #b45309; }
-  .bar.comparing { background: #0f766e; }
-  .bar.swap      { background: #9333ea; }
-  .bar.sorted    { background: #ffff00; }
-  .bar.done      { background: #ff0063; }
-  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 0.75rem; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #64748b; }
-  .legend-dot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-  .log-box { background: #0f1117; border: 1px solid #1e2433; border-radius: 7px; padding: 7px 11px; font-size: 0.75rem; color: #94a3b8; min-height: 36px; line-height: 1.55; }
-  .phase-tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 0.67rem; font-weight: 700; margin-right: 5px; letter-spacing: 0.3px; }
-  .phase-target  { background: #1e2d5e; color: #93c5fd; }
-  .phase-compare { background: #14374e; color: #67e8f9; }
-  .phase-min     { background: #451a03; color: #fcd34d; }
-  .phase-swap    { background: #2e1065; color: #c4b5fd; }
-  .phase-done    { background: #052e16; color: #4ade80; }
-  .code-section { margin-top: 1.5rem; }
-  .code-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #475569; margin-bottom: 0.75rem; padding-left: 0.2rem; }
-  .code-panel { background: #0d1117; border: 1px solid #2d3552; border-radius: 10px; overflow: hidden; }
-  .code-panel-header { display: flex; align-items: center; gap: 7px; padding: 0.6rem 1rem; background: #161b27; border-bottom: 1px solid #2d3552; font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
-  .code-panel-header .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-  pre { margin: 0; padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.72rem; line-height: 1.7; font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace; color: #cdd6f4; white-space: pre; }
-  .ck { color: #6272a4; } .kw { color: #bd93f9; } .ty { color: #8be9fd; }
-  .fn { color: #50fa7b; } .nm { color: #ffb86c; } .nu { color: #ff79c6; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 680px) {
+    .notes-body {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .note-card {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: #1e2433;
+    border: 1px solid #334155;
+    border-radius: 5px;
+    padding: 2px 9px;
+    font-size: 0.73rem;
+    color: #a5b4fc;
+    font-weight: 600;
+  }
+
+  .badge.good {
+    border-color: #065f46;
+    color: #6ee7b7;
+    background: #022c22;
+  }
+
+  .badge.bad {
+    border-color: #7f1d1d;
+    color: #fca5a5;
+    background: #1c0a0a;
+  }
+
+  .controls-bar {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .viz-panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .bar-area {
+    display: grid;
+    align-items: flex-end;
+    gap: 2px;
+    height: 160px;
+    margin-bottom: 0.75rem;
+    width: 100%;
+  }
+
+  .bar {
+    border-radius: 3px 3px 0 0;
+    transition: height 0.12s, background 0.12s;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-width: 1px;
+  }
+
+  .bar span {
+    font-size: 9px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .bar.normal {
+    background: #4c4e9a;
+  }
+
+  .bar.target {
+    background: #1d4ed8;
+  }
+
+  .bar.minval {
+    background: #b45309;
+  }
+
+  .bar.comparing {
+    background: #0f766e;
+  }
+
+  .bar.swap {
+    background: #9333ea;
+  }
+
+  .bar.sorted {
+    background: #ffff00;
+  }
+
+  .bar.done {
+    background: #ff0063;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-bottom: 0.75rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 7px 11px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    min-height: 36px;
+    line-height: 1.55;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .phase-target {
+    background: #1e2d5e;
+    color: #93c5fd;
+  }
+
+  .phase-compare {
+    background: #14374e;
+    color: #67e8f9;
+  }
+
+  .phase-min {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .phase-swap {
+    background: #2e1065;
+    color: #c4b5fd;
+  }
+
+  .phase-done {
+    background: #052e16;
+    color: #4ade80;
+  }
+
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  .ck {
+    color: #6272a4;
+  }
+
+  .kw {
+    color: #bd93f9;
+  }
+
+  .ty {
+    color: #8be9fd;
+  }
+
+  .fn {
+    color: #50fa7b;
+  }
+
+  .nm {
+    color: #ffb86c;
+  }
+
+  .nu {
+    color: #ff79c6;
+  }
 </style>
 
 <body>
 <div class="page">
 
   <div class="header">
-    <h1>선택 정렬 시각화</h1>
+    <h1 onclick="history.back()">선택 정렬 시각화</h1>
     <p>채울 위치(인덱스)를 먼저 선택하고, 남은 범위에서 최솟값을 찾아 배치</p>
   </div>
 
@@ -164,11 +553,26 @@
     </div>
     <div class="bar-area" id="barArea"></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div>삽입 위치</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#0f766e"></div>비교 중</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>현재 최솟값</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#9333ea"></div>교환</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#ffff00"></div>정렬 완료</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8"></div>
+        삽입 위치
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e"></div>
+        비교 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309"></div>
+        현재 최솟값
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#9333ea"></div>
+        교환
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffff00"></div>
+        정렬 완료
+      </div>
     </div>
     <div class="log-box" id="log">시작 버튼을 누르세요.</div>
   </div>
@@ -190,19 +594,26 @@
 
 <span class="ty">int</span> <span class="nm">index</span>, <span class="nm">temp</span>;
 
-<span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length - <span class="nu">1</span>; <span class="nm">i</span>++) {
+<span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length - <span
+            class="nu">1</span>; <span class="nm">i</span>++) {
 
   <span class="ck">// i 번째 자리에 들어올 최솟값의 인덱스를 찾는 과정 시작</span>
   <span class="nm">index</span> = <span class="nm">i</span>;
 
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nm">i</span> + <span class="nu">1</span>; <span class="nm">j</span> &lt; <span class="nm">arr</span>.length; <span class="nm">j</span>++) {
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
+            class="nm">i</span> + <span class="nu">1</span>; <span class="nm">j</span> &lt; <span
+            class="nm">arr</span>.length; <span class="nm">j</span>++) {
     <span class="ck">// 현재 최솟값보다 더 작은 값 발견 시 인덱스 갱신</span>
-    <span class="kw">if</span> (<span class="nm">arr</span>[<span class="nm">index</span>] &gt; <span class="nm">arr</span>[<span class="nm">j</span>]) { <span class="nm">index</span> = <span class="nm">j</span>; }
+    <span class="kw">if</span> (<span class="nm">arr</span>[<span
+            class="nm">index</span>] &gt; <span class="nm">arr</span>[<span class="nm">j</span>]) { <span
+            class="nm">index</span> = <span class="nm">j</span>; }
   }
 
   <span class="ck">// i 번째 원소와 찾아낸 최솟값 위치(index)를 교환</span>
   <span class="nm">temp</span> = <span class="nm">arr</span>[<span class="nm">index</span>];
-  <span class="nm">arr</span>[<span class="nm">index</span>] = <span class="nm">arr</span>[<span class="nm">i</span>];
+  <span class="nm">arr</span>[<span class="nm">index</span>] = <span class="nm">arr</span>[<span
+            class="nm">i</span>];
   <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">temp</span>;
   <span class="ck">// 1회전 완료 → 인덱스 i 에 최솟값 확정</span>
 }</pre>
@@ -212,92 +623,218 @@
 </div>
 </body>
 <script>
-  const speedMap   = {1:750,2:500,3:300,4:200,5:100,6:50,7:30,8:20,9:10,10:0.001};
-  const speedNames = {1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게'};
-  let steps=[], stepIdx=0, playing=false, timer=null;
-  function getSize()  { return parseInt(document.getElementById('sizeSlider').value); }
+  const speedMap = {1: 750, 2: 500, 3: 300, 4: 200, 5: 100, 6: 50, 7: 30, 8: 20, 9: 10, 10: 0.001};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
+  let steps = [], stepIdx = 0, playing = false, timer = null;
+
+  function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
   function randArr(n) {
-    const v=Array.from({length:n},(_,i)=>i+1);
-    for(let i=v.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[v[i],v[j]]=[v[j],v[i]];}
+    const v = Array.from({length: n}, (_, i) => i + 1);
+    for (let i = v.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [v[i], v[j]] = [v[j], v[i]];
+    }
     return v;
   }
+
   function generateSteps(arr) {
-    const a=[...arr],s=[],n=a.length;
-    const sortedSet=new Set();
-    for(let i=0;i<n-1;i++){
-      let minIdx=i;
-      s.push({type:'target',arr:[...a],i,minIdx,sortedSet:new Set(sortedSet),msg:`인덱스 ${i} 위치에 최솟값을 찾습니다 (현재 후보: ${a[i]})`});
-      for(let j=i+1;j<n;j++){
-        s.push({type:'compare',arr:[...a],i,j,minIdx,sortedSet:new Set(sortedSet),msg:`j=${j}: ${a[j]} vs 현재 최솟값 ${a[minIdx]} 비교`});
-        if(a[j]<a[minIdx]){
-          minIdx=j;
-          s.push({type:'newMin',arr:[...a],i,j,minIdx,sortedSet:new Set(sortedSet),msg:`새 최솟값 발견! 인덱스 ${minIdx}, 값 ${a[minIdx]}`});
+    const a = [...arr], s = [], n = a.length;
+    const sortedSet = new Set();
+    for (let i = 0; i < n - 1; i++) {
+      let minIdx = i;
+      s.push({
+        type: 'target',
+        arr: [...a],
+        i,
+        minIdx,
+        sortedSet: new Set(sortedSet),
+        msg: `인덱스 ${i} 위치에 최솟값을 찾습니다 (현재 후보: ${a[i]})`
+      });
+      for (let j = i + 1; j < n; j++) {
+        s.push({
+          type: 'compare',
+          arr: [...a],
+          i,
+          j,
+          minIdx,
+          sortedSet: new Set(sortedSet),
+          msg: `j=${j}: ${a[j]} vs 현재 최솟값 ${a[minIdx]} 비교`
+        });
+        if (a[j] < a[minIdx]) {
+          minIdx = j;
+          s.push({
+            type: 'newMin',
+            arr: [...a],
+            i,
+            j,
+            minIdx,
+            sortedSet: new Set(sortedSet),
+            msg: `새 최솟값 발견! 인덱스 ${minIdx}, 값 ${a[minIdx]}`
+          });
         }
       }
-      if(minIdx!==i){
-        s.push({type:'swap',arr:[...a],i,j:minIdx,minIdx,sortedSet:new Set(sortedSet),msg:`인덱스 ${i}(${a[i]}) ↔ 인덱스 ${minIdx}(${a[minIdx]}) 교환`});
-        [a[i],a[minIdx]]=[a[minIdx],a[i]];
-        s.push({type:'swapDone',arr:[...a],i,minIdx,sortedSet:new Set(sortedSet),msg:`교환 완료`});
+      if (minIdx !== i) {
+        s.push({
+          type: 'swap',
+          arr: [...a],
+          i,
+          j: minIdx,
+          minIdx,
+          sortedSet: new Set(sortedSet),
+          msg: `인덱스 ${i}(${a[i]}) ↔ 인덱스 ${minIdx}(${a[minIdx]}) 교환`
+        });
+        [a[i], a[minIdx]] = [a[minIdx], a[i]];
+        s.push({
+          type: 'swapDone',
+          arr: [...a],
+          i,
+          minIdx,
+          sortedSet: new Set(sortedSet),
+          msg: `교환 완료`
+        });
       } else {
-        s.push({type:'swapDone',arr:[...a],i,minIdx,sortedSet:new Set(sortedSet),msg:`이미 최솟값이 제자리에 있습니다`});
+        s.push({
+          type: 'swapDone',
+          arr: [...a],
+          i,
+          minIdx,
+          sortedSet: new Set(sortedSet),
+          msg: `이미 최솟값이 제자리에 있습니다`
+        });
       }
       sortedSet.add(i);
-      s.push({type:'placed',arr:[...a],i,sortedSet:new Set(sortedSet),msg:`인덱스 ${i}에 ${a[i]} 확정`});
+      s.push({
+        type: 'placed',
+        arr: [...a],
+        i,
+        sortedSet: new Set(sortedSet),
+        msg: `인덱스 ${i}에 ${a[i]} 확정`
+      });
     }
-    sortedSet.add(n-1);
-    s.push({type:'done',arr:[...a],sortedSet:new Set(Array.from({length:n},(_,i)=>i)),msg:'정렬 완료!'});
+    sortedSet.add(n - 1);
+    s.push({
+      type: 'done',
+      arr: [...a],
+      sortedSet: new Set(Array.from({length: n}, (_, i) => i)),
+      msg: '정렬 완료!'
+    });
     return s;
   }
+
   function init() {
     stopPlay();
-    const arr=randArr(getSize());
-    steps=generateSteps(arr);
-    stepIdx=0;
-    renderStep({type:'init',arr:[...arr],sortedSet:new Set(),msg:'시작 버튼을 누르세요.'});
-    document.getElementById('stepCounter').textContent='—';
-    document.getElementById('btnPlay').disabled=false;
+    const arr = randArr(getSize());
+    steps = generateSteps(arr);
+    stepIdx = 0;
+    renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'});
+    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('btnPlay').disabled = false;
   }
+
   function renderStep(step) {
-    const barArea=document.getElementById('barArea');
-    const log=document.getElementById('log');
-    const maxVal=Math.max(...step.arr);
-    const showNum=step.arr.length<=20;
-    barArea.style.gridTemplateColumns=`repeat(${step.arr.length},1fr)`;
-    barArea.innerHTML=step.arr.map((v,idx)=>{
-      let cls='bar normal';
-      if(step.sortedSet?.has(idx)) cls=step.type==='done'?'bar done':'bar sorted';
-      if(['target','compare','newMin','swap','swapDone','placed'].includes(step.type)&&idx===step.i&&!step.sortedSet?.has(idx)) cls='bar target';
-      if(step.type==='compare'&&idx===step.j) cls='bar comparing';
-      if((step.type==='newMin'||step.type==='target')&&idx===step.minIdx&&idx!==step.i) cls='bar minval';
-      if(step.type==='swap'&&(idx===step.i||idx===step.j)) cls='bar swap';
-      if(step.type==='done') cls='bar done';
-      const h=Math.max(10,Math.round((v/maxVal)*140));
-      const tc=cls.includes('done')||cls.includes('sorted')?'#86efac':cls.includes('comparing')?'#67e8f9':cls.includes('target')?'#93c5fd':cls.includes('swap')?'#c4b5fd':cls.includes('minval')?'#fcd34d':'#a5b4fc';
-      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum?v:''}</span></div>`;
+    const barArea = document.getElementById('barArea');
+    const log = document.getElementById('log');
+    const maxVal = Math.max(...step.arr);
+    const showNum = step.arr.length <= 20;
+    barArea.style.gridTemplateColumns = `repeat(${step.arr.length},1fr)`;
+    barArea.innerHTML = step.arr.map((v, idx) => {
+      let cls = 'bar normal';
+      if (step.sortedSet?.has(idx)) {
+        cls = step.type === 'done' ? 'bar done' : 'bar sorted';
+      }
+      if (['target', 'compare', 'newMin', 'swap', 'swapDone', 'placed'].includes(step.type) && idx
+          === step.i && !step.sortedSet?.has(idx)) {
+        cls = 'bar target';
+      }
+      if (step.type === 'compare' && idx === step.j) {
+        cls = 'bar comparing';
+      }
+      if ((step.type === 'newMin' || step.type === 'target') && idx === step.minIdx && idx
+          !== step.i) {
+        cls = 'bar minval';
+      }
+      if (step.type === 'swap' && (idx === step.i || idx === step.j)) {
+        cls = 'bar swap';
+      }
+      if (step.type === 'done') {
+        cls = 'bar done';
+      }
+      const h = Math.max(10, Math.round((v / maxVal) * 140));
+      const tc = cls.includes('done') || cls.includes('sorted') ? '#86efac' : cls.includes(
+          'comparing') ? '#67e8f9' : cls.includes('target') ? '#93c5fd' : cls.includes('swap')
+          ? '#c4b5fd' : cls.includes('minval') ? '#fcd34d' : '#a5b4fc';
+      return `<div class="${cls}" style="height:${h}px"><span style="color:${tc}">${showNum ? v
+          : ''}</span></div>`;
     }).join('');
-    const tagMap={target:'<span class="phase-tag phase-target">삽입 위치</span>',compare:'<span class="phase-tag phase-compare">비교</span>',newMin:'<span class="phase-tag phase-min">최솟값 갱신</span>',swap:'<span class="phase-tag phase-swap">교환</span>',swapDone:'<span class="phase-tag phase-swap">교환 완료</span>',placed:'<span class="phase-tag phase-done">확정</span>',done:'<span class="phase-tag phase-done">완료 ✓</span>'};
-    log.innerHTML=(tagMap[step.type]||'')+(step.msg||'');
+    const tagMap = {
+      target: '<span class="phase-tag phase-target">삽입 위치</span>',
+      compare: '<span class="phase-tag phase-compare">비교</span>',
+      newMin: '<span class="phase-tag phase-min">최솟값 갱신</span>',
+      swap: '<span class="phase-tag phase-swap">교환</span>',
+      swapDone: '<span class="phase-tag phase-swap">교환 완료</span>',
+      placed: '<span class="phase-tag phase-done">확정</span>',
+      done: '<span class="phase-tag phase-done">완료 ✓</span>'
+    };
+    log.innerHTML = (tagMap[step.type] || '') + (step.msg || '');
   }
+
   function tick() {
-    if(stepIdx>=steps.length){stopPlay();return;}
+    if (stepIdx >= steps.length) {
+      stopPlay();
+      return;
+    }
     renderStep(steps[stepIdx]);
-    document.getElementById('stepCounter').textContent=`${stepIdx+1} / ${steps.length}`;
+    document.getElementById('stepCounter').textContent = `${stepIdx + 1} / ${steps.length}`;
     stepIdx++;
   }
-  function stopPlay(){playing=false;clearInterval(timer);document.getElementById('btnPlay').textContent='▶ 시작';}
-  document.getElementById('btnPlay').addEventListener('click',()=>{
-    if(playing){stopPlay();return;}
-    if(stepIdx>=steps.length)return;
-    playing=true;document.getElementById('btnPlay').textContent='⏸ 일시정지';
-    timer=setInterval(tick,speedMap[getSpeed()]);
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (stepIdx >= steps.length) {
+      return;
+    }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
   });
-  document.getElementById('btnStep').addEventListener('click',()=>{stopPlay();tick();});
-  document.getElementById('btnReset').addEventListener('click',init);
-  document.getElementById('sizeSlider').addEventListener('input',e=>{document.getElementById('sizeLabel').textContent=e.target.value;init();});
-  document.getElementById('speedSlider').addEventListener('input',e=>{
-    document.getElementById('speedLabel').textContent=speedNames[e.target.value];
-    if(playing){clearInterval(timer);timer=setInterval(tick,speedMap[getSpeed()]);}
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+  document.getElementById('btnReset').addEventListener('click', init);
+  document.getElementById('sizeSlider').addEventListener('input', e => {
+    document.getElementById('sizeLabel').textContent = e.target.value;
+    init();
+  });
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
   });
   init();
 </script>

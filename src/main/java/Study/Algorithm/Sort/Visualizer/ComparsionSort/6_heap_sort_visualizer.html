@@ -526,7 +526,7 @@
 <div class="page">
 
   <div class="header">
-    <h1>힙 정렬 시각화</h1>
+    <h1 onclick="history.back()">힙 정렬 시각화</h1>
     <p>최대 힙(Max Heap) 구성 후, 루트를 추출하며 반복 정렬</p>
   </div>
 
@@ -551,24 +551,28 @@
       <div class="note-card">
         <h3>🔎 Bottom-Up Heapify (Floyd), Top-Down Heapify 차이</h3>
         <ul>
-          <li>Bottom-Up (Floyd 방식)</li>
-          <ul>
-            <li> 이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)</li>
-          </ul>
-          <li>Top-Down (Insertion 방식)</li>
-          <ul>
-            <li> 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)</li>
-          </ul>
-          <li> 차이 핵심</li>
-          <ul>
-            <li> Top-Down: 삽입 기반 (Priority Queue, streaming system)</li>
-            <li> Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)</li>
-          </ul>
-          <li>실제 사용</li>
-          <ul>
-            <li> Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현</li>
-            <li> Top-Down: Priority Queue, 실시간 top-K, 스케줄링</li>
-          </ul>
+          <li>Bottom-Up (Floyd 방식)
+            <ul>
+              <li> 이미 존재하는 배열을 heapify-down으로 정리, 전체 구조를 한 번에 구성, Build Heap 시간복잡도 O(n)</li>
+            </ul>
+          </li>
+          <li>Top-Down (Insertion 방식)
+            <ul>
+              <li> 하나씩 삽입하며 sift-up으로 heap 유지, 실시간 데이터 삽입 구조, Build Heap 시간복잡도 O(n log n)</li>
+            </ul>
+          </li>
+          <li> 차이 핵심
+            <ul>
+              <li> Top-Down: 삽입 기반 (Priority Queue, streaming system)</li>
+              <li> Bottom-Up: 일괄 구성 기반 (heap sort, batch processing)</li>
+            </ul>
+          </li>
+          <li>실제 사용
+            <ul>
+              <li> Bottom-Up: 배열 -> Heap 변환, Heap Sort 구현</li>
+              <li> Top-Down: Priority Queue, 실시간 top-K, 스케줄링</li>
+            </ul>
+          </li>
         </ul>
       </div>
 
@@ -611,13 +615,10 @@
             <ul>
               <li>Heapify 하나당 depth = O(log n) & extract를 n번 수행 2 log n 수준의 비교/이동이 반복</li>
               <li>퀵 정렬은 특히 연속된 메모리 접근으로 캐시 친화적이기 때문에 Heap Sort가 느린 경우가 많음</li>
-
             </ul>
           </li>
         </ul>
       </div>
-
-
     </div>
   </details>
 

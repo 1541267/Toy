@@ -653,7 +653,7 @@
 
   <!-- Header -->
   <div class="header">
-    <h1>기수 정렬(Radix Sort) 시각화</h1>
+    <h1 onclick="history.back()">기수 정렬(Radix Sort) 시각화</h1>
     <p>데이터를 구성하는 자릿수(Radix)로 Counting Sort를 반복 — LSD(하위 자리부터) vs MSD(상위 자리부터) 비교</p>
   </div>
 
@@ -706,30 +706,31 @@
           </li>
           <li><strong class="hl">공간복잡도</strong>
             <ul>
-              <li>output 배열 = O(n), counting 배열 O(b) => O(n + b)
+              <li>output 배열 = O(n), counting 배열 O(b) => O(n + b)</li>
               <li>
                 <div class="complexity-row">
                   <span class="badge good">O(n + b)</span>
                 </div>
               </li>
+            </ul>
           </li>
         </ul>
-        </li>
+        <ul>
+          <li><strong class="hl">장점</strong>
+            <ul>
+              <li>구현 단순, 분기 없는 일관된 흐름(Branch-free)</li>
+              <li>항상 배열을 순차 접근 -> <strong>캐시 지역성이 좋음</strong></li>
+              <li>데이터 분포와 무관하게 <strong>성능이 일정(예측 가능)</strong></li>
+            </ul>
+          </li>
         </ul>
         <ul>
-          <li><strong class="hl">장점</strong></li>
-          <ul>
-            <li>구현 단순, 분기 없는 일관된 흐름(Branch-free)</li>
-            <li>항상 배열을 순차 접근 -> <strong>캐시 지역성이 좋음</strong></li>
-            <li>데이터 분포와 무관하게 <strong>성능이 일정(예측 가능)</strong></li>
-          </ul>
-        </ul>
-        <ul>
-          <li><strong class="hlx">단점</strong></li>
-          <ul>
-            <li>자릿수(d)만큼 무조건 전부 순회, 상위 자릿수로 갈렸어도 활용 못 함</li>
-            <li>고정 길이 키에 적합, 가변 길이 키(문자열)엔 패딩 등 추가 처리 필요</li>
-          </ul>
+          <li><strong class="hlx">단점</strong>
+            <ul>
+              <li>자릿수(d)만큼 무조건 전부 순회, 상위 자릿수로 갈렸어도 활용 못 함</li>
+              <li>고정 길이 키에 적합, 가변 길이 키(문자열)엔 패딩 등 추가 처리 필요</li>
+            </ul>
+          </li>
         </ul>
       </div>
 
@@ -749,17 +750,18 @@
               </li>
             </ul>
           </li>
-          <li><strong class="hl">공간복잡도</strong></li>
-          <ul>
-            <li>작은 bucket은 삽입 정렬로 수정 가능</li>
-            <li> bucket 배열 & 재귀 stack, O(n + b + d)</li>
-            <li> 보통 d는 매우 작거나 log 범위라 실질적으로 O(n + b)</li>
-            <li>
-              <div class="complexity-row">
-                <span class="badge good">AVG O(n + b + d) or O(n + b)</span>
-              </div>
-            </li>
-          </ul>
+          <li><strong class="hl">공간복잡도</strong>
+            <ul>
+              <li>작은 bucket은 삽입 정렬로 수정 가능</li>
+              <li> bucket 배열 & 재귀 stack, O(n + b + d)</li>
+              <li> 보통 d는 매우 작거나 log 범위라 실질적으로 O(n + b)</li>
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">AVG O(n + b + d) or O(n + b)</span>
+                </div>
+              </li>
+            </ul>
+          </li>
           <li><strong class="hl">장점</strong>
             <ul>
               <li>상위 자릿수만으로 그룹이 좁혀지면 <strong>조기 종료</strong> 가능</li>

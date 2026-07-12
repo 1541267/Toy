@@ -4,17 +4,87 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title></title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f1117;
+      color: #e2e8f0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    a:link {
+      color: #ff0063
+    }
+
+    a:visited {
+      color: #ff0063;
+    }
+
+    a:hover {
+      color: #ffff00;
+    }
+
+  </style>
 </head>
 <body>
+<div>
+  <h3 style="display: flex; justify-content: center;">페이지 진입 후 타이틀을 클릭해 페이지로 돌아옴</h3>
 
+  <ul style="">
+    <li>정렬
+      <ul>
+        <li>Comparsion Sort
+          <ul>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/1_bubble_sort_visualizer.html">
+                Bubble</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/2_selection_sort_visualizer.html">
+                Selection</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/3_insertion_sort_visualizer.html">
+                Insertion</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/4_quick_sort_visualizer.html">
+                Quick</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/5_merge_sort_visualizer.html">
+                Merge</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/6_heap_sort_visualizer.html">
+                Heap</a>
+            </li>
+          </ul>
+        </li>
+        <li>Non-Comparsion Sort<br/> Comparsion Sort 에서 모두 정렬하는 가짓수는 n!<br/>
+          정렬을 통해 생기는 트리의 말단 노드가 n! 이상의 노드를 갖기 위해선 2^h >= n!을 만족하는 h를 가져야 하고
+          이 식은 h > O(n log n)<br/>h는 트리의 높이 (Comparison Sort의 시간 복잡도), 이 O(n log n)을 줄이기 위해선
+          Comparison을 하지 않는 것
+          <ul>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/1_counting_sort_visualizer.html">
+                Counting</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/2_radix_sort_visualizer.html">
+                Radix</a>
+            </li>
+            <li>
+              <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/3_bucket_sort_visualizer.html">
+                Bucket</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+  </ul>
 
-<ul>
-  <li>
-    <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/1_bubble_sort_visualizer.html">
-      버블 정렬 시각화
-    </a>
-  </li>
-</ul>
-
+</div>
 </body>
 </html>

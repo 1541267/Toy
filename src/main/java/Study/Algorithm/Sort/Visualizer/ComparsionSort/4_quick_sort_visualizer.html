@@ -482,7 +482,7 @@
 <div class="page">
 
   <div class="header">
-    <h1>퀵 정렬(양방향 포인터 방식, Hoare Parition) 시각화</h1>
+    <h1 onclick="history.back()">퀵 정렬(양방향 포인터 방식, Hoare Parition) 시각화</h1>
     <p>피벗을 기준으로 분할·정복하며 한 번 확정된 피벗은 이후 연산에서 제외</p>
   </div>
 
@@ -531,28 +531,30 @@
         </div>
         <ul>
           <hr/>
-        </ul>   <ul>
-          <li>시간 복잡도</li>
-          <ul>
-            <li>
-              <div class="complexity-row">
-                <span class="badge good">Best O(n log n)</span>
-                <span class="badge good">Avg O(n log n)</span>
-                <span class="badge bad">Worst O(n²)</span>
-              </div>
-            </li>
-          </ul>
-
-          <li>공간 복잡도</li>
-          <ul>
-            <li>
-              <div class="complexity-row">
-                <span class="badge good">추가 메모리 O(1)</span>
-                <span class="badge good">Avg 재귀 호출 비용 O(log n)</span>
-                <span class="badge bad">Worst 재귀 호출 비용 O(n)</span>
-              </div>
-            </li>
-          </ul>
+        </ul>
+        <ul>
+          <li>시간 복잡도
+            <ul>
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">Best O(n log n)</span>
+                  <span class="badge good">Avg O(n log n)</span>
+                  <span class="badge bad">Worst O(n²)</span>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li>공간 복잡도
+            <ul>
+              <li>
+                <div class="complexity-row">
+                  <span class="badge good">추가 메모리 O(1)</span>
+                  <span class="badge good">Avg 재귀 호출 비용 O(log n)</span>
+                  <span class="badge bad">Worst 재귀 호출 비용 O(n)</span>
+                </div>
+              </li>
+            </ul>
+          </li>
         </ul>
       </div>
       <div class="note-card">

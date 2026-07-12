@@ -205,6 +205,7 @@
     .cols {
       grid-template-columns: 1fr;
     }
+
     .note-card[style*="span 2"] {
       grid-column: span 1 !important;
     }
@@ -565,13 +566,41 @@
     white-space: pre;
   }
 
-  .ck { color: #6272a4; }   /* comment */
-  .kw { color: #bd93f9; }   /* keyword */
-  .ty { color: #8be9fd; }   /* type */
-  .fn { color: #50fa7b; }   /* function */
-  .nm { color: #ffb86c; }   /* variable / param */
-  .st { color: #f1fa8c; }   /* string */
-  .nu { color: #ff79c6; }   /* number */
+  .ck {
+    color: #6272a4;
+  }
+
+  /* comment */
+  .kw {
+    color: #bd93f9;
+  }
+
+  /* keyword */
+  .ty {
+    color: #8be9fd;
+  }
+
+  /* type */
+  .fn {
+    color: #50fa7b;
+  }
+
+  /* function */
+  .nm {
+    color: #ffb86c;
+  }
+
+  /* variable / param */
+  .st {
+    color: #f1fa8c;
+  }
+
+  /* string */
+  .nu {
+    color: #ff79c6;
+  }
+
+  /* number */
 </style>
 
 <body>
@@ -579,7 +608,7 @@
 
   <!-- Header -->
   <div class="header">
-    <h1>계수 정렬(Counting Sort) 시각화</h1>
+    <h1 onclick="history.back()">계수 정렬(Counting Sort) 시각화</h1>
     <p>값의 등장 횟수를 세어(Counting) 비교 없이 정렬 — 안정 버전 vs 불안정 버전 비교</p>
   </div>
 
@@ -709,11 +738,26 @@
       <div class="bar-area" id="outA"></div>
 
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#4c4e9a"></div>기본</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#0f766e"></div>처리 중</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>배치/갱신</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>배치 완료</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff0063"></div>정렬 완료</div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          처리 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#b45309"></div>
+          배치/갱신
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          배치 완료
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
       </div>
 
       <div class="log-box" id="logA">시작 버튼을 누르세요.</div>
@@ -740,11 +784,26 @@
       <div class="bar-area" id="outB"></div>
 
       <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#4c4e9a"></div>기본</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#0f766e"></div>처리 중</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#6d28d9"></div>소비(채우는 중)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div>배치 완료</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#ff0063"></div>정렬 완료</div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#4c4e9a"></div>
+          기본
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#0f766e"></div>
+          처리 중
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#6d28d9"></div>
+          소비(채우는 중)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#16a34a"></div>
+          배치 완료
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff0063"></div>
+          정렬 완료
+        </div>
       </div>
 
       <div class="log-box" id="logB">시작 버튼을 누르세요.</div>
@@ -782,31 +841,51 @@
           <div class="dot" style="background:#6ee7b7"></div>
           countingSort() — Stable
         </div>
-        <pre><span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">countingSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
-  <span class="kw">if</span> (<span class="nm">arr</span> == <span class="kw">null</span> || <span class="nm">arr</span>.length == <span class="nu">0</span>) { <span class="kw">return</span> <span class="nm">arr</span>; }
-  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span class="nu">0</span>];
+        <pre><span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">countingSort</span>(<span
+            class="ty">int</span>[] <span class="nm">arr</span>) {
+  <span class="kw">if</span> (<span class="nm">arr</span> == <span class="kw">null</span> || <span
+              class="nm">arr</span>.length == <span class="nu">0</span>) { <span
+              class="kw">return</span> <span class="nm">arr</span>; }
+  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>];
 
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) {
-    <span class="kw">if</span> (<span class="nm">num</span> &lt; <span class="nm">min</span>) { <span class="nm">min</span> = <span class="nm">num</span>; }
-    <span class="kw">if</span> (<span class="nm">num</span> &gt; <span class="nm">max</span>) { <span class="nm">max</span> = <span class="nm">num</span>; }
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) {
+    <span class="kw">if</span> (<span class="nm">num</span> &lt; <span
+              class="nm">min</span>) { <span class="nm">min</span> = <span class="nm">num</span>; }
+    <span class="kw">if</span> (<span class="nm">num</span> &gt; <span
+              class="nm">max</span>) { <span class="nm">max</span> = <span class="nm">num</span>; }
   }
 
-  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">max</span> - <span class="nm">min</span> + <span class="nu">1</span>;
-  <span class="ty">int</span>[] <span class="nm">counting</span> = <span class="kw">new</span> <span class="ty">int</span>[<span class="nm">range</span>];
-  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span class="ty">int</span>[<span class="nm">arr</span>.length];
+  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">max</span> - <span
+              class="nm">min</span> + <span class="nu">1</span>;
+  <span class="ty">int</span>[] <span class="nm">counting</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">range</span>];
+  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">arr</span>.length];
 
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) { <span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]++; }
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) { <span class="nm">counting</span>[<span class="nm">num</span> - <span
+              class="nm">min</span>]++; }
 
   <span class="ck">// 누적합: counting[i] -> "값 (i+min) 이하 원소 개수"</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">range</span>; <span class="nm">i</span>++) {
-    <span class="nm">counting</span>[<span class="nm">i</span>] += <span class="nm">counting</span>[<span class="nm">i</span> - <span class="nu">1</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">1</span>; <span class="nm">i</span> &lt; <span
+              class="nm">range</span>; <span class="nm">i</span>++) {
+    <span class="nm">counting</span>[<span class="nm">i</span>] += <span class="nm">counting</span>[<span
+              class="nm">i</span> - <span class="nu">1</span>];
   }
 
   <span class="ck">// 뒤에서부터 순회 + 위치 감소 배치 -> 안정 정렬 보장</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nm">arr</span>.length - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span class="nu">0</span>; <span class="nm">i</span>--) {
-    <span class="ty">int</span> <span class="nm">num</span> = <span class="nm">arr</span>[<span class="nm">i</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nm">arr</span>.length - <span class="nu">1</span>; <span class="nm">i</span> &gt;= <span
+              class="nu">0</span>; <span class="nm">i</span>--) {
+    <span class="ty">int</span> <span class="nm">num</span> = <span class="nm">arr</span>[<span
+              class="nm">i</span>];
     <span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]--;
-    <span class="nm">output</span>[<span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]] = <span class="nm">num</span>;
+    <span class="nm">output</span>[<span class="nm">counting</span>[<span
+              class="nm">num</span> - <span class="nm">min</span>]] = <span class="nm">num</span>;
   }
 
   <span class="kw">return</span> <span class="nm">output</span>;
@@ -820,25 +899,40 @@
           unStableCountingSort() — Unstable
         </div>
         <pre><span class="ck">// counting[i]번 등장한 요소를 배열 순서 참조 없이 삽입 -> UnStable</span>
-<span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">unStableCountingSort</span>(<span class="ty">int</span>[] <span class="nm">arr</span>) {
-  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span class="nu">0</span>];
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) {
-    <span class="kw">if</span> (<span class="nm">num</span> &lt; <span class="nm">min</span>) { <span class="nm">min</span> = <span class="nm">num</span>; }
-    <span class="kw">if</span> (<span class="nm">num</span> &gt; <span class="nm">max</span>) { <span class="nm">max</span> = <span class="nm">num</span>; }
+<span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">unStableCountingSort</span>(<span
+              class="ty">int</span>[] <span class="nm">arr</span>) {
+  <span class="ty">int</span> <span class="nm">min</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>], <span class="nm">max</span> = <span class="nm">arr</span>[<span
+              class="nu">0</span>];
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) {
+    <span class="kw">if</span> (<span class="nm">num</span> &lt; <span
+              class="nm">min</span>) { <span class="nm">min</span> = <span class="nm">num</span>; }
+    <span class="kw">if</span> (<span class="nm">num</span> &gt; <span
+              class="nm">max</span>) { <span class="nm">max</span> = <span class="nm">num</span>; }
   }
 
-  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">max</span> - <span class="nm">min</span> + <span class="nu">1</span>;
-  <span class="ty">int</span>[] <span class="nm">counting</span> = <span class="kw">new</span> <span class="ty">int</span>[<span class="nm">range</span>];
+  <span class="ty">int</span> <span class="nm">range</span> = <span class="nm">max</span> - <span
+              class="nm">min</span> + <span class="nu">1</span>;
+  <span class="ty">int</span>[] <span class="nm">counting</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">range</span>];
 
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span class="nm">arr</span>) { <span class="nm">counting</span>[<span class="nm">num</span> - <span class="nm">min</span>]++; }
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">num</span> : <span
+              class="nm">arr</span>) { <span class="nm">counting</span>[<span class="nm">num</span> - <span
+              class="nm">min</span>]++; }
 
-  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span class="ty">int</span>[<span class="nm">arr</span>.length];
+  <span class="ty">int</span>[] <span class="nm">output</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">arr</span>.length];
   <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
   <span class="ck">// 누적합 없이, 등장 횟수만큼 값을 그대로 채워 넣음</span>
   <span class="ck">// -> 어떤 원소가 어디서 왔는지 정보가 없음</span>
-  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">range</span>; <span class="nm">i</span>++) {
-    <span class="kw">while</span> (<span class="nm">counting</span>[<span class="nm">i</span>] &gt; <span class="nu">0</span>) {
-      <span class="nm">output</span>[<span class="nm">idx</span>++] = <span class="nm">i</span> + <span class="nm">min</span>;
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span
+              class="nm">range</span>; <span class="nm">i</span>++) {
+    <span class="kw">while</span> (<span class="nm">counting</span>[<span class="nm">i</span>] &gt; <span
+              class="nu">0</span>) {
+      <span class="nm">output</span>[<span class="nm">idx</span>++] = <span
+              class="nm">i</span> + <span class="nm">min</span>;
       <span class="nm">counting</span>[<span class="nm">i</span>]--;
     }
   }
@@ -856,9 +950,21 @@
   // Speed map
   // ─────────────────────────────────────────────
   const speedMap = {1: 800, 2: 500, 3: 300, 4: 180, 5: 100, 6: 55, 7: 30, 8: 15, 9: 6, 10: 0.5};
-  const speedNames = {1:'매우 느림',2:'매우 느림',3:'느림',4:'느림',5:'보통',6:'보통',7:'빠름',8:'빠름',9:'매우 빠름',10:'최대한 빠르게'};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
 
   function getSize() { return parseInt(document.getElementById('sizeSlider').value); }
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
   // ─────────────────────────────────────────────
@@ -887,7 +993,14 @@
     const arr = base.map(x => ({...x}));
     const n = arr.length;
     let min = arr[0].value, max = arr[0].value;
-    arr.forEach(e => { if (e.value < min) min = e.value; if (e.value > max) max = e.value; });
+    arr.forEach(e => {
+      if (e.value < min) {
+        min = e.value;
+      }
+      if (e.value > max) {
+        max = e.value;
+      }
+    });
     const range = max - min + 1;
     const counting = new Array(range).fill(0);
     const output = new Array(n).fill(null);
@@ -935,7 +1048,14 @@
     const arr = base.map(x => ({...x}));
     const n = arr.length;
     let min = arr[0].value, max = arr[0].value;
-    arr.forEach(e => { if (e.value < min) min = e.value; if (e.value > max) max = e.value; });
+    arr.forEach(e => {
+      if (e.value < min) {
+        min = e.value;
+      }
+      if (e.value > max) {
+        max = e.value;
+      }
+    });
     const range = max - min + 1;
     const counting = new Array(range).fill(0);
     const output = new Array(n).fill(null);
@@ -959,7 +1079,8 @@
     for (let i = 0; i < n; i++) {
       counting[arr[i].value - min]++;
       push('count', {ci: i, countIdx: arr[i].value - min},
-          `counting[${arr[i].value - min}]++  (arr[${i}] = ${arr[i].value}${arr[i].tag} 등장, 원본 위치는 저장 안 함)`);
+          `counting[${arr[i].value
+          - min}]++  (arr[${i}] = ${arr[i].value}${arr[i].tag} 등장, 원본 위치는 저장 안 함)`);
     }
 
     let idx = 0;
@@ -1018,21 +1139,35 @@
     const maxVal = step.max;
 
     renderValueBars(ids.arr, step.arr, maxVal, (idx) => {
-      if (step.type === 'count' && idx === step.ci) return 'bar active';
-      if (step.type === 'place' && idx === step.ai) return 'bar placed';
+      if (step.type === 'count' && idx === step.ci) {
+        return 'bar active';
+      }
+      if (step.type === 'place' && idx === step.ai) {
+        return 'bar placed';
+      }
       return 'bar normal';
     });
 
     renderCountBars(ids.count, ids.axis, step.counting, step.n, step.min, (idx) => {
-      if (step.type === 'count' && idx === step.countIdx) return 'bar count-active';
-      if (step.type === 'prefix' && idx === step.countIdx) return 'bar count-prefix';
-      if (step.type === 'place' && idx === step.countIdx) return 'bar count-consume';
+      if (step.type === 'count' && idx === step.countIdx) {
+        return 'bar count-active';
+      }
+      if (step.type === 'prefix' && idx === step.countIdx) {
+        return 'bar count-prefix';
+      }
+      if (step.type === 'place' && idx === step.countIdx) {
+        return 'bar count-consume';
+      }
       return 'bar count-base';
     });
 
     renderValueBars(ids.out, step.output, maxVal, (idx) => {
-      if (step.type === 'done') return 'bar done';
-      if (step.type === 'place' && idx === step.pos) return 'bar placed';
+      if (step.type === 'done') {
+        return 'bar done';
+      }
+      if (step.type === 'place' && idx === step.pos) {
+        return 'bar placed';
+      }
       return 'bar filled';
     });
 
@@ -1064,10 +1199,26 @@
     idxA = 0;
     idxB = 0;
 
-    const emptyOutA = {type: 'init', min: stepsA[0].min, max: stepsA[0].max, n,
-      arr: stepsA[0].arr, counting: stepsA[0].counting, output: stepsA[0].output, msg: '시작 버튼을 누르세요.'};
-    const emptyOutB = {type: 'init', min: stepsB[0].min, max: stepsB[0].max, n,
-      arr: stepsB[0].arr, counting: stepsB[0].counting, output: stepsB[0].output, msg: '시작 버튼을 누르세요.'};
+    const emptyOutA = {
+      type: 'init',
+      min: stepsA[0].min,
+      max: stepsA[0].max,
+      n,
+      arr: stepsA[0].arr,
+      counting: stepsA[0].counting,
+      output: stepsA[0].output,
+      msg: '시작 버튼을 누르세요.'
+    };
+    const emptyOutB = {
+      type: 'init',
+      min: stepsB[0].min,
+      max: stepsB[0].max,
+      n,
+      arr: stepsB[0].arr,
+      counting: stepsB[0].counting,
+      output: stepsB[0].output,
+      msg: '시작 버튼을 누르세요.'
+    };
 
     renderStep(emptyOutA, idsA);
     renderStep(emptyOutB, idsB);
@@ -1080,7 +1231,10 @@
   function tick() {
     const doneA = idxA >= stepsA.length;
     const doneB = idxB >= stepsB.length;
-    if (doneA && doneB) { stopPlay(); return; }
+    if (doneA && doneB) {
+      stopPlay();
+      return;
+    }
     if (!doneA) {
       renderStep(stepsA[idxA], idsA);
       document.getElementById('stepA').textContent = `${idxA + 1} / ${stepsA.length}`;
@@ -1103,7 +1257,10 @@
   // Event listeners
   // ─────────────────────────────────────────────
   document.getElementById('btnPlay').addEventListener('click', () => {
-    if (playing) { stopPlay(); return; }
+    if (playing) {
+      stopPlay();
+      return;
+    }
     if (idxA >= stepsA.length && idxB >= stepsB.length) { return; }
     playing = true;
     document.getElementById('btnPlay').textContent = '⏸ 일시정지';
