@@ -1,4 +1,4 @@
-package Study.DataStructure.Array;
+package Study.DataStructure.Code;
 
 
 import Study.Algorithm.Sort.ArrGenerator;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
-public class _1_Array {
+public class _0_Array {
 
   // 논리적 저장 순서와 물리적 저장 순서가 일치 ->
 
