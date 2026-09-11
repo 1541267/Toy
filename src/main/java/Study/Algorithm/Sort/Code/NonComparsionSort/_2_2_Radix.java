@@ -9,6 +9,7 @@ package Study.Algorithm.Sort.Code.NonComparsionSort;
 
 // - LSD
 // -> 안정 정렬, 구현 단순, 실제로 가장 많이 쓰임
+// -> 이전 자릿수에서 정해진 상대 순서가 다음 자릿수 정렬을 거쳐도 깨지지 않게 하기위해 안정 정렬이 되는 Counting Sort를 사용해야함
 // -> 시간복잡도: d = 자릿수(10진수 고정), 각 반복 마다 Counting Sort = O(n + b) => O(d * (n + b))
 // -> 공간복잡도: output 배열 = O(n), counting 배열 O(b) => O(n + b) => O(n + b)
 // LSD 장점: 구현이 단순, 분기 없는 일관된 흐름(Branch-free), 항상 전체 배열을 순차 접근하므로 캐시 지역성이 좋음,
