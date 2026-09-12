@@ -1,0 +1,1583 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>이중 연결 리스트 시각화</title>
+</head>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0 0 0.3rem;
+    color: #f8fafc;
+    cursor: pointer;
+  }
+
+  .header p {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin: 0;
+  }
+
+  .notes-toggle {
+    background: #1e2433;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .notes-toggle summary {
+    padding: 0.75rem 1.1rem;
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+    letter-spacing: 0.3px;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .notes-toggle summary::before {
+    content: '▶';
+    font-size: 9px;
+    transition: transform 0.2s;
+    color: #6366f1;
+  }
+
+  .notes-toggle[open] summary::before {
+    transform: rotate(90deg);
+  }
+
+  .notes-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .notes-body {
+    padding: 0 1.1rem 1.1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+
+  .section-divider {
+    flex-basis: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0.3rem 0 -0.15rem;
+    color: #a5b4fc;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2d3552;
+  }
+
+  .note-card h3 {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6366f1;
+  }
+
+  .note-card ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.79rem;
+    color: #94a3b8;
+    line-height: 1.75;
+  }
+
+  .note-card ul li {
+    margin-bottom: 0.1rem;
+  }
+
+  .note-card ul li strong {
+    color: #c7d2fe;
+  }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+  }
+
+  .complexity-table th, .complexity-table td {
+    text-align: left;
+    padding: 4px 6px;
+    border-bottom: 1px solid #252d45;
+    color: #94a3b8;
+  }
+
+  .complexity-table th {
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .complexity-table td.good { color: #6ee7b7; font-weight: 600; }
+  .complexity-table td.warn { color: #fcd34d; font-weight: 600; }
+
+  /* ── Controls ── */
+  .controls-bar {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    align-items: center;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #64748b;
+  }
+
+  .ctrl-group label {
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .ctrl-group select,
+  .ctrl-group input[type=number] {
+    background: #0f1117;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.8rem;
+    width: 72px;
+  }
+
+  .ctrl-group select {
+    width: auto;
+  }
+
+  .ctrl-group input[type=range] {
+    width: 100px;
+    accent-color: #6366f1;
+  }
+
+  .ctrl-group .val {
+    font-weight: 600;
+    color: #e2e8f0;
+    min-width: 32px;
+    font-size: 0.8rem;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+  }
+
+  .btn-row.right {
+    margin-left: auto;
+  }
+
+  .btn {
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid #334155;
+    background: #1e2433;
+    color: #cbd5e1;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background: #273047;
+  }
+
+  .btn.primary {
+    background: #4f46e5;
+    border-color: #6366f1;
+    color: #fff;
+  }
+
+  .btn.primary:hover {
+    background: #4338ca;
+  }
+
+  .btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .divider-v {
+    width: 1px;
+    align-self: stretch;
+    background: #2d3552;
+  }
+
+  @media (max-width: 620px) {
+    .divider-v { display: none; }
+  }
+
+  /* ── Info strip ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: #141824;
+    border: 1px solid #252d45;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: #94a3b8;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .info-chip strong {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+
+  /* ── Visualization Panel ── */
+  .panel {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+  }
+
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #c7d2fe;
+  }
+
+  .panel-step {
+    font-size: 0.7rem;
+    color: #475569;
+  }
+
+  .list-scroll {
+    padding: 1.75rem 0.5rem 0.5rem;
+  }
+
+  .list-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    row-gap: 30px;
+    width: 100%;
+  }
+
+  .empty-msg {
+    color: #475569;
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .null-cap {
+    color: #3f4a63;
+    font-size: 0.68rem;
+    font-family: 'Consolas', monospace;
+    padding: 0 6px;
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .node-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .pos-tags {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .pos-tag {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .pos-tag.head { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+  .pos-tag.tail { background: #4c0519; color: #fb7185; border: 1px solid #881337; }
+
+  .node-box {
+    width: 56px;
+    height: 56px;
+    border-radius: 9px;
+    border: 2px solid #334155;
+    background: #1e2433;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+  }
+
+  .node-idx {
+    margin-top: 5px;
+    font-size: 0.65rem;
+    color: #475569;
+    font-family: 'Consolas', monospace;
+  }
+
+  .node-box.visited-fwd { background: #0c3a37; border-color: #0f766e; color: #5eead4; }
+  .node-box.visited-bwd { background: #2e1065; border-color: #6d28d9; color: #c4b5fd; }
+  .node-box.current-fwd { background: #0f766e; border-color: #5eead4; color: #ecfeff; transform: scale(1.12); }
+  .node-box.current-bwd { background: #6d28d9; border-color: #c4b5fd; color: #f5f3ff; transform: scale(1.12); }
+  .node-box.target { background: #b45309; border-color: #fcd34d; color: #fff7ed; transform: scale(1.12); }
+  .node-box.new { background: #065f46; border-color: #34d399; color: #ecfdf5; animation: pop 0.35s ease; }
+  .node-box.removing { background: #7f1d1d; border-color: #f87171; color: #fecaca; text-decoration: line-through; opacity: 0.55; transform: scale(0.9); }
+
+  @keyframes pop {
+    0% { transform: scale(0.4); opacity: 0; }
+    70% { transform: scale(1.18); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+
+  .link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    flex-shrink: 0;
+    gap: 1px;
+    color: #3f4a63;
+    align-self: center;
+    margin-top: -14px;
+  }
+
+  .link .arrow {
+    font-size: 13px;
+    line-height: 1;
+    transition: color 0.15s, transform 0.15s;
+  }
+
+  .link.active-fwd .arrow.fwd { color: #5eead4; transform: scale(1.3); }
+  .link.active-bwd .arrow.bwd { color: #c4b5fd; transform: scale(1.3); }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin: 0.9rem 0 0.7rem;
+    padding: 0 0.2rem;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* Log */
+  .log-box {
+    background: #0f1117;
+    border: 1px solid #1e2433;
+    border-radius: 7px;
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  .phase-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.67rem;
+    font-weight: 700;
+    margin-right: 7px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+
+  .phase-traverse { background: #1e2d5e; color: #93c5fd; }
+  .phase-traverse-fwd { background: #0c3a37; color: #5eead4; }
+  .phase-traverse-bwd { background: #2e1065; color: #c4b5fd; }
+  .phase-insert { background: #14374e; color: #67e8f9; }
+  .phase-remove { background: #451a03; color: #fcd34d; }
+  .phase-done { background: #052e16; color: #4ade80; }
+  .phase-error { background: #450a0a; color: #fca5a5; }
+
+  /* ── Code Blocks ── */
+  .code-section {
+    margin-top: 1.5rem;
+  }
+
+  .code-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    margin-bottom: 0.75rem;
+    padding-left: 0.2rem;
+  }
+
+  .code-dual {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  @media (max-width: 740px) {
+    .code-dual {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .code-panel {
+    background: #0d1117;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.6rem 1rem;
+    background: #161b27;
+    border-bottom: 1px solid #2d3552;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+
+  .code-panel-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    color: #cdd6f4;
+    white-space: pre;
+  }
+
+  .ck { color: #6272a4; }   /* comment */
+  .kw { color: #bd93f9; }   /* keyword */
+  .ty { color: #8be9fd; }   /* type */
+  .fn { color: #50fa7b; }   /* function */
+  .nm { color: #ffb86c; }   /* variable / param */
+  .st { color: #f1fa8c; }   /* string */
+  .nu { color: #ff79c6; }   /* number */
+
+  .diff-note {
+    background: #1a1f2e;
+    border: 1px solid #2d3552;
+    border-radius: 10px;
+    padding: 0.85rem 1.1rem;
+    font-size: 0.78rem;
+    color: #94a3b8;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .diff-note strong { color: #c7d2fe; }
+  .diff-note .hl { color: #6ee7b7; font-weight: 600; }
+  .diff-note .hlw { color: #fcd34d; font-weight: 600; }
+
+  @media (max-width: 480px) {
+    .btn { padding: 6px 10px; font-size: 0.74rem; }
+    .ctrl-group input[type=number] { width: 60px; }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="history.back()">이중 연결 리스트 시각화</h1>
+    <p>head/tail 추적 + 양방향 탐색 최적화가 적용된 Doubly Linked List</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 연결 리스트 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🔍 단일 연결 리스트 (Singly Linked List)</h3>
+        <ul>
+          <li>각 노드가 <strong>data</strong>와 다음 노드에 대한 참조(<strong>next</strong>)만 가지는 자료구조</li>
+          <li>배열처럼 연속된 메모리 공간이 필요 없고, 삽입/삭제 시 값을 옮기는 대신 노드를 새로 만들고 참조(포인터)만 재연결</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚠️ 주의점</h3>
+        <ul>
+          <li>Node 자체를 리스트의 진입점(head)으로 쓰면 안 됨</li>
+          <li>index 0을 삽입/삭제하려면 head 참조 자체를 교체할 수 있어야 하는데, Node 객체 스스로는 외부에서 자신을 가리키는 참조를 바꿀 수 없음</li>
+          <li>head를 필드로 들고 있는 별도의 LinkedList 클래스가 필요 (<strong>head = head.next</strong> 처럼 리스트 클래스가 참조 교체를 담당)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>📌 tail 포인터</h3>
+        <ul>
+          <li>tail 포인터가 없으면 맨 뒤 추가(add())도 매번 head부터 끝까지 순회해야 해서 <strong>O(n)</strong></li>
+          <li>tail 필드를 별도로 관리하면 맨 뒤 추가를 <strong>O(1)</strong>로 개선 가능</li>
+          <li>단, tail 관리는 인덱스 계산보다 <strong>구조적 불변조건</strong>으로 판단하는 게 안전 — 새로 삽입한 노드의 next가 null이면 해당 노드가 tail</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✂️ 삽입 / 삭제</h3>
+        <ul>
+          <li><strong>삽입(add(i, e))</strong>: i번째 Prev Node를 찾아서 참조를 바꿔야 함 (단방향이라 앞에서부터 조회 시작)</li>
+          <li><strong>삭제(remove(i))</strong>도 마찬가지로 이전 노드가 필요 → 매번 head부터 순회해서 탐색 O(n)</li>
+          <li>인덱스 접근/삽입/삭제 시 경계 조건 구분 필요 — 삽입(add): 맨 끝(i == size)도 유효한 위치, i &gt; size일 때만 예외 / 조회·삭제(get, remove): 실제 값이 있는 0 ~ size 범위만 유효, i &gt;= size면 예외</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⚖️ 배열과의 트레이드오프</h3>
+        <ul>
+          <li><strong>배열</strong>: 인덱스 접근 O(1), 중간 삽입/삭제 O(n) (값 이동 필요), 캐시 지역성 좋음</li>
+          <li><strong>연결리스트</strong>: 인덱스 접근 O(n) (순차 탐색), 중간 삽입/삭제는 이전 노드를 이미 찾았다면 O(1)이지만, 위치를 찾는 과정 자체가 O(n)이라 실질적으로는 삽입/삭제도 O(n)인 경우가 많음</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 시간 복잡도 (tail 관리 적용 기준) &amp; 활용</h3>
+        <table class="complexity-table">
+          <tr><th>연산</th><th>단일 연결 리스트</th></tr>
+          <tr><td>get(i) — head부터 순차 탐색</td><td class="warn">O(n)</td></tr>
+          <tr><td>add(e) 맨 뒤 추가 — tail 덕분</td><td class="good">O(1)</td></tr>
+          <tr><td>add(0, e), remove(0) — head 참조만 교체</td><td class="good">O(1)</td></tr>
+          <tr><td>add(i, e), remove(i) (i&gt;0) — i-1번째까지 순회 필요</td><td class="warn">O(n)</td></tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: ArrayDeque, 각종 큐/스택, 해시 테이블의 체이닝, 순차적으로 처리하는 작업 목록</p>
+      </div>
+
+      <div class="section-divider">🔗 이중 연결 리스트 (Doubly Linked List)</div>
+
+      <div class="note-card">
+        <h3>🔗 이중 연결 리스트 (Doubly Linked List)</h3>
+        <ul>
+          <li>연결리스트의 각 노드에 <strong>prev</strong> 참조를 추가한 구조</li>
+          <li>prev, next 양방향 참조 덕분에 단일 연결리스트의 두 가지 한계를 해결</li>
+          <li>이중 연결 리스트는 prev 포인터를 사용하기 때문에 단일 연결 리스트보다 메모리를 추가로 사용</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔁 이점 1 — 삭제 시 탐색 불필요</h3>
+        <ul>
+          <li><strong>단일 연결리스트</strong>: 삭제하려면 반드시 prevNode를 앞에서부터 찾아야 함</li>
+          <li><strong>이중 연결리스트</strong>: curNode.prev로 즉시 접근 가능 (인덱스로 삭제할 때는 그 인덱스의 노드까지 찾아가는 탐색 자체는 여전히 필요)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>↔️ 이점 2 — tail에서 역방향 순회</h3>
+        <ul>
+          <li>getNode(i) 호출 시 i가 뒤쪽에 가까우면 tail에서 prev를 타고 거꾸로 탐색</li>
+          <li>i와 (size - i) 중 더 작은 쪽에서 시작 → 평균 탐색 비용이 절반으로 감소</li>
+          <li>Big-O 표기상으로는 여전히 O(n)이지만 상수 인자가 개선</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🎯 이점 3 — remove(size-1)</h3>
+        <ul>
+          <li>마지막 원소 삭제는 이중 연결리스트에서 <strong>O(1)</strong>로 가능 — tail.prev로 바로 새로운 tail을 얻을 수 있기 때문</li>
+          <li>단일 연결리스트였다면 마지막 노드의 "이전 노드"를 알 방법이 없어 O(n) 필요</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧭 구조 vs 내용 판단 기준</h3>
+        <ul>
+          <li>값만 바꾸는 연산(set)은 링크 재구성이 필요 없음 → <strong>getNode(i).data = e</strong>로 충분</li>
+          <li>add/remove는 리스트의 연결 구조(순서, 개수) 자체가 바뀌므로 이웃 노드의 참조 갱신이 필수</li>
+          <li>이 연산이 구조를 바꾸는가, 내용만 바꾸는가가 불필요한 작업을 피하는 판단 기준</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 시간 복잡도 (tail + 양방향 탐색 적용 기준)</h3>
+        <table class="complexity-table">
+          <tr><th>연산</th><th>이중 연결 리스트</th></tr>
+          <tr><td>get(i) — head/tail 중 가까운 쪽에서 탐색</td><td class="good">O(min(i, size-i))</td></tr>
+          <tr><td>add(e) 맨 뒤 추가</td><td class="good">O(1)</td></tr>
+          <tr><td>add(0, e), remove(0)</td><td class="good">O(1)</td></tr>
+          <tr><td>remove(size-1) — tail.prev로 즉시 접근 (단일 연결리스트라면 O(n))</td><td class="good">O(1)</td></tr>
+          <tr><td>add(i, e), remove(i) (일반 위치) — 위치 탐색 비용이 지배적</td><td class="good">O(min(i, size-i))</td></tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">LinkedList가 이 구조를 사용 (Doubly Linked List + head/tail 관리) — Deque 인터페이스를 구현하여 스택/큐로도 사용 가능한 이유 (양쪽 끝 모두 O(1) 삽입/삭제가 가능하기 때문)</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="addTail">add(e) — 맨 뒤 추가</option>
+        <option value="addAt">add(i, e) — 위치 삽입</option>
+        <option value="removeAt">remove(i) — 삭제</option>
+        <option value="getData">getData(i) — 조회</option>
+        <option value="set">set(i, e) — 값 변경</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="valGroup">
+      <label>값</label>
+      <input type="number" id="valInput" value="10">
+    </div>
+    <div class="ctrl-group" id="idxGroup" style="display:none;">
+      <label>인덱스</label>
+      <input type="number" id="idxInput" value="0">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewList">🔄 새 리스트</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip">head = <strong id="infoHead">null</strong></div>
+    <div class="info-chip">tail = <strong id="infoTail">null</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">—</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Doubly Linked List (head/tail 관리 + 양방향 탐색)</div>
+      <div class="panel-step" id="stepCounter">—</div>
+    </div>
+
+    <div class="list-scroll">
+      <div class="list-row" id="listArea"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>기본</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0f766e;"></div>정방향 탐색 중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6d28d9;"></div>역방향 탐색 중</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#0c3a37;"></div>정방향 지나온 경로</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#2e1065;"></div>역방향 지나온 경로</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#b45309;"></div>대상 노드</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#065f46;"></div>새로 삽입</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7f1d1d;"></div>삭제 중</div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        단일 & 이중 공통 부분
+      </div>
+      <pre>
+<span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+          class="kw">return</span> <span class="nm">size</span>;}
+
+<span class="kw">public</span> <span class="kw">void</span> <span
+          class="fn">checkInsertBounds</span>(<span class="ty">int</span> <span
+          class="nm">i</span>) {
+  <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span
+          class="nm">i</span> &gt; <span class="nm">size</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+          class="st">&quot;Index: &quot;</span> + <span class="nm">i</span> + <span class="st">&quot;, Size: &quot;</span> + <span
+          class="nm">size</span>);
+  }
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span
+          class="fn">checkElementBounds</span>(<span class="ty">int</span> <span
+          class="nm">i</span>) {
+  <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span
+          class="nm">i</span> &gt;= <span class="nm">size</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+          class="st">&quot;Index: &quot;</span> + <span class="nm">i</span> + <span class="st">&quot;, Size: &quot;</span> + <span
+          class="nm">size</span>);
+  }
+}
+</pre>
+    </div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        _2_LinkedList.java — 이중 연결 리스트 (tail 추적 + 양방향 탐색 개선판)
+      </div>
+      <pre><span class="ck">// tail(마지막 노드) 추적 개선 &amp; 이중 연결 리스트</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="nm">_2_LinkedList</span>&lt;<span
+            class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="nm">head</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="nm">tail</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+            class="nu">0</span>;
+
+  <span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; {
+
+    <span class="ty">E</span> <span class="nm">data</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">next</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">prev</span>;
+
+    <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>) {
+      <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+      <span class="kw">this</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+      <span class="kw">this</span>.<span class="nm">prev</span> = <span class="kw">null</span>;
+    }
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">add</span>(<span
+            class="ty">E</span> <span class="nm">e</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span
+            class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+
+    <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {
+      <span class="nm">head</span> = <span class="nm">newNode</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">tail</span>.<span class="nm">next</span> = <span class="nm">newNode</span>;
+      <span class="nm">newNode</span>.<span class="nm">prev</span> = <span class="nm">tail</span>;
+    }
+
+    <span class="nm">size</span>++;
+    <span class="fn">refreshTailTracking</span>(<span class="nm">newNode</span>);
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">add</span>(<span
+            class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span
+            class="nm">e</span>) {
+    <span class="fn">checkInsertBounds</span>(<span class="nm">i</span>);
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span
+            class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nu">0</span>) {
+      <span class="nm">newNode</span>.<span class="nm">next</span> = <span class="nm">head</span>;
+
+      <span class="kw">if</span> (<span class="nm">head</span> != <span
+            class="kw">null</span>) {<span class="nm">head</span>.<span
+            class="nm">prev</span> = <span class="nm">newNode</span>;}
+
+      <span class="nm">head</span> = <span class="nm">newNode</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">prevNode</span> = <span
+            class="fn">getNode</span>(<span class="nm">i</span> - <span class="nu">1</span>);
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">nextNode</span> = <span
+            class="nm">prevNode</span>.<span class="nm">next</span>;
+
+      <span class="nm">prevNode</span>.<span class="nm">next</span> = <span
+            class="nm">newNode</span>;
+      <span class="nm">newNode</span>.<span class="nm">prev</span> = <span
+            class="nm">prevNode</span>;
+      <span class="nm">newNode</span>.<span class="nm">next</span> = <span
+            class="nm">nextNode</span>;
+
+      <span class="kw">if</span> (<span class="nm">nextNode</span> != <span class="kw">null</span>) {<span
+            class="nm">nextNode</span>.<span class="nm">prev</span> = <span
+            class="nm">newNode</span>;}
+    }
+
+    <span class="kw">if</span> (<span class="nm">newNode</span>.<span
+            class="nm">next</span> == <span class="kw">null</span>) {<span class="fn">refreshTailTracking</span>(<span
+            class="nm">newNode</span>);}
+
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span class="fn">set</span>(<span
+            class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span
+            class="nm">e</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+    <span class="fn">getNode</span>(<span class="nm">i</span>).<span class="nm">data</span> = <span
+            class="nm">e</span>;
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span class="fn">set</span>(<span
+            class="ty">int</span> <span class="nm">i</span>, <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="nm">node</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+    <span class="fn">getNode</span>(<span class="nm">i</span>).<span class="nm">data</span> = <span
+            class="nm">node</span>.<span class="nm">data</span>;
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">remove</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nu">0</span>) {
+      <span class="nm">head</span> = <span class="nm">head</span>.<span class="nm">next</span>;
+
+      <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {
+        <span class="nm">tail</span> = <span class="kw">null</span>;
+      } <span class="kw">else</span> {
+        <span class="nm">head</span>.<span class="nm">prev</span> = <span class="kw">null</span>;
+      }
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">i</span> == <span
+            class="nm">size</span> - <span class="nu">1</span>) {
+      <span class="fn">refreshTailTracking</span>(<span class="nm">tail</span>.<span
+            class="nm">prev</span>);
+      <span class="nm">tail</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span
+            class="fn">getNode</span>(<span class="nm">i</span>);
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">prevNode</span> = <span
+            class="nm">curNode</span>.<span class="nm">prev</span>;
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">nextNode</span> = <span
+            class="nm">curNode</span>.<span class="nm">next</span>;
+
+      <span class="nm">prevNode</span>.<span class="nm">next</span> = <span
+            class="nm">nextNode</span>;
+      <span class="nm">nextNode</span>.<span class="nm">prev</span> = <span
+            class="nm">prevNode</span>;
+    }
+    <span class="nm">size</span>--;
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span
+            class="fn">refreshTailTracking</span>(<span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="nm">newNode</span>) {<span class="nm">tail</span> = <span
+            class="nm">newNode</span>;}
+
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">getData</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {<span class="kw">return</span> <span
+            class="fn">getNode</span>(<span class="nm">i</span>).<span class="nm">data</span>;}
+
+  <span class="ck">// 인덱스 조회 시 노드 순회를 줄이기 위해 head, tail 중 더 가까운 쪽에서 시작해서 조회</span>
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="fn">getNode</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nu">0</span>) {<span
+            class="kw">return</span> <span class="nm">head</span>;}
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nm">size</span> - <span
+            class="nu">1</span>) {<span class="kw">return</span> <span class="nm">tail</span>;}
+
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span>;
+
+    <span class="ck">// i가 앞쪽에 가까운 경우</span>
+    <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nm">size</span> / <span
+            class="nu">2</span>) {
+      <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
+      <span class="nm">curNode</span> = <span class="nm">head</span>;
+
+      <span class="kw">while</span> (<span class="nm">idx</span> &lt; <span class="nm">i</span>) {
+        <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span
+            class="nm">next</span>;
+        <span class="nm">idx</span>++;
+      }
+    } <span class="kw">else</span> {
+      <span class="ty">int</span> <span class="nm">idx</span> = <span class="nm">size</span> - <span
+            class="nu">1</span>;
+      <span class="nm">curNode</span> = <span class="nm">tail</span>;
+
+      <span class="kw">while</span> (<span class="nm">idx</span> &gt; <span class="nm">i</span>) {
+        <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span
+            class="nm">prev</span>;
+        <span class="nm">idx</span>--;
+      }
+    }
+    <span class="kw">return</span> <span class="nm">curNode</span>;
+  }
+
+  <span class="ck">/*
+    마지막 노드인 tail 추적으로 getLastNode 필요 X
+    private Node&lt;E&gt; getLastNode() {
+      Node&lt;E&gt; curNode = head;
+
+      while (curNode.next != null) {curNode = curNode.next;}
+      return curNode;
+    }
+  */</span>
+}</pre>
+    </div>
+
+    <div class="code-panel">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#fcd34d"></div>
+        _2_LinkedList.java — 단일 연결 리스트 (개선 전 버전)
+      </div>
+      <pre><span class="ck">// 개선 전 단일 연결 리스트</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="nm">_2_LinkedList</span>&lt;<span
+            class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="nm">head</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+            class="nu">0</span>;
+
+  <span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; {
+
+    <span class="ty">E</span> <span class="nm">data</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">next</span>;
+
+    <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>) {
+      <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+      <span class="kw">this</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+    }
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">add</span>(<span
+            class="ty">E</span> <span class="nm">e</span>) {
+
+    <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {
+      <span class="nm">head</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
+            class="nm">e</span>);
+    } <span class="kw">else</span> {
+      <span class="fn">getLastNode</span>().<span class="nm">next</span> = <span
+            class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+    }
+
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">add</span>(<span
+            class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span
+            class="nm">e</span>) {
+    <span class="fn">checkInsertBounds</span>(<span class="nm">i</span>);
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span
+            class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nu">0</span>) {
+      <span class="nm">newNode</span>.<span class="nm">next</span> = <span class="nm">head</span>;
+      <span class="nm">head</span> = <span class="nm">newNode</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">prevNode</span> = <span
+            class="fn">getNode</span>(<span class="nm">i</span> - <span class="nu">1</span>);
+      <span class="nm">newNode</span>.<span class="nm">next</span> = <span
+            class="nm">prevNode</span>.<span class="nm">next</span>;
+      <span class="nm">prevNode</span>.<span class="nm">next</span> = <span
+            class="nm">newNode</span>;
+    }
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">getData</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {
+    <span class="kw">return</span> <span class="fn">getNode</span>(<span class="nm">i</span>).<span
+            class="nm">data</span>;
+  }
+
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="fn">getNode</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span
+            class="nm">head</span>;
+    <span class="ty">int</span> <span class="nm">idx</span> = <span class="nu">0</span>;
+
+    <span class="kw">while</span> (<span class="nm">idx</span> &lt; <span class="nm">i</span>) {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">next</span>;
+      <span class="nm">idx</span>++;
+    }
+
+    <span class="kw">return</span> <span class="nm">curNode</span>;
+  }
+
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; <span class="fn">getLastNode</span>() {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span
+            class="nm">head</span>;
+
+    <span class="kw">while</span> (<span class="nm">curNode</span>.<span
+            class="nm">next</span> != <span class="kw">null</span>) {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">next</span>;
+    }
+
+    <span class="kw">return</span> <span class="nm">curNode</span>;
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">remove</span>(<span
+            class="ty">int</span> <span class="nm">i</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+
+    <span class="kw">if</span> (<span class="nm">i</span> == <span class="nu">0</span>) {
+      <span class="nm">head</span> = <span class="nm">head</span>.<span class="nm">next</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">prevNode</span> = <span
+            class="fn">getNode</span>(<span class="nm">i</span> - <span class="nu">1</span>);
+      <span class="nm">prevNode</span>.<span class="nm">next</span> = <span
+            class="nm">prevNode</span>.<span class="nm">next</span>.<span class="nm">next</span>;
+    }
+
+    <span class="nm">size</span>--;
+  }
+}
+      </pre>
+    </div>
+
+  </div>
+
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림',
+    2: '매우 느림',
+    3: '느림',
+    4: '느림',
+    5: '보통',
+    6: '보통',
+    7: '빠름',
+    8: '빠름',
+    9: '매우 빠름',
+    10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  let list = [];
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function randList(n) {
+    const arr = [];
+    for (let i = 0; i < n; i++) {
+      arr.push({value: Math.floor(Math.random() * 90) + 10});
+    }
+    return arr;
+  }
+
+  function planTraverse(arr, i) {
+    const steps = [];
+    const size = arr.length;
+    if (i === 0) {
+      steps.push({
+        current: 0,
+        visited: [0],
+        dir: 'direct',
+        msg: `getNode(${i}) → i==0 → head를 바로 반환 (O(1))`
+      });
+      return steps;
+    }
+    if (i === size - 1) {
+      steps.push({
+        current: size - 1,
+        visited: [size - 1],
+        dir: 'direct',
+        msg: `getNode(${i}) → i==size-1 → tail을 바로 반환 (O(1))`
+      });
+      return steps;
+    }
+    const half = (size / 2).toFixed(1);
+    if (i < size / 2) {
+      steps.push({
+        current: null,
+        visited: [],
+        dir: 'fwd-start',
+        msg: `getNode(${i}) → i(${i}) &lt; size/2(${half}) → head에서 순방향 탐색 시작`
+      });
+      const visited = [];
+      for (let idx = 0; idx <= i; idx++) {
+        visited.push(idx);
+        steps.push({
+          current: idx, visited: [...visited], dir: 'fwd',
+          msg: idx === i ? `idx=${idx} 도달 → 목표 노드 발견`
+              : `head → 순방향 이동 (curNode = curNode.next), 현재 idx=${idx}`
+        });
+      }
+    } else {
+      steps.push({
+        current: null,
+        visited: [],
+        dir: 'bwd-start',
+        msg: `getNode(${i}) → i(${i}) ≥ size/2(${half}) → tail에서 역방향 탐색 시작`
+      });
+      const visited = [];
+      for (let idx = size - 1; idx >= i; idx--) {
+        visited.push(idx);
+        steps.push({
+          current: idx, visited: [...visited], dir: 'bwd',
+          msg: idx === i ? `idx=${idx} 도달 → 목표 노드 발견`
+              : `tail → 역방향 이동 (curNode = curNode.prev), 현재 idx=${idx}`
+        });
+      }
+    }
+    return steps;
+  }
+
+  function tagOf(dir) {
+    if (dir === 'fwd-start' || dir === 'bwd-start' || dir === 'direct') {
+      return 'traverse';
+    }
+    if (dir === 'fwd') {
+      return 'traverse-fwd';
+    }
+    if (dir === 'bwd') {
+      return 'traverse-bwd';
+    }
+    return 'traverse';
+  }
+
+  function buildHighlight(s) {
+    const h = {};
+    if (s.visited) {
+      for (const v of s.visited) {
+        h[v] = (s.dir === 'bwd') ? 'visited-bwd'
+            : 'visited-fwd';
+      }
+    }
+    if (s.current !== null && s.current !== undefined) {
+      h[s.current] = (s.dir === 'bwd')
+          ? 'current-bwd' : 'current-fwd';
+    }
+    return h;
+  }
+
+  function traverseAsRenderSteps(arr, i) {
+    return planTraverse(arr, i).map(
+        s => ({arr: [...arr], highlight: buildHighlight(s), msg: s.msg, tag: tagOf(s.dir)}));
+  }
+
+  function planAddTail(arr, value) {
+    const rsteps = [];
+    const newArr = [...arr, {value}];
+    if (arr.length === 0) {
+      rsteps.push(
+          {arr: [...arr], highlight: {}, msg: `head == null → 새 노드가 곧 head가 됩니다`, tag: 'insert'});
+    } else {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {[arr.length - 1]: 'target'},
+        msg: `tail.next = 새 노드, 새 노드.prev = tail`,
+        tag: 'insert'
+      });
+    }
+    rsteps.push({
+      arr: newArr,
+      highlight: {[newArr.length - 1]: 'new'},
+      msg: `refreshTailTracking() → tail 갱신, size++ (O(1) 완료)`,
+      tag: 'done'
+    });
+    return {steps: rsteps, result: newArr};
+  }
+
+  function planAddAt(arr, i, value) {
+    const rsteps = [];
+    const size = arr.length;
+    if (isNaN(i) || i < 0 || i > size) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {},
+        msg: `checkInsertBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: arr, error: true};
+    }
+    if (i === 0) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: size > 0 ? {0: 'target'} : {},
+        msg: `i==0 → 새 노드를 head 앞에 연결 (O(1))`,
+        tag: 'insert'
+      });
+    } else {
+      rsteps.push(...traverseAsRenderSteps(arr, i - 1));
+      rsteps.push({
+        arr: [...arr],
+        highlight: {[i - 1]: 'target'},
+        msg: `prevNode 발견 (idx=${i - 1}) → 그 뒤에 새 노드를 연결`,
+        tag: 'insert'
+      });
+    }
+    const newArr = [...arr.slice(0, i), {value}, ...arr.slice(i)];
+    rsteps.push(
+        {arr: newArr, highlight: {[i]: 'new'}, msg: `삽입 완료 (idx=${i}) → size++`, tag: 'done'});
+    return {steps: rsteps, result: newArr};
+  }
+
+  function planRemoveAt(arr, i) {
+    const rsteps = [];
+    const size = arr.length;
+    if (isNaN(i) || i < 0 || i >= size) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {},
+        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: arr, error: true};
+    }
+    if (i === 0) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {0: 'removing'},
+        msg: `i==0 → head = head.next (O(1))`,
+        tag: 'remove'
+      });
+    } else if (i === size - 1) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {[size - 1]: 'removing'},
+        msg: `i==size-1 → tail = tail.prev (이중연결이라 O(1) 가능)`,
+        tag: 'remove'
+      });
+    } else {
+      rsteps.push(...traverseAsRenderSteps(arr, i));
+      rsteps.push({
+        arr: [...arr],
+        highlight: {[i]: 'removing'},
+        msg: `curNode 발견 (idx=${i}) → prevNode.next=nextNode, nextNode.prev=prevNode`,
+        tag: 'remove'
+      });
+    }
+    const removedVal = arr[i].value;
+    const newArr = [...arr.slice(0, i), ...arr.slice(i + 1)];
+    rsteps.push({arr: newArr, highlight: {}, msg: `노드(${removedVal}) 삭제 완료 → size--`, tag: 'done'});
+    return {steps: rsteps, result: newArr};
+  }
+
+  function planGetData(arr, i) {
+    const rsteps = [];
+    const size = arr.length;
+    if (isNaN(i) || i < 0 || i >= size) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {},
+        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: arr, error: true};
+    }
+    rsteps.push(...traverseAsRenderSteps(arr, i));
+    rsteps.push({
+      arr: [...arr],
+      highlight: {[i]: 'target'},
+      msg: `getData(${i}) → 결과 = ${arr[i].value}`,
+      tag: 'done'
+    });
+    return {steps: rsteps, result: arr};
+  }
+
+  function planSet(arr, i, value) {
+    const rsteps = [];
+    const size = arr.length;
+    if (isNaN(i) || i < 0 || i >= size) {
+      rsteps.push({
+        arr: [...arr],
+        highlight: {},
+        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: arr, error: true};
+    }
+    rsteps.push(...traverseAsRenderSteps(arr, i));
+    const oldVal = arr[i].value;
+    const newArr = arr.map((n, idx) => idx === i ? {value} : n);
+    rsteps.push({
+      arr: newArr,
+      highlight: {[i]: 'new'},
+      msg: `getNode(${i}).data = ${value} (${oldVal} → ${value}) → 링크 재구성 없이 값만 변경`,
+      tag: 'done'
+    });
+    return {steps: rsteps, result: newArr};
+  }
+
+  function renderStep(step) {
+    const area = document.getElementById('listArea');
+    const arr = step.arr;
+
+    if (arr.length === 0) {
+      area.innerHTML = '<div class="empty-msg">리스트가 비어 있습니다 (head = null, tail = null)</div>';
+    } else {
+      let html = '<div class="null-cap">null ←</div>';
+      arr.forEach((node, idx) => {
+        const hl = step.highlight[idx];
+        let cls = 'node-box';
+        if (hl) {
+          cls += ' ' + hl;
+        }
+        let tags = '';
+        if (idx === 0) {
+          tags += '<span class="pos-tag head">HEAD</span>';
+        }
+        if (idx === arr.length - 1) {
+          tags += '<span class="pos-tag tail">TAIL</span>';
+        }
+        html += `<div class="node-wrap">
+            ${tags ? `<div class="pos-tags">${tags}</div>` : ''}
+            <div class="${cls}">${node.value}</div>
+            <div class="node-idx">[${idx}]</div>
+          </div>`;
+        if (idx < arr.length - 1) {
+          html += `<div class="link"><div class="arrow fwd">→</div><div class="arrow bwd">←</div></div>`;
+        }
+      });
+      html += '<div class="null-cap">→ null</div>';
+      area.innerHTML = html;
+    }
+
+    const tagMap = {
+      'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+      'traverse-fwd': '<span class="phase-tag phase-traverse-fwd">정방향 이동</span>',
+      'traverse-bwd': '<span class="phase-tag phase-traverse-bwd">역방향 이동</span>',
+      'insert': '<span class="phase-tag phase-insert">삽입</span>',
+      'remove': '<span class="phase-tag phase-remove">삭제</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+      'error': '<span class="phase-tag phase-error">오류</span>',
+    };
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+
+    document.getElementById('infoSize').textContent = arr.length;
+    document.getElementById('infoHead').textContent = arr.length ? arr[0].value : 'null';
+    document.getElementById('infoTail').textContent = arr.length ? arr[arr.length - 1].value
+        : 'null';
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) {
+      return;
+    }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) {
+      return;
+    }
+    const op = document.getElementById('opSelect').value;
+    const value = parseInt(document.getElementById('valInput').value);
+    const idx = parseInt(document.getElementById('idxInput').value);
+    let plan;
+    if (op === 'addTail') {
+      plan = planAddTail(list, isNaN(value) ? 0 : value);
+    } else if (op === 'addAt') {
+      plan = planAddAt(list, idx, isNaN(value) ? 0 : value);
+    } else if (op === 'removeAt') {
+      plan = planRemoveAt(list, idx);
+    } else if (op === 'getData') {
+      plan = planGetData(list, idx);
+    } else if (op === 'set') {
+      plan = planSet(list, idx, isNaN(value) ? 0 : value);
+    }
+
+    steps = plan.steps;
+    list = plan.result;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    const needsVal = op === 'addTail' || op === 'addAt' || op === 'set';
+    const needsIdx = op === 'addAt' || op === 'removeAt' || op === 'getData' || op === 'set';
+    document.getElementById('valGroup').style.display = needsVal ? 'flex' : 'none';
+    document.getElementById('idxGroup').style.display = needsIdx ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('valInput').addEventListener('input', markDirty);
+  document.getElementById('idxInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) {
+      return;
+    }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick(); // show the first step immediately, then continue on the interval
+    if (playing) {
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewList').addEventListener('click', () => {
+    stopPlay();
+    list = randList(5);
+    steps = [{
+      arr: [...list],
+      highlight: {},
+      msg: '새 리스트를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: ''
+    }];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  updateOpUI();
+  list = randList(5);
+  steps = [{arr: [...list], highlight: {}, msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''}];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>

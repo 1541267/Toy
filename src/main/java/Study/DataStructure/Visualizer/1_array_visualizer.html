@@ -568,7 +568,7 @@
   </div>
 
   <!-- Study Notes -->
-  <details class="notes-toggle" open>
+  <details class="notes-toggle">
     <summary>📖 동적 배열 학습 노트 (클릭해서 펼치기)</summary>
     <div class="notes-body">
 
@@ -604,7 +604,7 @@
         <ul>
           <li>중간 삽입/삭제 시 나머지 원소를 밀어야 해서 <strong>O(n)</strong></li>
           <li>capacity 초과 시 전체 복사 <strong>O(n)</strong> 발생</li>
-          <li>다만 자주 일어나지 않으므로 <strong>상각 분석(Amortized)</strong>하면 add()는 평균 O(1)</li>
+          <li>다만 capacity 초과는 자주 일어나진 않으므로 여러번의 add(e)에 대한 전체 비용을 <strong>상각 분석(Amortized analysis)</strong>하면 O(1)</li>
         </ul>
       </div>
 
@@ -743,6 +743,11 @@
     <span class="kw">return</span> <span class="nm">arr</span>[<span class="nm">i</span>];
   }
 
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">Object</span> <span class="nm">obj</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
+  }
+
   <span class="kw">public void</span> <span class="fn">remove</span>(<span class="ty">int</span> <span class="nm">i</span>) {
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
 
@@ -824,6 +829,11 @@
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
     <span class="ck">// Object[]로 저장했으니 꺼낼 때 캐스팅 필요</span>
     <span class="kw">return</span> (<span class="ty">E</span>) <span class="nm">arr</span>[<span class="nm">i</span>];
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span class="nm">obj</span>) {
+    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
+    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
   }
 
   <span class="kw">public void</span> <span class="fn">remove</span>(<span class="ty">int</span> <span class="nm">i</span>) {
