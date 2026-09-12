@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>동적 배열 시각화</title>
+  <title>동적 배열(Dynamic Array)</title>
 </head>
 <style>
   *, *::before, *::after {
@@ -901,8 +901,7 @@
     return isNaN(v) ? 0 : v;
   }
   function parseIndexInput() {
-    const v = parseInt(document.getElementById('indexInput').value);
-    return v;
+    return parseInt(document.getElementById('indexInput').value);
   }
 
   function actionButtons() {
@@ -913,7 +912,6 @@
     actionButtons().forEach(b => b.disabled = !enabled);
   }
 
-  /* ── Step generators ── */
   function growSteps(a, cap, sz, stepsOut) {
     const newCap = nextGrowCap(cap);
     const newArr = new Array(newCap).fill(null);
