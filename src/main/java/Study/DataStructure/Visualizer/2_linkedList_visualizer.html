@@ -381,8 +381,12 @@
   .pos-tag.tail { background: #4c0519; color: #fb7185; border: 1px solid #881337; }
 
   .node-box {
-    width: 56px;
-    height: 56px;
+    width: 3vw;
+    height: 3vw;
+    min-width: 42px;
+    min-height: 42px;
+    /*width: 56px;*/
+    /*height: 56px;*/
     border-radius: 9px;
     border: 2px solid #334155;
     background: #1e2433;
@@ -601,6 +605,7 @@
   <details class="notes-toggle">
     <summary>📖 연결 리스트 학습 노트 (클릭해서 펼치기)</summary>
     <div class="notes-body">
+      <div class="section-divider">🔗 단일 연결 리스트 (Singly Linked List)</div>
 
       <div class="note-card">
         <h3>🔍 단일 연결 리스트 (Singly Linked List)</h3>
@@ -792,7 +797,7 @@
     <div class="code-panel" style="margin-bottom: 1rem;">
       <div class="code-panel-header">
         <div class="dot" style="background:#67e8f9"></div>
-        단일 & 이중 공통 부분
+        공통 부분
       </div>
       <pre>
 <span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span

@@ -32,10 +32,6 @@
       }
     }
 
-    .category {
-      padding: 1rem;
-    }
-
     details {
       &.top-details {
         > summary {
@@ -76,6 +72,14 @@
       }
     }
 
+    .data-structure details > ul {
+      margin-top: 0;
+    }
+
+    .container {
+      padding: 1rem;
+    }
+
   </style>
 </head>
 <body>
@@ -84,107 +88,109 @@
   <h1>페이지 진입 후 타이틀을 클릭해 페이지로 돌아옴</h1>
 </header>
 
-<div class="category data-structure">
-  <details class="" open>
-    <summary>자료구조</summary>
-    <ul>
+<div class="container">
+  <div class="category data-structure">
+    <details open>
+      <summary>자료구조</summary>
+      <ul style="list-style-type: decimal">
+        <li>
+          <a href="src/main/java/Study/DataStructure/Visualizer/1_array_visualizer.html">
+            Dynamic Array</a>
+        </li>
+        <li>
+          <a href="src/main/java/Study/DataStructure/Visualizer/2_linkedList_visualizer.html">
+            LinkedList (Singly & Doubly)</a>
+        </li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="category algorithm">
+    <ul class="top-list">
       <li>
-        <a href="src/main/java/Study/DataStructure/Visualizer/1_array_visualizer.html">
-          Dynamic Array</a>
-      </li>
-      <li>
-        <a href="src/main/java/Study/DataStructure/Visualizer/2_linkedList_visualizer.html">
-        LinkedList (Singly & Doubly)</a>
+        <details class="top-details" open>
+          <summary>알고리즘</summary>
+          <ul>
+            <li>
+              <details open>
+                <summary>정렬</summary>
+                <ul class="sort">
+                  <li>Comparsion Sort
+                    <ul class="ul-detail-items" style="list-style-type: decimal">
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/1_bubble_sort_visualizer.html">
+                          Bubble</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/2_selection_sort_visualizer.html">
+                          Selection</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/3_insertion_sort_visualizer.html">
+                          Insertion</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/4_quick_sort_visualizer.html">
+                          Quick</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/5_merge_sort_visualizer.html">
+                          Merge</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/6_heap_sort_visualizer.html">
+                          Heap</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>Non-Comparsion Sort
+                    <ul class="ul-detail-items" style="list-style-type: decimal">
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/1_counting_sort_visualizer.html">
+                          Counting</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/2_radix_sort_visualizer.html">
+                          Radix</a>
+                      </li>
+                      <li>
+                        <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/3_bucket_sort_visualizer.html">
+                          Bucket</a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li> Comparison Sort와 차이
+                    <ul class="ul-detail-items">
+                      <li>Comparison Sort의 실행 과정은 이진 결정 트리(decision tree)로 모델링 가능
+                        -> 내부 노드 하나 = 비교 연산 1회, 왼쪽/오른쪽 분기 = 비교 결과(<= / &gt;)
+                      </li>
+                      <li>모든 가능한 정렬 결과(순열)의 가짓수는 n! 이므로,
+                        결정 트리는 최소 n!개의 말단 노드(leaf)를 가져야 함
+                      </li>
+                      <li>높이 h인 이진 트리가 가질 수 있는 최대 말단 노드 수는 2^h 이므로,
+                        2^h >= n! 을 만족해야 함
+                      </li>
+                      <li>양변에 log₂를 취하면 h >= log₂(n!)</li>
+                      <li>Stirling 근사(log₂(n!) ≈ n log₂n − n log₂e)에 의해
+                        h >= log₂(n!) = Ω(n log n)
+                      </li>
+                      <li>h는 트리의 높이 = 최악의 경우 필요한 비교 횟수(worst-case comparisons)</li>
+                      <li>즉 어떤 Comparison Sort도 최악의 경우 Ω(n log n)번의 비교보다 적게 할 수 없음
+                        (mergesort, heapsort는 이 하한을 실제로 달성 → Θ(n log n))
+                      </li>
+                      <li>이 하한을 벗어나려면 비교 자체를 하지 않아야 함
+                        -> Counting/Radix/Bucket Sort처럼 키의 값 구조(범위, 자릿수)를 직접 이용해 인덱싱
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </details>
+            </li>
+          </ul>
+        </details>
       </li>
     </ul>
-  </details>
-</div>
-
-<div class="category algorithm">
-  <ul class="top-list">
-    <li>
-      <details class="top-details" open>
-        <summary>알고리즘</summary>
-        <ul>
-          <li>
-            <details open>
-              <summary>정렬</summary>
-              <ul class="sort">
-                <li>Comparsion Sort
-                  <ul class="ul-detail-items" style="list-style-type: decimal">
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/1_bubble_sort_visualizer.html">
-                        Bubble</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/2_selection_sort_visualizer.html">
-                        Selection</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/3_insertion_sort_visualizer.html">
-                        Insertion</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/4_quick_sort_visualizer.html">
-                        Quick</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/5_merge_sort_visualizer.html">
-                        Merge</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/ComparsionSort/6_heap_sort_visualizer.html">
-                        Heap</a>
-                    </li>
-                  </ul>
-                </li>
-                <li>Non-Comparsion Sort
-                  <ul class="ul-detail-items" style="list-style-type: decimal">
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/1_counting_sort_visualizer.html">
-                        Counting</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/2_radix_sort_visualizer.html">
-                        Radix</a>
-                    </li>
-                    <li>
-                      <a href="src/main/java/Study/Algorithm/Sort/Visualizer/NonComparsionSort/3_bucket_sort_visualizer.html">
-                        Bucket</a>
-                    </li>
-                  </ul>
-                </li>
-                <li> Comparison Sort와 차이
-                  <ul class="ul-detail-items">
-                    <li>Comparison Sort의 실행 과정은 이진 결정 트리(decision tree)로 모델링 가능
-                      — 내부 노드 하나 = 비교 연산 1회, 왼쪽/오른쪽 분기 = 비교 결과(<= / &gt;)
-                    </li>
-                    <li>모든 가능한 정렬 결과(순열)의 가짓수는 n! 이므로,
-                      결정 트리는 최소 n!개의 말단 노드(leaf)를 가져야 함
-                    </li>
-                    <li>높이 h인 이진 트리가 가질 수 있는 최대 말단 노드 수는 2^h 이므로,
-                      2^h >= n! 을 만족해야 함
-                    </li>
-                    <li>양변에 log₂를 취하면 h >= log₂(n!)</li>
-                    <li>Stirling 근사(log₂(n!) ≈ n log₂n − n log₂e)에 의해
-                      h >= log₂(n!) = Ω(n log n)
-                    </li>
-                    <li>h는 트리의 높이 = 최악의 경우 필요한 비교 횟수(worst-case comparisons)</li>
-                    <li>즉 어떤 Comparison Sort도 최악의 경우 Ω(n log n)번의 비교보다 적게 할 수 없음
-                      (mergesort, heapsort는 이 하한을 실제로 달성 → Θ(n log n))
-                    </li>
-                    <li>이 하한을 벗어나려면 비교 자체를 하지 않아야 함
-                      -> Counting/Radix/Bucket Sort처럼 키의 값 구조(범위, 자릿수)를 직접 이용해 인덱싱
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-            </details>
-          </li>
-        </ul>
-      </details>
-    </li>
-  </ul>
+  </div>
 </div>
 </body>
 </html>
