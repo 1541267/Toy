@@ -44,7 +44,7 @@ public class _3_Stack {
   // 배열 기반
   static class ArrayBasedStack<E> {
 
-    Object[] stack;
+    private Object[] stack;
     private int capacity, top = 0;
 
     public ArrayBasedStack() {

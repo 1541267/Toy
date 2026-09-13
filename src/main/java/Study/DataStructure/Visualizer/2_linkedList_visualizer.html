@@ -636,6 +636,11 @@
         공통 부분
       </div>
       <pre>
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">getData</span>(<span
+          class="ty">int</span> <span class="nm">i</span>) {<span class="kw">return</span> <span
+          class="fn">getNode</span>(<span class="nm">i</span>).<span
+          class="nm">data</span>;}
+
 <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span
           class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span
           class="nm">e</span>) {
@@ -707,13 +712,14 @@
 
   <span class="kw">public</span> <span class="kw">void</span> <span class="fn">add</span>(<span
               class="ty">E</span> <span class="nm">e</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span
+              class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
 
     <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {
-      <span class="nm">head</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
-              class="nm">e</span>);
+      <span class="nm">head</span> = <span class="nm">newNode</span>;
     } <span class="kw">else</span> {
       <span class="fn">getLastNode</span>().<span class="nm">next</span> = <span
-              class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+              class="nm">newNode</span>;
     }
 
     <span class="nm">size</span>++;
@@ -738,12 +744,6 @@
               class="nm">newNode</span>;
     }
     <span class="nm">size</span>++;
-  }
-
-  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">getData</span>(<span
-              class="ty">int</span> <span class="nm">i</span>) {
-    <span class="kw">return</span> <span class="fn">getNode</span>(<span class="nm">i</span>).<span
-              class="nm">data</span>;
   }
 
   <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
@@ -792,9 +792,9 @@
     <span class="nm">size</span>--;
   }
 }
-      </pre>
+        </pre>
       </div>
-      <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#67e8f9"></div>
           이중 연결 리스트 (tail 추적 + 양방향 탐색 개선)
@@ -913,10 +913,6 @@
     <span class="nm">size</span>--;
   }
 
-  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">getData</span>(<span
-              class="ty">int</span> <span class="nm">i</span>) {<span class="kw">return</span> <span
-              class="fn">getNode</span>(<span class="nm">i</span>).<span class="nm">data</span>;}
-
   <span class="kw">private</span> <span class="kw">void</span> <span
               class="fn">refreshTailTracking</span>(<span class="ty">Node</span>&lt;<span
               class="ty">E</span>&gt; <span class="nm">newNode</span>) {<span class="nm">tail</span> = <span
@@ -959,7 +955,8 @@
     }
     <span class="kw">return</span> <span class="nm">curNode</span>;
   }
-}</pre>
+}
+        </pre>
       </div>
     </div>
   </div>
