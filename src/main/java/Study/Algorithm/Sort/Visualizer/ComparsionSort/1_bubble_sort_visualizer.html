@@ -4,462 +4,35 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>버블 정렬 시각화</title>
+  <link rel="stylesheet" href="/css/common_code_page_style.css">
 </head>
 <style>
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    background: #0f1117;
-    color: #e2e8f0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-  }
-
-  .page {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 3rem;
-  }
-
-  /* ── Header ── */
-  .header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .header h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin: 0 0 0.3rem;
-    color: #f8fafc;
-  }
-
-  .header p {
-    font-size: 0.82rem;
-    color: #64748b;
-    margin: 0;
-  }
-
-  /* ── Study Notes ── */
-  .notes-toggle {
-    background: #1e2433;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-
-  .notes-toggle summary {
-    padding: 0.75rem 1.1rem;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #94a3b8;
-    letter-spacing: 0.3px;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-  }
-
-  .notes-toggle summary::before {
-    content: '▶';
-    font-size: 9px;
-    transition: transform 0.2s;
-    color: #6366f1;
-  }
-
-  .notes-toggle[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  .notes-toggle summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .notes-body {
-    padding: 0 1.1rem 1.1rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  @media (max-width: 680px) {
-    .notes-body {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .note-card {
-    background: #141824;
-    border: 1px solid #252d45;
-    border-radius: 8px;
-    padding: 0.85rem 1rem;
-  }
-
-  .note-card h3 {
-    margin: 0 0 0.55rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: #6366f1;
-  }
-
-  .note-card ul {
-    margin: 0;
-    padding-left: 1.1rem;
-    font-size: 0.79rem;
-    color: #94a3b8;
-    line-height: 1.75;
-  }
-
-  .note-card ul li {
-    margin-bottom: 0.1rem;
-  }
-
-  .note-card ul li strong {
-    color: #c7d2fe;
-  }
-
-  .complexity-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.55rem;
-    flex-wrap: wrap;
-  }
-
-  .badge {
-    background: #1e2433;
-    border: 1px solid #334155;
-    border-radius: 5px;
-    padding: 2px 9px;
-    font-size: 0.73rem;
-    color: #a5b4fc;
-    font-weight: 600;
-  }
-
-  .badge.good {
-    border-color: #065f46;
-    color: #6ee7b7;
-    background: #022c22;
-  }
-
-  .badge.warn {
-    border-color: #78350f;
-    color: #fcd34d;
-    background: #1c1008;
-  }
-
-  .badge.bad {
-    border-color: #7f1d1d;
-    color: #fca5a5;
-    background: #1c0a0a;
-  }
-
-  /* ── Controls ── */
-  .controls-bar {
-    background: #1a1f2e;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    padding: 0.9rem 1.1rem;
-    margin-bottom: 1.25rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-  }
-
-  .ctrl-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: #64748b;
-  }
-
-  .ctrl-group label {
-    color: #94a3b8;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .ctrl-group input[type=range] {
-    width: 100px;
-    accent-color: #6366f1;
-  }
-
-  .ctrl-group .val {
-    font-weight: 600;
-    color: #e2e8f0;
-    min-width: 32px;
-    font-size: 0.8rem;
-  }
-
-  .btn-row {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin-left: auto;
-  }
-
-  .btn {
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 7px;
-    border: 1px solid #334155;
-    background: #1e2433;
-    color: #cbd5e1;
-    transition: background 0.15s;
-    white-space: nowrap;
-  }
-
-  .btn:hover {
-    background: #273047;
-  }
-
-  .btn.primary {
-    background: #4f46e5;
-    border-color: #6366f1;
-    color: #fff;
-  }
-
-  .btn.primary:hover {
-    background: #4338ca;
-  }
-
-  .btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  /* ── Viz Panel ── */
-  .viz-panel {
-    background: #1a1f2e;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-
-  .panel-title {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #c7d2fe;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .panel-title .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .panel-step {
-    font-size: 0.7rem;
-    color: #475569;
-  }
-
-  .bar-area {
-    display: grid;
-    align-items: flex-end;
-    gap: 2px;
-    height: 160px;
-    margin-bottom: 0.75rem;
-    width: 100%;
+  :root {
+    --page-max-width: 960px;
   }
 
   .bar {
-    border-radius: 3px 3px 0 0;
-    transition: height 0.12s, background 0.12s;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    min-width: 1px;
-  }
+    &.comparing {
+      background: var(--state-compare);
+    }
 
-  .bar span {
-    font-size: 9px;
-    font-weight: 600;
-    margin-bottom: 2px;
-    line-height: 1;
-    overflow: hidden;
-  }
+    &.swap {
+      background: var(--state-swap);
+    }
 
-  .bar.normal {
-    background: #4c4e9a;
-  }
-
-  .bar.comparing {
-    background: #0f766e;
-  }
-
-  .bar.swap {
-    background: #b45309;
-  }
-
-  .bar.boundary {
-    background: #1d4ed8;
-  }
-
-  .bar.sorted {
-    background: #ffff00;
-  }
-
-  .bar.done {
-    background: #ff0063;
-  }
-
-  /* ── Legend ── */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    margin-bottom: 0.75rem;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.7rem;
-    color: #64748b;
-  }
-
-  .legend-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── Log ── */
-  .log-box {
-    background: #0f1117;
-    border: 1px solid #1e2433;
-    border-radius: 7px;
-    padding: 7px 11px;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    align-content: center;
-    min-height: 3.5rem;
-    line-height: 1.55;
-  }
-
-  .phase-tag {
-    display: inline-block;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.67rem;
-    font-weight: 700;
-    margin-right: 5px;
-    letter-spacing: 0.3px;
+    &.boundary {
+      background: var(--state-mark);
+    }
   }
 
   .phase-compare {
-    background: #14374e;
-    color: #67e8f9;
+    background: var(--tag-cyan-bg);
+    color: var(--tag-cyan-text);
   }
 
   .phase-swap {
-    background: #451a03;
-    color: #fcd34d;
-  }
-
-  .phase-done {
-    background: #052e16;
-    color: #4ade80;
-  }
-
-  /* ── Code ── */
-  .code-section {
-    margin-top: 1.5rem;
-  }
-
-  .code-section-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #475569;
-    margin-bottom: 0.75rem;
-    padding-left: 0.2rem;
-  }
-
-  .code-panel {
-    background: #0d1117;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .code-panel-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0.6rem 1rem;
-    background: #161b27;
-    border-bottom: 1px solid #2d3552;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-  }
-
-  .code-panel-header .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  pre {
-    margin: 0;
-    padding: 1rem 1.1rem;
-    overflow-x: auto;
-    font-size: 0.72rem;
-    line-height: 1.7;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    color: #cdd6f4;
-    white-space: pre;
-  }
-
-  .ck {
-    color: #6272a4;
-  }
-
-  .kw {
-    color: #bd93f9;
-  }
-
-  .ty {
-    color: #8be9fd;
-  }
-
-  .fn {
-    color: #50fa7b;
-  }
-
-  .nm {
-    color: #ffb86c;
-  }
-
-  .nu {
-    color: #ff79c6;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
   }
 </style>
 
@@ -467,7 +40,7 @@
 <div class="page">
 
   <div class="header">
-    <h1 onclick="history.back()">버블 정렬(Bubble Sort)</h1>
+    <h1 onclick="location.href = '/Toy'">버블 정렬(Bubble Sort)</h1>
     <p>인접한 두 원소를 비교해 1회전마다 최댓값을 맨 뒤에 위치</p>
   </div>
 
@@ -690,6 +263,7 @@
     return s;
   }
 
+  // 상태
   function init() {
     stopPlay();
     const arr = randArr(getSize());
@@ -700,6 +274,7 @@
     document.getElementById('btnPlay').disabled = false;
   }
 
+  // 렌더
   function renderStep(step) {
     const barArea = document.getElementById('barArea');
     const log = document.getElementById('log');
@@ -756,6 +331,7 @@
     document.getElementById('btnPlay').textContent = '▶ 시작';
   }
 
+  // Event Listeners
   document.getElementById('btnPlay').addEventListener('click', () => {
     if (playing) {
       stopPlay();

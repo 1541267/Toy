@@ -4,297 +4,33 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>동적 배열(Dynamic Array)</title>
+  <link rel="stylesheet" href="/css/common_code_page_style.css">
 </head>
 <style>
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    background: #0f1117;
-    color: #e2e8f0;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-  }
-
-  .page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 3rem;
-  }
-
-  /* ── Header ── */
-  .header {
-    text-align: center;
-    margin-bottom: 2rem;
+  :root {
+    --controls-mb: 0.9rem;
+    --controls-gap: 0.9rem;
+    --btn-padding: 7px 13px;
+    --legenddot-radius: 3px;
+    --legenddot-border: 1px solid transparent;
   }
 
   .header h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    margin: 0 0 0.3rem;
-    color: #f8fafc;
     cursor: pointer;
-  }
-
-  .header p {
-    font-size: 0.82rem;
-    color: #64748b;
-    margin: 0;
-  }
-
-  /* ── Study Notes ── */
-  .notes-toggle {
-    background: #1e2433;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-
-  .notes-toggle summary {
-    padding: 0.75rem 1.1rem;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #94a3b8;
-    letter-spacing: 0.3px;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-  }
-
-  .notes-toggle summary::before {
-    content: '▶';
-    font-size: 9px;
-    transition: transform 0.2s;
-    color: #6366f1;
-  }
-
-  .notes-toggle[open] summary::before {
-    transform: rotate(90deg);
-  }
-
-  .notes-toggle summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .notes-body {
-    padding: 0 1.1rem 1.1rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  @media (max-width: 680px) {
-    .notes-body {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .note-card {
-    background: #141824;
-    border: 1px solid #252d45;
-    border-radius: 8px;
-    padding: 0.85rem 1rem;
-  }
-
-  .note-card h3 {
-    margin: 0 0 0.55rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.8px;
-    color: #6366f1;
-  }
-
-  .note-card ul {
-    margin: 0;
-    padding-left: 1.1rem;
-    font-size: 0.79rem;
-    color: #94a3b8;
-    line-height: 1.75;
-  }
-
-  .note-card ul li {
-    margin-bottom: 0.1rem;
-  }
-
-  .note-card ul li strong {
-    color: #c7d2fe;
-  }
-
-  .complexity-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.55rem;
-    flex-wrap: wrap;
-  }
-
-  .badge {
-    background: #1e2433;
-    border: 1px solid #334155;
-    border-radius: 5px;
-    padding: 2px 9px;
-    font-size: 0.73rem;
-    color: #a5b4fc;
-    font-weight: 600;
-  }
-
-  .badge.good {
-    border-color: #065f46;
-    color: #6ee7b7;
-    background: #022c22;
-  }
-
-  .badge.warn {
-    border-color: #78350f;
-    color: #fcd34d;
-    background: #1c1008;
-  }
-
-  .badge.bad {
-    border-color: #7f1d1d;
-    color: #fca5a5;
-    background: #1c0a0a;
-  }
-
-  /* ── Controls ── */
-  .controls-bar {
-    background: #1a1f2e;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    padding: 0.9rem 1.1rem;
-    margin-bottom: 0.9rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.9rem;
-    align-items: center;
-  }
-
-  .ctrl-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
-    color: #64748b;
-  }
-
-  .ctrl-group label {
-    color: #94a3b8;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .ctrl-group input[type=range] {
-    width: 100px;
-    accent-color: #6366f1;
   }
 
   .ctrl-group input[type=number] {
     width: 62px;
-    background: #0f1117;
-    border: 1px solid #334155;
-    color: #e2e8f0;
-    border-radius: 6px;
-    padding: 5px 7px;
-    font-size: 0.8rem;
-  }
-
-  .ctrl-group .val {
-    font-weight: 600;
-    color: #e2e8f0;
-    min-width: 32px;
-    font-size: 0.8rem;
-  }
-
-  .btn-row {
-    display: flex;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin-left: auto;
-  }
-
-  .btn {
-    cursor: pointer;
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 7px 13px;
-    border-radius: 7px;
-    border: 1px solid #334155;
-    background: #1e2433;
-    color: #cbd5e1;
-    transition: background 0.15s;
-    white-space: nowrap;
-  }
-
-  .btn:hover {
-    background: #273047;
-  }
-
-  .btn.primary {
-    background: #4f46e5;
-    border-color: #6366f1;
-    color: #fff;
-  }
-
-  .btn.primary:hover {
-    background: #4338ca;
   }
 
   .btn.danger {
-    background: #7f1d1d;
+    background: var(--bad-border);
     border-color: #991b1b;
-    color: #fecaca;
-  }
+    color: var(--tag-red-text);
 
-  .btn.danger:hover {
-    background: #991b1b;
-  }
-
-  .btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  /* ── Viz Panel ── */
-  .viz-panel {
-    background: #1a1f2e;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.65rem;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .panel-title {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #c7d2fe;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .panel-title .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-  }
-
-  .panel-step {
-    font-size: 0.7rem;
-    color: #475569;
+    &:hover {
+      background: #991b1b;
+    }
   }
 
   .info-row {
@@ -304,6 +40,7 @@
     margin-bottom: 0.85rem;
   }
 
+  /* ── 배열 셀(cell) 시각화 ── */
   .cell-area {
     display: flex;
     flex-wrap: wrap;
@@ -316,8 +53,8 @@
     width: 48px;
     height: 48px;
     border-radius: 8px;
-    border: 1px solid #334155;
-    background: #1e2433;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-bg);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -325,131 +62,85 @@
     gap: 1px;
     transition: background 0.15s, border-color 0.15s, transform 0.15s;
     flex-shrink: 0;
+
+    & .idx-label {
+      font-size: 0.55rem;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    & .val-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent-soft);
+    }
+
+    &.empty {
+      border-style: dashed;
+      background: var(--card-bg);
+
+      & .val-label {
+        color: var(--surface-border);
+      }
+    }
+
+    &.shift-src {
+      background: var(--tag-amber-bg);
+      border-color: var(--state-swap);
+
+      & .val-label {
+        color: var(--tag-amber-text);
+      }
+    }
+
+    &.shift-dest {
+      background: var(--tag-cyan-bg);
+      border-color: var(--state-compare);
+      transform: scale(1.06);
+
+      & .val-label {
+        color: var(--tag-cyan-text);
+      }
+    }
+
+    &.insert {
+      background: #1c0a2e;
+      border-color: #a855f7;
+      transform: scale(1.1);
+
+      & .val-label {
+        color: #e9d5ff;
+      }
+    }
+
+    &.clear {
+      background: var(--bad-bg);
+      border-color: var(--bad-border);
+
+      & .val-label {
+        color: var(--bad-text);
+      }
+    }
+
+    &.get-hit {
+      background: var(--tag-green-bg);
+      border-color: #22c55e;
+      transform: scale(1.1);
+
+      & .val-label {
+        color: var(--tag-green2-text);
+      }
+    }
+
+    &.grow-new {
+      border-color: var(--state-mark);
+    }
   }
 
-  .cell .idx-label {
-    font-size: 0.55rem;
-    color: #475569;
-    font-weight: 600;
-  }
-
-  .cell .val-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #a5b4fc;
-  }
-
-  .cell.empty {
-    border-style: dashed;
-    background: #141824;
-  }
-
-  .cell.empty .val-label {
-    color: #334155;
-  }
-
-  .cell.shift-src {
-    background: #451a03;
-    border-color: #b45309;
-  }
-
-  .cell.shift-src .val-label {
-    color: #fcd34d;
-  }
-
-  .cell.shift-dest {
-    background: #14374e;
-    border-color: #0f766e;
-    transform: scale(1.06);
-  }
-
-  .cell.shift-dest .val-label {
-    color: #67e8f9;
-  }
-
-  .cell.insert {
-    background: #1c0a2e;
-    border-color: #a855f7;
-    transform: scale(1.1);
-  }
-
-  .cell.insert .val-label {
-    color: #e9d5ff;
-  }
-
-  .cell.clear {
-    background: #1c0a0a;
-    border-color: #7f1d1d;
-  }
-
-  .cell.clear .val-label {
-    color: #fca5a5;
-  }
-
-  .cell.get-hit {
-    background: #052e16;
-    border-color: #22c55e;
-    transform: scale(1.1);
-  }
-
-  .cell.get-hit .val-label {
-    color: #86efac;
-  }
-
-  .cell.grow-new {
-    border-color: #1d4ed8;
-  }
-
-  /* ── Legend ── */
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 14px;
-    margin-bottom: 0.75rem;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 0.7rem;
-    color: #64748b;
-  }
-
-  .legend-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 3px;
-    flex-shrink: 0;
-    border: 1px solid transparent;
-  }
-
-  /* ── Log ── */
-  .log-box {
-    background: #0f1117;
-    border: 1px solid #1e2433;
-    border-radius: 7px;
-    padding: 7px 11px;
-    font-size: 0.75rem;
-    color: #94a3b8;
-    align-content: center;
-    min-height: 3.5rem;
-    line-height: 1.55;
-  }
-
-  .phase-tag {
-    display: inline-block;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-size: 0.67rem;
-    font-weight: 700;
-    margin-right: 5px;
-    letter-spacing: 0.3px;
-  }
-
+  /* ── 로그 phase 태그 ── */
   .phase-shift {
-    background: #451a03;
-    color: #fcd34d;
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
   }
 
   .phase-insert {
@@ -458,43 +149,23 @@
   }
 
   .phase-clear {
-    background: #1c0a0a;
-    color: #fca5a5;
+    background: var(--bad-bg);
+    color: var(--bad-text);
   }
 
   .phase-get {
-    background: #052e16;
-    color: #4ade80;
+    background: var(--tag-green-bg);
+    color: var(--tag-green-text);
   }
 
   .phase-grow {
-    background: #14374e;
-    color: #67e8f9;
+    background: var(--tag-cyan-bg);
+    color: var(--tag-cyan-text);
   }
 
   .phase-error {
-    background: #7f1d1d;
-    color: #fecaca;
-  }
-
-  .phase-done {
-    background: #052e16;
-    color: #4ade80;
-  }
-
-  /* ── Code ── */
-  .code-section {
-    margin-top: 1.5rem;
-  }
-
-  .code-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .code-grid .code-panel {
-    min-width: 0;
+    background: var(--tag-red-bg);
+    color: var(--tag-red-text);
   }
 
   @media (max-width: 820px) {
@@ -502,68 +173,13 @@
       grid-template-columns: 1fr;
     }
   }
-
-  .code-section-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #475569;
-    margin-bottom: 0.75rem;
-    padding-left: 0.2rem;
-  }
-
-  .code-panel {
-    background: #0d1117;
-    border: 1px solid #2d3552;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .code-panel-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 0.6rem 1rem;
-    background: #161b27;
-    border-bottom: 1px solid #2d3552;
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-  }
-
-  .code-panel-header .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  pre {
-    margin: 0;
-    padding: 1rem 1.1rem;
-    overflow-x: auto;
-    font-size: 0.72rem;
-    line-height: 1.7;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-    color: #cdd6f4;
-    white-space: pre;
-  }
-
-  .ck { color: #6272a4; }
-  .kw { color: #bd93f9; }
-  .ty { color: #8be9fd; }
-  .fn { color: #50fa7b; }
-  .nm { color: #ffb86c; }
-  .nu { color: #ff79c6; }
-  .str { color: #f1fa8c; }
 </style>
 
 <body>
 <div class="page">
 
   <div class="header">
-    <h1 onclick="history.back()">동적 배열(Dynamic Array) 시각화</h1>
+    <h1 onclick="location.href = '/Toy'">동적 배열(Dynamic Array) 시각화</h1>
     <p>capacity(용량)와 size(개수)를 구분하고, add / remove 시 원소가 어떻게 이동하는지 확인</p>
   </div>
 
@@ -604,7 +220,9 @@
         <ul>
           <li>중간 삽입/삭제 시 나머지 원소를 밀어야 해서 <strong>O(n)</strong></li>
           <li>capacity 초과 시 전체 복사 <strong>O(n)</strong> 발생</li>
-          <li>다만 capacity 초과는 자주 일어나진 않으므로 여러번의 add(e)에 대한 전체 비용을 <strong>상각 분석(Amortized analysis)</strong>하면 O(1)</li>
+          <li>다만 capacity 초과는 자주 일어나진 않으므로 여러번의 add(e)에 대한 전체 비용을 <strong>상각 분석(Amortized
+            analysis)</strong>하면 O(1)
+          </li>
         </ul>
       </div>
 
@@ -675,7 +293,7 @@
     <div class="panel-header">
       <div class="panel-title">
         <div class="dot" style="background:#67e8f9"></div>
-        InnerArr
+        DynamicArray
       </div>
       <div class="panel-step" id="stepCounter">—</div>
     </div>
@@ -686,12 +304,30 @@
     </div>
     <div class="cell-area" id="cellArea"></div>
     <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:#141824;border-color:#334155"></div>빈 슬롯</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#b45309"></div>이동(밀려남)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#0f766e"></div>이동 도착</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>삽입 위치</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#7f1d1d"></div>삭제(null)</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>조회 결과</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#141824;border-color:#334155"></div>
+        빈 슬롯
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309"></div>
+        이동(밀려남)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e"></div>
+        이동 도착
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#a855f7"></div>
+        삽입 위치
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d"></div>
+        삭제(null)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#22c55e"></div>
+        조회 결과
+      </div>
     </div>
     <div class="log-box" id="log">"새 배열" 또는 위의 버튼으로 add / remove / get 을 실행해보세요.</div>
   </div>
@@ -699,7 +335,69 @@
   <!-- Code -->
   <div class="code-section">
     <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통 부분
+      </div>
+      <pre>
+<span class="kw">public void</span> <span class="fn">remove</span>(<span
+          class="ty">int</span> <span class="nm">i</span>) {
+  <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
 
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
+          class="nm">i</span>; <span class="nm">j</span> &lt; <span
+          class="nm">size</span> - <span class="nu">1</span>; <span class="nm">j</span>++) {
+    <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span
+          class="nm">j</span> + <span class="nu">1</span>];
+  }
+  <span class="nm">arr</span>[<span class="nm">size</span> - <span class="nu">1</span>] = <span
+          class="kw">null</span>;
+  <span class="nm">size</span>--;
+}
+
+<span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+          class="kw">return</span> <span class="nm">size</span>;}
+
+<span class="kw">public</span> <span class="ty">int</span> <span
+          class="fn">capacity</span>() {<span class="kw">return</span> <span class="nm">arr</span>.length;}
+
+<span class="kw">private void</span> <span class="fn">growIfNeeded</span>() {
+  <span class="kw">if</span> (<span class="nm">size</span> == <span class="nm">arr</span>.length) {
+    <span class="ty">int</span> <span class="nm">newCapacity</span> = (<span class="ty">int</span>) (<span
+          class="nm">arr</span>.length * <span class="nu">1.5</span>) + <span
+          class="nu">1</span>;
+    <span class="nm">arr</span> = <span class="ty">Arrays</span>.<span
+          class="fn">copyOf</span>(<span class="nm">arr</span>, <span
+          class="nm">newCapacity</span>);
+  }
+}
+
+<span class="kw">private void</span> <span class="fn">checkInsertBounds</span>(<span
+          class="ty">int</span> <span
+          class="nm">i</span>) {
+  <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span
+          class="nm">i</span> &gt; <span class="nm">size</span>) {
+    <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+          class="str">"Index: "</span> + <span class="nm">i</span> + <span
+          class="str">", Size: "</span> + <span
+          class="nm">size</span>);
+  }
+}
+
+<span class="kw">private void</span> <span class="fn">checkElementBounds</span>(<span
+          class="ty">int</span> <span
+          class="nm">i</span>) {
+  <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span
+          class="nm">i</span> &gt;= <span class="nm">size</span>) {
+    <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+          class="str">"Index: "</span> + <span class="nm">i</span> + <span
+          class="str">", Size: "</span> + <span
+          class="nm">size</span>);
+  }
+}
+      </pre>
+    </div>
     <div class="code-grid">
       <!-- 일반 버전 -->
       <div class="code-panel">
@@ -708,82 +406,61 @@
           일반 버전
         </div>
         <pre><span class="ck">// 일반 버전: Object[]를 사용해 동적 배열 구현</span>
-<span class="kw">static class</span> <span class="ty">BasicArray</span> {
+<span class="kw">static class</span> <span class="ty">BasicDynamicArray</span> {
 
   <span class="kw">private</span> <span class="ty">Object</span>[] <span class="nm">arr</span>;
-  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+              class="nu">0</span>;
 
-  <span class="kw">public</span> <span class="fn">BasicArray</span>() {
-    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span class="ty">Object</span>[<span class="nu">10</span>];
+  <span class="kw">public</span> <span class="fn">BasicDynamicArray</span>() {
+    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nu">10</span>];
   }
 
-  <span class="kw">public</span> <span class="fn">BasicArray</span>(<span class="ty">int</span> <span class="nm">capacity</span>) {
-    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span class="ty">Object</span>[<span class="nm">capacity</span>];
+  <span class="kw">public</span> <span class="fn">BasicDynamicArray</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+    <span class="kw">if</span> (<span class="nm">capacity</span> &lt; <span class="nu">0</span>) {
+      <span class="kw">throw new</span>
+        <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="str">"잘못된 용량 초기화 capacity: "</span> + <span class="nm">capacity</span>);
+    }
+    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
   }
 
-  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">Object</span> <span class="nm">obj</span>) {
+  <span class="kw">public void</span> <span class="fn">add</span>(<span
+              class="ty">Object</span> <span class="nm">obj</span>) {
     <span class="fn">growIfNeeded</span>();
     <span class="nm">arr</span>[<span class="nm">size</span>++] = <span class="nm">obj</span>;
   }
 
-  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">Object</span> <span class="nm">obj</span>) {
+  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">int</span> <span
+              class="nm">i</span>, <span class="ty">Object</span> <span class="nm">obj</span>) {
     <span class="fn">checkInsertBounds</span>(<span class="nm">i</span>);
     <span class="fn">growIfNeeded</span>();
 
-    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nm">size</span>; <span class="nm">j</span> &gt; <span class="nm">i</span>; <span class="nm">j</span>--) {
-      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>];
+    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
+              class="nm">size</span>; <span class="nm">j</span> &gt; <span
+              class="nm">i</span>; <span class="nm">j</span>--) {
+      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span
+              class="nm">j</span> - <span class="nu">1</span>];
     }
 
     <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
     <span class="nm">size</span>++;
   }
 
-  <span class="kw">public</span> <span class="ty">Object</span> <span class="fn">get</span>(<span class="ty">int</span> <span class="nm">i</span>) {
+  <span class="kw">public</span> <span class="ty">Object</span> <span class="fn">get</span>(<span
+              class="ty">int</span> <span class="nm">i</span>) {
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
     <span class="kw">return</span> <span class="nm">arr</span>[<span class="nm">i</span>];
   }
 
-  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">Object</span> <span class="nm">obj</span>) {
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span
+              class="ty">int</span> <span class="nm">i</span>, <span
+              class="ty">Object</span> <span class="nm">obj</span>) {
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
     <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
-  }
-
-  <span class="kw">public void</span> <span class="fn">remove</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
-
-    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nm">i</span>; <span class="nm">j</span> &lt; <span class="nm">size</span> - <span class="nu">1</span>; <span class="nm">j</span>++) {
-      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span class="nm">j</span> + <span class="nu">1</span>];
-    }
-
-    <span class="nm">arr</span>[<span class="nm">size</span> - <span class="nu">1</span>] = <span class="kw">null</span>;
-    <span class="nm">size</span>--;
-  }
-
-  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {
-    <span class="kw">return</span> <span class="nm">size</span>;
-  }
-
-  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">capacity</span>() {
-    <span class="kw">return</span> <span class="nm">arr</span>.length;
-  }
-
-  <span class="kw">private void</span> <span class="fn">growIfNeeded</span>() {
-    <span class="kw">if</span> (<span class="nm">size</span> == <span class="nm">arr</span>.length) {
-      <span class="ty">int</span> <span class="nm">newCapacity</span> = (<span class="ty">int</span>) (<span class="nm">arr</span>.length * <span class="nu">1.5</span>) + <span class="nu">1</span>;
-      <span class="nm">arr</span> = <span class="ty">Arrays</span>.<span class="fn">copyOf</span>(<span class="nm">arr</span>, <span class="nm">newCapacity</span>);
-    }
-  }
-
-  <span class="kw">private void</span> <span class="fn">checkInsertBounds</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span class="nm">i</span> &gt; <span class="nm">size</span>) {
-      <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span class="str">"Index: "</span> + <span class="nm">i</span> + <span class="str">", Size: "</span> + <span class="nm">size</span>);
-    }
-  }
-
-  <span class="kw">private void</span> <span class="fn">checkElementBounds</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span class="nm">i</span> &gt;= <span class="nm">size</span>) {
-      <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span class="str">"Index: "</span> + <span class="nm">i</span> + <span class="str">", Size: "</span> + <span class="nm">size</span>);
-    }
   }
 }</pre>
       </div>
@@ -791,87 +468,69 @@
       <!-- 제네릭 버전 -->
       <div class="code-panel">
         <div class="code-panel-header">
-          <div class="dot" style="background:#a855f7"></div>제네릭 버전
+          <div class="dot" style="background:#a855f7"></div>
+          제네릭 버전
         </div>
-        <pre><span class="ck">// 제네릭 버전: Object[]에 저장하고 get()에서 E로 캐스팅</span>
-<span class="kw">static class</span> <span class="ty">GenericArray</span>&lt;<span class="ty">E</span>&gt; {
+        <pre><span class="ck">// 제네릭 버전: Object[]에 저장하고 get()에서 E로 캐스팅, 타입 안정성</span>
+<span class="kw">static class</span> <span class="ty">GenericDynamicArray</span>&lt;<span
+              class="ty">E</span>&gt; {
 
   <span class="kw">private</span> <span class="ty">Object</span>[] <span class="nm">arr</span>;
-  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+              class="nu">0</span>;
 
-  <span class="kw">public</span> <span class="fn">GenericArray</span>() {
-    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span class="ty">Object</span>[<span class="nu">10</span>];
+  <span class="kw">public</span> <span class="fn">GenericDynamicArray</span>() {
+    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nu">10</span>];
   }
 
-  <span class="kw">public</span> <span class="fn">GenericArray</span>(<span class="ty">int</span> <span class="nm">capacity</span>) {
-    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span class="ty">Object</span>[<span class="nm">capacity</span>];
+  <span class="kw">public</span> <span class="fn">GenericDynamicArray</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+    <span class="kw">if</span> (<span class="nm">capacity</span> &lt; <span class="nu">0</span>) {
+      <span class="kw">throw new</span>
+        <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="str">"잘못된 용량 초기화 capacity: "</span> + <span class="nm">capacity</span>);
+    }
+    <span class="kw">this</span>.<span class="nm">arr</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
   }
 
-  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">E</span> <span class="nm">obj</span>) {
+  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">E</span> <span
+              class="nm">e</span>) {
     <span class="fn">growIfNeeded</span>();
-    <span class="nm">arr</span>[<span class="nm">size</span>++] = <span class="nm">obj</span>;
+    <span class="nm">arr</span>[<span class="nm">size</span>++] = <span class="nm">e</span>;
   }
 
-  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span class="nm">obj</span>) {
+  <span class="kw">public void</span> <span class="fn">add</span>(<span class="ty">int</span> <span
+              class="nm">i</span>, <span class="ty">E</span> <span class="nm">e</span>) {
     <span class="fn">checkInsertBounds</span>(<span class="nm">i</span>);
     <span class="fn">growIfNeeded</span>();
 
-    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nm">size</span>; <span class="nm">j</span> &gt; <span class="nm">i</span>; <span class="nm">j</span>--) {
-      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span class="nm">j</span> - <span class="nu">1</span>];
+    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
+              class="nm">size</span>; <span class="nm">j</span> &gt; <span
+              class="nm">i</span>; <span class="nm">j</span>--) {
+      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span
+              class="nm">j</span> - <span class="nu">1</span>];
     }
 
-    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
+    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">e</span>;
     <span class="nm">size</span>++;
   }
 
   <span class="kw">@SuppressWarnings</span>(<span class="str">"unchecked"</span>)
-  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">get</span>(<span class="ty">int</span> <span class="nm">i</span>) {
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">get</span>(<span
+              class="ty">int</span> <span class="nm">i</span>) {
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
     <span class="ck">// Object[]로 저장했으니 꺼낼 때 캐스팅 필요</span>
-    <span class="kw">return</span> (<span class="ty">E</span>) <span class="nm">arr</span>[<span class="nm">i</span>];
+    <span class="kw">return</span> (<span class="ty">E</span>) <span class="nm">arr</span>[<span
+              class="nm">i</span>];
   }
 
-  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span class="nm">obj</span>) {
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">set</span>(<span
+              class="ty">int</span> <span class="nm">i</span>, <span class="ty">E</span> <span
+              class="nm">e</span>) {
     <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
-    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">obj</span>;
-  }
-
-  <span class="kw">public void</span> <span class="fn">remove</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="fn">checkElementBounds</span>(<span class="nm">i</span>);
-
-    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span class="nm">i</span>; <span class="nm">j</span> &lt; <span class="nm">size</span> - <span class="nu">1</span>; <span class="nm">j</span>++) {
-      <span class="nm">arr</span>[<span class="nm">j</span>] = <span class="nm">arr</span>[<span class="nm">j</span> + <span class="nu">1</span>];
-    }
-
-    <span class="nm">arr</span>[<span class="nm">size</span> - <span class="nu">1</span>] = <span class="kw">null</span>;
-    <span class="nm">size</span>--;
-  }
-
-  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {
-    <span class="kw">return</span> <span class="nm">size</span>;
-  }
-
-  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">capacity</span>() {
-    <span class="kw">return</span> <span class="nm">arr</span>.length;
-  }
-
-  <span class="kw">private void</span> <span class="fn">growIfNeeded</span>() {
-    <span class="kw">if</span> (<span class="nm">size</span> == <span class="nm">arr</span>.length) {
-      <span class="ty">int</span> <span class="nm">newCapacity</span> = (<span class="ty">int</span>) (<span class="nm">arr</span>.length * <span class="nu">1.5</span>) + <span class="nu">1</span>;
-      <span class="nm">arr</span> = <span class="ty">Arrays</span>.<span class="fn">copyOf</span>(<span class="nm">arr</span>, <span class="nm">newCapacity</span>);
-    }
-  }
-
-  <span class="kw">private void</span> <span class="fn">checkInsertBounds</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span class="nm">i</span> &gt; <span class="nm">size</span>) {
-      <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span class="str">"Index: "</span> + <span class="nm">i</span> + <span class="str">", Size: "</span> + <span class="nm">size</span>);
-    }
-  }
-
-  <span class="kw">private void</span> <span class="fn">checkElementBounds</span>(<span class="ty">int</span> <span class="nm">i</span>) {
-    <span class="kw">if</span> (<span class="nm">i</span> &lt; <span class="nu">0</span> || <span class="nm">i</span> &gt;= <span class="nm">size</span>) {
-      <span class="kw">throw new</span> <span class="ty">IndexOutOfBoundsException</span>(<span class="str">"Index: "</span> + <span class="nm">i</span> + <span class="str">", Size: "</span> + <span class="nm">size</span>);
-    }
+    <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">e</span>;
   }
 }</pre>
       </div>
@@ -893,13 +552,16 @@
   let pendingFinalArr = null, pendingFinalSize = null;
 
   function getCap() { return parseInt(document.getElementById('capSlider').value); }
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
   function nextGrowCap(cap) { return Math.floor(cap * 1.5) + 1; }
 
   function parseValueInput() {
     const v = parseInt(document.getElementById('valueInput').value);
     return isNaN(v) ? 0 : v;
   }
+
   function parseIndexInput() {
     return parseInt(document.getElementById('indexInput').value);
   }
@@ -908,6 +570,7 @@
     return [document.getElementById('btnAddLast'), document.getElementById('btnAddAt'),
       document.getElementById('btnRemove'), document.getElementById('btnGet')];
   }
+
   function setButtonsEnabled(enabled) {
     actionButtons().forEach(b => b.disabled = !enabled);
   }
@@ -915,12 +578,14 @@
   function growSteps(a, cap, sz, stepsOut) {
     const newCap = nextGrowCap(cap);
     const newArr = new Array(newCap).fill(null);
-    for (let k = 0; k < sz; k++) newArr[k] = a[k];
+    for (let k = 0; k < sz; k++) {
+      newArr[k] = a[k];
+    }
     stepsOut.push({
       type: 'grow', arr: [...newArr], size: sz, growFrom: cap, growTo: newCap,
       msg: `growIfNeeded(): capacity(${cap}) 가득 참 → 새 배열(용량 ${newCap})에 기존 원소 복사`
     });
-    return { arr: newArr, cap: newCap };
+    return {arr: newArr, cap: newCap};
   }
 
   function generateAddLastSteps(value) {
@@ -928,88 +593,128 @@
     const s = [];
     if (sz === cap) {
       const g = growSteps(a, cap, sz, s);
-      a = g.arr; cap = g.cap;
+      a = g.arr;
+      cap = g.cap;
     }
     a[sz] = value;
-    s.push({ type: 'insert', arr: [...a], size: sz + 1, idx: sz,
-      msg: `arr[${sz}] = ${value}  (size: ${sz} → ${sz + 1})` });
-    s.push({ type: 'done', arr: [...a], size: sz + 1, msg: '추가 완료! — add(e), 맨 뒤 추가는 평균 O(1)' });
-    return { steps: s, finalArr: a, finalSize: sz + 1, error: false };
+    s.push({
+      type: 'insert', arr: [...a], size: sz + 1, idx: sz,
+      msg: `arr[${sz}] = ${value}  (size: ${sz} → ${sz + 1})`
+    });
+    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '추가 완료! — add(e), 맨 뒤 추가는 평균 O(1)'});
+    return {steps: s, finalArr: a, finalSize: sz + 1, error: false};
   }
 
   function generateAddAtSteps(index, value) {
     let sz = currentSize;
     if (isNaN(index) || index < 0 || index > sz) {
-      return { steps: [{ type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz}` }],
-        finalArr: currentArr, finalSize: sz, error: true };
+      return {
+        steps: [{
+          type: 'error', arr: [...currentArr], size: sz,
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz}`
+        }],
+        finalArr: currentArr, finalSize: sz, error: true
+      };
     }
     let a = [...currentArr], cap = a.length;
     const s = [];
     if (sz === cap) {
       const g = growSteps(a, cap, sz, s);
-      a = g.arr; cap = g.cap;
+      a = g.arr;
+      cap = g.cap;
     }
     for (let j = sz; j > index; j--) {
       a[j] = a[j - 1];
-      s.push({ type: 'shift', arr: [...a], size: sz, from: j - 1, to: j,
-        msg: `arr[${j}] = arr[${j - 1}]  — 오른쪽 끝부터 한 칸씩 밀기` });
+      s.push({
+        type: 'shift', arr: [...a], size: sz, from: j - 1, to: j,
+        msg: `arr[${j}] = arr[${j - 1}]  — 오른쪽 끝부터 한 칸씩 밀기`
+      });
     }
     a[index] = value;
-    s.push({ type: 'insert', arr: [...a], size: sz + 1, idx: index,
-      msg: `arr[${index}] = ${value}  (size: ${sz} → ${sz + 1})` });
-    s.push({ type: 'done', arr: [...a], size: sz + 1, msg: '삽입 완료! — add(i,e)는 이동 때문에 O(n)' });
-    return { steps: s, finalArr: a, finalSize: sz + 1, error: false };
+    s.push({
+      type: 'insert', arr: [...a], size: sz + 1, idx: index,
+      msg: `arr[${index}] = ${value}  (size: ${sz} → ${sz + 1})`
+    });
+    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '삽입 완료! — add(i,e)는 이동 때문에 O(n)'});
+    return {steps: s, finalArr: a, finalSize: sz + 1, error: false};
   }
 
   function generateRemoveSteps(index) {
     let sz = currentSize;
     if (isNaN(index) || index < 0 || index >= sz) {
-      return { steps: [{ type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}` }],
-        finalArr: currentArr, finalSize: sz, error: true };
+      return {
+        steps: [{
+          type: 'error', arr: [...currentArr], size: sz,
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}`
+        }],
+        finalArr: currentArr, finalSize: sz, error: true
+      };
     }
     let a = [...currentArr];
     const s = [];
     for (let j = index; j < sz - 1; j++) {
       a[j] = a[j + 1];
-      s.push({ type: 'shift', arr: [...a], size: sz, from: j + 1, to: j,
-        msg: `arr[${j}] = arr[${j + 1}]  — 왼쪽으로 한 칸씩 당기기` });
+      s.push({
+        type: 'shift', arr: [...a], size: sz, from: j + 1, to: j,
+        msg: `arr[${j}] = arr[${j + 1}]  — 왼쪽으로 한 칸씩 당기기`
+      });
     }
     a[sz - 1] = null;
-    s.push({ type: 'clear', arr: [...a], size: sz - 1, idx: sz - 1,
-      msg: `arr[${sz - 1}] = null  (size: ${sz} → ${sz - 1})` });
-    s.push({ type: 'done', arr: [...a], size: sz - 1, msg: '삭제 완료! — remove(i)는 당기기 때문에 O(n)' });
-    return { steps: s, finalArr: a, finalSize: sz - 1, error: false };
+    s.push({
+      type: 'clear', arr: [...a], size: sz - 1, idx: sz - 1,
+      msg: `arr[${sz - 1}] = null  (size: ${sz} → ${sz - 1})`
+    });
+    s.push({type: 'done', arr: [...a], size: sz - 1, msg: '삭제 완료! — remove(i)는 당기기 때문에 O(n)'});
+    return {steps: s, finalArr: a, finalSize: sz - 1, error: false};
   }
 
   function generateGetSteps(index) {
     let sz = currentSize;
     if (isNaN(index) || index < 0 || index >= sz) {
-      return { steps: [{ type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}` }],
-        finalArr: currentArr, finalSize: sz, error: true };
+      return {
+        steps: [{
+          type: 'error', arr: [...currentArr], size: sz,
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}`
+        }],
+        finalArr: currentArr, finalSize: sz, error: true
+      };
     }
     const s = [];
-    s.push({ type: 'get', arr: [...currentArr], size: sz, idx: index,
-      msg: `get(${index}) → ${currentArr[index]} 반환` });
-    s.push({ type: 'done', arr: [...currentArr], size: sz, msg: '조회 완료! — get(i)은 인덱스 접근이라 O(1)' });
-    return { steps: s, finalArr: currentArr, finalSize: sz, error: false };
+    s.push({
+      type: 'get', arr: [...currentArr], size: sz, idx: index,
+      msg: `get(${index}) → ${currentArr[index]} 반환`
+    });
+    s.push({type: 'done', arr: [...currentArr], size: sz, msg: '조회 완료! — get(i)은 인덱스 접근이라 O(1)'});
+    return {steps: s, finalArr: currentArr, finalSize: sz, error: false};
   }
 
-  /* ── Render ── */
+  // 렌더
   function renderStep(step) {
     const cellArea = document.getElementById('cellArea');
     const cap = step.arr.length;
     cellArea.innerHTML = step.arr.map((v, idx) => {
       let cls = 'cell';
-      if (idx >= step.size) cls += ' empty';
-      if (step.type === 'grow' && idx >= step.growFrom) cls += ' grow-new';
-      if (step.type === 'shift' && idx === step.from) cls += ' shift-src';
-      if (step.type === 'shift' && idx === step.to) cls += ' shift-dest';
-      if (step.type === 'insert' && idx === step.idx) cls += ' insert';
-      if (step.type === 'clear' && idx === step.idx) cls += ' clear';
-      if (step.type === 'get' && idx === step.idx) cls += ' get-hit';
+      if (idx >= step.size) {
+        cls += ' empty';
+      }
+      if (step.type === 'grow' && idx >= step.growFrom) {
+        cls += ' grow-new';
+      }
+      if (step.type === 'shift' && idx === step.from) {
+        cls += ' shift-src';
+      }
+      if (step.type === 'shift' && idx === step.to) {
+        cls += ' shift-dest';
+      }
+      if (step.type === 'insert' && idx === step.idx) {
+        cls += ' insert';
+      }
+      if (step.type === 'clear' && idx === step.idx) {
+        cls += ' clear';
+      }
+      if (step.type === 'get' && idx === step.idx) {
+        cls += ' get-hit';
+      }
       const val = v === null || v === undefined ? '·' : v;
       return `<div class="${cls}"><span class="idx-label">${idx}</span><span class="val-label">${val}</span></div>`;
     }).join('');
@@ -1035,13 +740,19 @@
     const cap = getCap();
     currentArr = new Array(cap).fill(null);
     currentSize = 0;
-    steps = [{ type: 'init', arr: [...currentArr], size: 0, msg: '새 배열 준비 완료. 버튼을 눌러 add / remove / get 을 실행해보세요.' }];
+    steps = [{
+      type: 'init',
+      arr: [...currentArr],
+      size: 0,
+      msg: '새 배열 준비 완료. 버튼을 눌러 add / remove / get 을 실행해보세요.'
+    }];
     stepIdx = 1;
     renderStep(steps[0]);
     document.getElementById('stepCounter').textContent = '—';
     setButtonsEnabled(true);
   }
 
+  // 상태
   function tick() {
     if (stepIdx >= steps.length) {
       finishPlay();
@@ -1060,7 +771,8 @@
     if (pendingFinalArr !== null) {
       currentArr = pendingFinalArr;
       currentSize = pendingFinalSize;
-      pendingFinalArr = null; pendingFinalSize = null;
+      pendingFinalArr = null;
+      pendingFinalSize = null;
     }
     setButtonsEnabled(true);
   }
@@ -1078,7 +790,8 @@
     if (result.error) {
       renderStep(steps[0]);
       document.getElementById('stepCounter').textContent = '오류';
-      pendingFinalArr = null; pendingFinalSize = null;
+      pendingFinalArr = null;
+      pendingFinalSize = null;
       setButtonsEnabled(true);
       return;
     }
@@ -1090,6 +803,7 @@
     timer = setInterval(tick, speedMap[getSpeed()]);
   }
 
+  // Event Listeners
   document.getElementById('btnAddLast').addEventListener('click', () => {
     doAction(generateAddLastSteps(parseValueInput()));
   });

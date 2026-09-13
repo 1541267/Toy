@@ -40,13 +40,13 @@ public class YearProgress extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		primaryStage.setTitle("Year Progress");
-		primaryStage.getIcons().add(new Image("/icon.png"));
+		primaryStage.getIcons().add(new Image("/img/icon.png"));
 		primaryStage.setAlwaysOnTop(true);
 		// 메인 컨테이너
 		VBox root = new VBox(10);
 		root.setPadding(new Insets(20));
 		root.setAlignment(Pos.CENTER);
-		root.setStyle("-fx-background-color: #ffffff; -fx-background-image: url('/maxresdefault.jpg');"
+		root.setStyle("-fx-background-color: #ffffff; -fx-background-image: url('/img/maxresdefault.jpg');"
 			+ "-fx-background-size: cover; -fx-background-repeat: no-repeat");
 
 		// 현재 날짜/시간 레이블

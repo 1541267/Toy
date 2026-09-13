@@ -38,16 +38,15 @@ import java.util.Arrays;
 public class _1_Array {
 
   // 일반 버전
-  static class InnerArr {
+  static class BasicDynamicArray {
 
     private Object[] arr;
     private int size = 0;
 
-    public InnerArr() {
-      this.arr = new Object[10];
-    }
+    public BasicDynamicArray() {this.arr = new Object[10];}
 
-    public InnerArr(int capacity) {
+    public BasicDynamicArray(int capacity) {
+      if (capacity < 0) {throw new IllegalArgumentException("잘못된 용량 초기화 capacity: " + capacity);}
       this.arr = new Object[capacity];
     }
 
@@ -86,13 +85,9 @@ public class _1_Array {
       size--;
     }
 
-    public int size() {
-      return size;
-    }
+    public int size() {return size;}
 
-    public int capacity() {
-      return arr.length;
-    }
+    public int capacity() {return arr.length;}
 
     private void growIfNeeded() {
       if (size == arr.length) {
@@ -115,14 +110,17 @@ public class _1_Array {
   }
 
   // 제네릭 버전
-  static class GenericArray<E> {
+  static class GenericDynamicArray<E> {
 
     private Object[] arr;
     private int size = 0;
 
-    public GenericArray() {this.arr = new Object[10];}
+    public GenericDynamicArray() {this.arr = new Object[10];}
 
-    public GenericArray(int capacity) {this.arr = new Object[capacity];}
+    public GenericDynamicArray(int capacity) {
+      if (capacity < 0) {throw new IllegalArgumentException("잘못된 용량 초기화 capacity: " + capacity);}
+      this.arr = new Object[capacity];
+    }
 
     public void add(E obj) {
       growIfNeeded();

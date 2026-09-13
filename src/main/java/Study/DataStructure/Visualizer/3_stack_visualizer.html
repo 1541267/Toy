@@ -1,0 +1,687 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>스택(Stack) 시각화</title>
+  <link rel="stylesheet" href="/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --noteh3-transform: none;
+  }
+
+  /* ── 배열 기반 스택 셀 ── */
+  .stack-col {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 4px;
+    min-height: 300px;
+    justify-content: flex-start;
+    align-items: stretch;
+  }
+
+  .stack-cell {
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-sub);
+    transition: background 0.15s, box-shadow 0.15s;
+
+    & .cell-idx {
+      font-size: 0.6rem;
+      font-weight: 600;
+      opacity: 0.7;
+      min-width: 14px;
+      text-align: center;
+    }
+
+    &.filled {
+      background: var(--state-base);
+      color: #fff;
+
+      &.top {
+        background: var(--state-mark);
+        box-shadow: 0 0 0 2px var(--accent-strong) inset;
+      }
+
+      &.peek {
+        background: var(--state-info);
+        box-shadow: 0 0 0 2px #7dd3fc inset;
+      }
+    }
+
+    &.empty {
+      background: transparent;
+      border: 1px dashed var(--surface-border);
+      color: var(--text-dim);
+    }
+
+    &.null {
+      background: var(--bad-bg);
+      border: 1px dashed var(--bad-border);
+      color: var(--bad-text);
+      font-size: 0.64rem;
+    }
+  }
+
+  /* ── 연결리스트 기반 스택 ── */
+  .ll-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-height: 300px;
+    justify-content: flex-start;
+    padding-top: 4px;
+  }
+
+  .ll-top-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--state-mark);
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .ll-box {
+    background: var(--state-base);
+    color: #fff;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: background 0.15s, box-shadow 0.15s;
+
+    &.head {
+      background: var(--state-mark);
+      box-shadow: 0 0 0 2px var(--accent-strong) inset;
+    }
+
+    &.peek {
+      background: var(--state-info);
+      box-shadow: 0 0 0 2px #7dd3fc inset;
+    }
+  }
+
+  .ll-arrow {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  .ll-null-box {
+    border: 1px dashed var(--surface-border);
+    color: var(--text-dim);
+    border-radius: 6px;
+    padding: 4px 14px;
+    font-size: 0.7rem;
+  }
+
+  .ll-empty {
+    color: var(--text-dim);
+    font-size: 0.78rem;
+    margin-top: 1rem;
+  }
+
+  .stack-info {
+    font-size: 0.72rem;
+    color: var(--text-sub);
+    text-align: center;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--panel-border);
+  }
+
+  /* ── phase 태그 색상 ── */
+  .phase-push {
+    background: var(--tag-green-bg);
+    color: var(--tag-green-text);
+  }
+
+  .phase-pop {
+    background: var(--tag-red-bg);
+    color: var(--tag-red-text);
+  }
+
+  .phase-peek {
+    background: var(--tag-cyan-bg);
+    color: var(--tag-cyan-text);
+  }
+
+  .phase-grow {
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">스택(Stack, LIFO) - 배열 기반 / 연결리스트 기반</h1>
+    <p>같은 push/pop 연산을 배열 기반과 연결리스트 기반에 동시에 적용해 내부 동작 차이를 비교</p>
+  </div>
+
+  <details class="notes-toggle">
+    <summary>📖 스택 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🔍 개념</h3>
+        <ul>
+          <li><strong>LIFO(Last In First Out)</strong> - 마지막에 삽입된 원소가 가장 먼저 나옴</li>
+          <li><code>push(e)</code> / <code>pop()</code> / <code>peek()</code> 모두
+            <strong>O(1)</strong>
+            (배열 기반 push는 Dynamic Array처럼 <strong>Amortized O(1)</strong>)
+          </li>
+          <li><strong>top</strong> - 배열 기반은 "다음 원소가 들어갈 인덱스", 연결리스트 기반은 "head 역할을 하는 참조"</li>
+          <li>두 방식 모두 연산이 <strong>한쪽 끝에서만</strong> 발생 -> 반대쪽 끝(tail) 접근이 필요 없음</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">push/pop/peek O(1)</span>
+          <span class="badge warn">배열 push Amortized O(1)</span>
+          <span class="badge good">공간 O(n)</span>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <h3>🗑️ Loitering Object (배열 기반 전용 이슈)</h3>
+        <ul>
+          <li>배열 기반 <code>pop()</code>은 <code>top</code>을 감소시키는 <strong>논리적 삭제</strong>만으로는
+            참조가 끊기지 않아 GC가 회수하지 못하는 <strong>Loitering Object</strong> 발생
+          </li>
+          <li><code>stack[top] = null</code> 처리를 꼭 해줘야 GC 대상이 되고 메모리 누수를 방지</li>
+          <li>연결리스트 기반은 <code>top = top.next</code>로 재할당하는 순간, 제거된 노드를 참조하는
+            변수가 아예 없어져 <strong>별도 null 처리 없이 자동으로 GC 대상</strong>
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>📌 배열 기반 구조 특징</h3>
+        <ul>
+          <li>Dynamic Array 구조 사용 (ArrayList의 addLast/removeLast와 동일 구조)</li>
+          <li>push/pop이 항상 배열 <strong>끝쪽</strong>에서만 발생 -> 앞쪽을 밀거나 당길 필요 없음</li>
+          <li><code>growIfNeeded()</code> - top == capacity 이면 capacity를 2배로 확장(Amortized O(1)의 근거)
+          </li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h3>📌 연결리스트 기반 구조 특징</h3>
+        <ul>
+          <li>top: head 역할, 새 노드는 항상 <code>top.next</code>에 삽입 (head 삽입)</li>
+          <li>push(): <code>newNode.next = top; top = newNode;</code></li>
+          <li>pop(): <code>top.data</code> 저장 -> <code>top = top.next</code> -> data 반환 (head 제거)</li>
+          <li>스택은 한쪽 끝만 사용하므로 tail 포인터 & 이중 연결이 <strong>불필요</strong></li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚖️ 배열 vs 연결리스트 선택 기준</h3>
+        <div class="cols">
+          <ul>
+            <li><strong>배열 기반</strong></li>
+            <li>데이터 크기가 대략 예측 가능할 때</li>
+            <li>연속 메모리 -> CPU 캐시 친화적</li>
+            <li>원소 자체 외 메모리 오버헤드가 적음</li>
+            <li>구현이 단순</li>
+          </ul>
+          <ul>
+            <li><strong>연결리스트 기반</strong></li>
+            <li>크기 예측이 어려울 때</li>
+            <li>추가/삭제가 빈번하고 크기 변화가 클 때</li>
+            <li>재할당 없이 필요한 만큼만 동적 확장</li>
+            <li>노드마다 next 참조 오버헤드 존재</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>초기 용량(배열)</label>
+      <input type="range" id="capSlider" min="1" max="8" value="2" step="1">
+      <span class="val" id="capLabel">2</span>
+    </div>
+    <div class="ctrl-group">
+      <label>연산 개수</label>
+      <input type="range" id="opsSlider" min="6" max="16" value="10" step="1">
+      <span class="val" id="opsLabel">10</span>
+    </div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row">
+      <button class="btn primary" id="btnPlay">▶ 시작</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">새 시퀀스</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <div class="dot" style="background:#fcd34d"></div>
+        Stack - push/pop/peek 동시 비교
+      </div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="dual">
+      <div>
+        <div class="bar-group-title">🔢 배열 기반 (ArrayBasedStack)</div>
+        <div class="stack-col" id="arrStackCol"></div>
+        <div class="stack-info" id="arrInfo">capacity: - / top: -</div>
+      </div>
+      <div>
+        <div class="bar-group-title">🔗 연결리스트 기반 (LinkedListStack)</div>
+        <div class="ll-col" id="llStackCol"></div>
+        <div class="stack-info" id="llInfo">size: -</div>
+      </div>
+    </div>
+
+    <div class="legend" style="padding:0 0.2rem; margin:0.85rem 0;">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#4c4e9a"></div>
+        채워진 값
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8"></div>
+        top / head
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0e7490"></div>
+        peek 확인
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d"></div>
+        null 처리 (배열 전용)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="border:1px dashed #334155; background:transparent"></div>
+        빈 슬롯
+      </div>
+    </div>
+
+    <div class="log-box" id="log">시작 버튼을 누르세요.</div>
+  </div>
+
+  <div class="diff-note">
+    <strong>같은 연산, 다른 내부 동작</strong> - 두 스택은 push/pop 순서(결과)가 완전히 동일하지만,
+    배열 기반은 pop 시 <strong>명시적으로 null을 대입</strong>해야 Loitering Object를 막고,
+    연결리스트 기반은 head 재할당만으로 <strong>참조가 끊긴 노드가 자동으로 GC 대상</strong>이 됩니다.
+    또한 배열 기반은 capacity를 넘어서면 <strong>growIfNeeded()</strong>로 확장 비용이 발생하지만,
+    연결리스트 기반은 필요한 만큼만 노드를 생성해 별도의 확장 비용이 없습니다.
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <div class="code-dual">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          ArrayBasedStack - push() / growIfNeeded() / pop()
+        </div>
+        <pre><span class="ty">Object</span>[] <span class="nm">stack</span>;
+<span class="kw">private</span> <span class="ty">int</span> <span class="nm">capacity</span>, <span
+              class="nm">top</span> = <span class="nu">0</span>;
+
+<span class="kw">public</span> <span class="fn">ArrayBasedStack</span>() {
+  <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nu">10</span>;
+  <span class="kw">this</span>.<span class="nm">stack</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+}
+
+<span class="kw">public</span> <span class="fn">ArrayBasedStack</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+  <span class="kw">if</span> (<span class="nm">capacity</span> &lt; <span class="nu">0</span>) {
+    <span class="kw">throw new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">"잘못된 용량 초기화, capacity: "</span> + <span class="nm">capacity</span>);
+  }
+  <span class="kw">this</span>.<span class="nm">stack</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nm">capacity</span>;
+}
+
+<span class="kw">public void</span> <span class="fn">push</span>(<span class="ty">E</span> <span
+              class="nm">e</span>) {
+  <span class="nm">growIfNeeded</span>();
+  <span class="nm">stack</span>[<span class="nm">top</span>++] = <span class="nm">e</span>;
+}
+
+<span class="kw">private void</span> <span class="fn">growIfNeeded</span>() {
+  <span class="kw">if</span> (<span class="nm">top</span> == <span class="nm">capacity</span>) {
+    <span class="nm">capacity</span> = <span class="nm">capacity</span> == <span class="nu">0</span> ? <span
+              class="nu">1</span> : <span class="nm">capacity</span> * <span class="nu">2</span>;
+    <span class="nm">stack</span> = <span class="ty">Arrays</span>.<span
+              class="fn">copyOf</span>(<span class="nm">stack</span>, <span
+              class="nm">capacity</span>);
+  }
+}
+
+<span class="ck">// pop() 한 top 데이터를 null 처리 해줘야 GC 대상이 되어 메모리에 남지 않음</span>
+<span class="ck">// 배회하는 객체(Loitering Object) 방지</span>
+<span class="nm">@SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">pop</span>() {
+  <span class="kw">if</span> (<span class="nm">top</span> == <span class="nu">0</span>) {
+    <span class="kw">throw new</span> <span class="ty">NoSuchElementException</span>(<span
+              class="st">"Empty Stack"</span>);
+  } <span class="kw">else</span> {
+    <span class="ty">E</span> <span class="nm">value</span> = (<span class="ty">E</span>) <span
+              class="nm">stack</span>[--<span class="nm">top</span>];
+    <span class="nm">stack</span>[<span class="nm">top</span>] = <span class="kw">null</span>;
+    <span class="kw">return</span> <span class="nm">value</span>;
+  }
+}
+
+<span class="nm">@SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">peek</span>() {
+  <span class="kw">if</span> (<span class="nm">top</span> == <span class="nu">0</span>) {
+    <span class="kw">throw new</span> <span class="ty">NoSuchElementException</span>(<span
+              class="st">"Empty Stack"</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">return</span> (<span class="ty">E</span>) <span class="nm">stack</span>[<span
+              class="nm">top</span> - <span class="nu">1</span>];
+  }
+}
+
+<span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+              class="kw">return</span> <span class="nm">top</span>;}
+
+<span class="kw">public</span> <span class="ty">boolean</span> <span
+              class="fn">isEmpty</span>() {<span class="kw">return</span> <span
+              class="nm">top</span> == <span class="nu">0</span>;}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#6ee7b7"></div>
+          LinkedListStack - push() / pop() / peek()
+        </div>
+        <pre><span class="kw">private static class</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; {
+  <span class="kw">private final</span> <span class="ty">E</span> <span class="nm">data</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">next</span>;
+
+  <span class="kw">private</span> <span class="fn">Node</span>(<span class="ty">E</span> <span
+              class="nm">data</span>) {<span class="kw">this</span>.<span
+              class="nm">data</span> = <span class="nm">data</span>;}
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">top</span>;
+<span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span>;
+
+<span class="ck">// top: head 역할, 새 노드는 항상 top.next 위치(head)에 삽입</span>
+<span class="kw">public void</span> <span class="fn">push</span>(<span class="ty">E</span> <span
+              class="nm">data</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
+              class="nm">data</span>);
+  <span class="nm">newNode</span>.<span class="nm">next</span> = <span class="nm">top</span>;
+  <span class="nm">top</span> = <span class="nm">newNode</span>;
+  <span class="nm">size</span>++;
+}
+
+<span class="ck">// top = top.next 재할당만으로 이전 head는 참조가 끊겨</span>
+<span class="ck">// 별도 null 처리 없이 자동으로 GC 대상이 됨</span>
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">pop</span>() {
+  <span class="kw">if</span> (<span class="nm">top</span> == <span class="kw">null</span>) {<span
+              class="kw">throw new</span> <span class="ty">NoSuchElementException</span>(<span
+              class="st">"Empty Stack"</span>);}
+
+  <span class="ty">E</span> <span class="nm">data</span> = <span class="nm">top</span>.<span
+              class="nm">data</span>;
+  <span class="nm">top</span> = <span class="nm">top</span>.<span class="nm">next</span>;
+  <span class="nm">size</span>--;
+
+  <span class="kw">return</span> <span class="nm">data</span>;
+}
+
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">peek</span>() {
+  <span class="kw">if</span> (<span class="nm">top</span> == <span class="kw">null</span>) {<span
+              class="kw">throw new</span> <span class="ty">NoSuchElementException</span>(<span
+              class="st">"Empty Stack"</span>);}
+  <span class="kw">return</span> <span class="nm">top</span>.<span class="nm">data</span>;
+}
+
+<span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+              class="kw">return</span> <span class="nm">size</span>;}
+
+<span class="kw">public</span> <span class="ty">boolean</span> <span
+              class="fn">isEmpty</span>() {<span class="kw">return</span> <span
+              class="nm">top</span> == <span class="kw">null</span>;}</pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+<script>
+  const speedMap = {1: 750, 2: 500, 3: 300, 4: 200, 5: 100, 6: 50, 7: 30, 8: 20, 9: 10, 10: 0.001};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  let steps = [], stepIdx = 0, playing = false, timer = null;
+
+  function getCap() { return parseInt(document.getElementById('capSlider').value); }
+
+  function getOpsCount() { return parseInt(document.getElementById('opsSlider').value); }
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // 랜덤 push/pop/peek 연산 시퀀스 생성
+  function generateOps(count) {
+    const ops = [];
+    let curSize = 0;
+    for (let i = 0; i < count; i++) {
+      const r = Math.random();
+      if (curSize === 0 || r < 0.6) {
+        ops.push({type: 'push', value: Math.floor(Math.random() * 98) + 1});
+        curSize++;
+      } else if (r < 0.85) {
+        ops.push({type: 'pop'});
+        curSize--;
+      } else {
+        ops.push({type: 'peek'});
+      }
+    }
+    return ops;
+  }
+
+  // 배열 기반 & 연결리스트 기반에 동일한 연산을 동시에 적용하며 스텝 기록
+  function simulate(ops, initCap) {
+    const generated = [];
+    let arrCap = Math.max(1, initCap);
+    let arrData = new Array(arrCap).fill(null);
+    let arrTop = 0;
+    let llData = []; // index 0 = top(head)
+
+    ops.forEach(op => {
+      if (op.type === 'push') {
+        if (arrTop === arrCap) {
+          const oldCap = arrCap;
+          arrCap = arrCap === 0 ? 1 : arrCap * 2;
+          arrData = arrData.concat(new Array(arrCap - oldCap).fill(null));
+          generated.push({
+            phase: 'grow', arrData: [...arrData], arrCap, arrTop, llData: [...llData],
+            msg: `[배열] top(${arrTop}) == capacity(${oldCap}) -> growIfNeeded()로 capacity ${oldCap} -> ${arrCap} 확장`
+          });
+        }
+        arrData[arrTop] = op.value;
+        arrTop++;
+        llData.unshift(op.value);
+        generated.push({
+          phase: 'push', arrData: [...arrData], arrCap, arrTop, llData: [...llData],
+          msg: `push(${op.value}) - 배열: stack[${arrTop - 1}]에 저장 / 연결리스트: 새 노드를 head로 삽입`
+        });
+      } else if (op.type === 'pop') {
+        if (arrTop === 0) {
+          return;
+        }
+        const poppedVal = arrData[arrTop - 1];
+        arrTop--;
+        arrData[arrTop] = null;
+        llData.shift();
+        generated.push({
+          phase: 'pop', arrData: [...arrData], arrCap, arrTop, llData: [...llData],
+          msg: `pop() -> ${poppedVal} 반환 - 배열: stack[${arrTop}]=null 처리(Loitering 방지) / 연결리스트: top=top.next 재할당만으로 GC 대상`
+        });
+      } else if (op.type === 'peek') {
+        if (arrTop === 0) {
+          return;
+        }
+        const val = arrData[arrTop - 1];
+        generated.push({
+          phase: 'peek', arrData: [...arrData], arrCap, arrTop, llData: [...llData],
+          msg: `peek() -> ${val} (제거 없이 최상단 값만 확인, top은 그대로)`
+        });
+      }
+    });
+
+    generated.push({
+      phase: 'done',
+      arrData: generated.length ? generated[generated.length - 1].arrData : [...arrData],
+      arrCap,
+      arrTop: generated.length ? generated[generated.length - 1].arrTop : arrTop,
+      llData: generated.length ? generated[generated.length - 1].llData : [...llData],
+      msg: `모든 연산 완료! 최종 배열 top(size): ${arrTop} / capacity: ${arrCap} · 연결리스트 size: ${llData.length}`
+    });
+
+    return generated;
+  }
+
+  function renderArr(step) {
+    const col = document.getElementById('arrStackCol');
+    const info = document.getElementById('arrInfo');
+    col.innerHTML = step.arrData.map((v, idx) => {
+      let cls = 'stack-cell';
+      let inner = `<span class="cell-idx">${idx}</span>`;
+      if (idx < step.arrTop) {
+        cls += ' filled';
+        if (idx === step.arrTop - 1 && step.phase === 'peek') {
+          cls += ' peek';
+        } else if (idx === step.arrTop - 1) {
+          cls += ' top';
+        }
+        inner += `<span>${v}</span>`;
+      } else if (step.phase === 'pop' && idx === step.arrTop) {
+        cls += ' null';
+        inner += `<span>null</span>`;
+      } else {
+        cls += ' empty';
+      }
+      return `<div class="${cls}">${inner}</div>`;
+    }).join('');
+    info.textContent = `capacity: ${step.arrCap} / top(size): ${step.arrTop}`;
+  }
+
+  function renderLL(step) {
+    const col = document.getElementById('llStackCol');
+    const info = document.getElementById('llInfo');
+    if (!step.llData.length) {
+      col.innerHTML = '<div class="ll-empty">비어있음 (top === null)</div>';
+    } else {
+      let html = '<div class="ll-top-label">top ↓</div>';
+      step.llData.forEach((v, idx) => {
+        const isHead = idx === 0;
+        let boxCls = 'll-box' + (isHead ? ' head' : '') + (isHead && step.phase === 'peek' ? ' peek'
+            : '');
+        html += `<div class="${boxCls}">${v}</div>`;
+        html += `<div class="ll-arrow">↓ next</div>`;
+      });
+      html += `<div class="ll-null-box">null</div>`;
+      col.innerHTML = html;
+    }
+    info.textContent = `size: ${step.llData.length}`;
+  }
+
+  function renderStep(step) {
+    renderArr(step);
+    renderLL(step);
+    const tagMap = {
+      push: '<span class="phase-tag phase-push">PUSH</span>',
+      pop: '<span class="phase-tag phase-pop">POP</span>',
+      peek: '<span class="phase-tag phase-peek">PEEK</span>',
+      grow: '<span class="phase-tag phase-grow">GROW</span>',
+      done: '<span class="phase-tag phase-done">완료 ✓</span>'
+    };
+    document.getElementById('log').innerHTML = (tagMap[step.phase] || '') + (step.msg || '');
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length) {
+      stopPlay();
+      return;
+    }
+    renderStep(steps[stepIdx]);
+    document.getElementById('stepCounter').textContent = `${stepIdx + 1} / ${steps.length}`;
+    stepIdx++;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 시작';
+  }
+
+  function init() {
+    stopPlay();
+    const cap = getCap();
+    const ops = generateOps(getOpsCount());
+    steps = simulate(ops, cap);
+    stepIdx = 0;
+    renderStep({
+      phase: 'init', arrData: new Array(cap).fill(null), arrCap: cap, arrTop: 0, llData: [],
+      msg: '시작 버튼을 누르세요.'
+    });
+    document.getElementById('stepCounter').textContent = '-';
+  }
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    if (stepIdx >= steps.length) {
+      return;
+    }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    timer = setInterval(tick, speedMap[getSpeed()]);
+  });
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    tick();
+  });
+  document.getElementById('btnReset').addEventListener('click', init);
+  document.getElementById('capSlider').addEventListener('input', e => {
+    document.getElementById('capLabel').textContent = e.target.value;
+    init();
+  });
+  document.getElementById('opsSlider').addEventListener('input', e => {
+    document.getElementById('opsLabel').textContent = e.target.value;
+    init();
+  });
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  init();
+</script>
+</html>

@@ -42,7 +42,7 @@ public class Lotto extends Application {
 			resultArea
 		);
 
-		URL imageUrl = Lotto.class.getResource("/3196.png");
+		URL imageUrl = Lotto.class.getResource("/img/3196.png");
 		if (imageUrl == null) {
 			System.out.println("이미지 못 찾음");
 		} else {
