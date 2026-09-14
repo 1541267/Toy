@@ -76,8 +76,8 @@
         <h3>✅ 장점</h3>
         <ul>
           <li>알고리즘 단순</li>
-          <li><strong>이미 정렬된 경우 O(n)</strong> — Best Case 매우 효과적</li>
-          <li><strong>제자리 정렬</strong> — 추가 메모리 공간 불필요</li>
+          <li><strong>이미 정렬된 경우 O(n)</strong> - Best Case 매우 효과적</li>
+          <li><strong>제자리 정렬</strong> - 추가 메모리 공간 불필요</li>
           <li>안정 정렬</li>
           <li>Selection·Bubble 동일 O(n²) 중 <strong>상대적으로 빠름</strong></li>
         </ul>
@@ -86,7 +86,7 @@
         <h3>❌ 단점</h3>
         <ul>
           <li>Worst &amp; Avg = <strong>O(n²)</strong></li>
-          <li>역순 정렬 시 최악 — 매 삽입마다 전체 이동 발생</li>
+          <li>역순 정렬 시 최악 - 매 삽입마다 전체 이동 발생</li>
           <li>배열 길이가 길수록 비효율적</li>
         </ul>
         <div class="complexity-row">
@@ -99,9 +99,9 @@
       <div class="note-card">
         <h3>⚡ Selection vs Insertion</h3>
         <ul>
-          <li>k번 반복 후 첫 k개가 정렬됨 — 둘 다 유사</li>
+          <li>k번 반복 후 첫 k개가 정렬됨 - 둘 다 유사</li>
           <li><strong>Selection:</strong> K+1 요소를 위해 항상 나머지 전체 탐색</li>
-          <li><strong>Insertion:</strong> K+1 요소 배치에 <strong>필요한 만큼만 탐색</strong> — 더 효율적</li>
+          <li><strong>Insertion:</strong> K+1 요소 배치에 <strong>필요한 만큼만 탐색</strong> - 더 효율적</li>
           <li>이미 정렬된 구간이 많을수록 Insertion이 압도적으로 유리</li>
         </ul>
       </div>
@@ -132,7 +132,7 @@
         <div class="dot" style="background:#93c5fd"></div>
         Insertion Sort
       </div>
-      <div class="panel-step" id="stepCounter">—</div>
+      <div class="panel-step" id="stepCounter">-</div>
     </div>
     <div class="bar-area" id="barArea"></div>
 
@@ -178,8 +178,8 @@
 <span class="ck">//       Select|Bubble과 같은 O(n²)보다 상대적으로 빠름</span>
 <span class="ck">// 단점: Worst &amp; Avg = O(n²), 배열 길이 길수록 비효율</span>
 <span class="ck">// 팁: Selection, Insertion 모두 k번 반복 후 첫 k개가 정렬된 순서</span>
-<span class="ck">//  → Selection: K+1 요소를 위해 항상 모든 요소 탐색</span>
-<span class="ck">//  → Insertion: K+1 요소 배치에 필요한 만큼만 탐색 (더 효율적)</span>
+<span class="ck">//  -> Selection: K+1 요소를 위해 항상 모든 요소 탐색</span>
+<span class="ck">//  -> Insertion: K+1 요소 배치에 필요한 만큼만 탐색 (더 효율적)</span>
 
 <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
             class="nu">1</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length; <span
@@ -249,7 +249,7 @@
         key,
         prev,
         sortedBound: i - 1,
-        msg: `키 값 ${key} (인덱스 ${i}) 선택 — 왼쪽 정렬 영역에서 삽입 위치 탐색`
+        msg: `키 값 ${key} (인덱스 ${i}) 선택 - 왼쪽 정렬 영역에서 삽입 위치 탐색`
       });
       while (prev >= 0 && a[prev] > key) {
         s.push({
@@ -259,7 +259,7 @@
           key,
           prev,
           sortedBound: i - 1,
-          msg: `prev=${prev}: ${a[prev]} > 키(${key}) → 오른쪽으로 이동`
+          msg: `prev=${prev}: ${a[prev]} > 키(${key}) -> 오른쪽으로 이동`
         });
         a[prev + 1] = a[prev];
         s.push({
@@ -270,7 +270,7 @@
           shiftIdx: prev + 1,
           prev,
           sortedBound: i - 1,
-          msg: `인덱스 ${prev}의 값 ${a[prev + 1]} → 인덱스 ${prev + 1}으로 이동`
+          msg: `인덱스 ${prev}의 값 ${a[prev + 1]} -> 인덱스 ${prev + 1}으로 이동`
         });
         prev--;
       }
@@ -282,7 +282,7 @@
           key,
           prev,
           sortedBound: i - 1,
-          msg: `prev=${prev}: ${a[prev]} ≤ 키(${key}) → 여기에 삽입`
+          msg: `prev=${prev}: ${a[prev]} ≤ 키(${key}) -> 여기에 삽입`
         });
       }
       a[prev + 1] = key;
@@ -306,7 +306,7 @@
     steps = generateSteps(arr);
     stepIdx = 0;
     renderStep(steps[0]);
-    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('stepCounter').textContent = '-';
     document.getElementById('btnPlay').disabled = false;
   }
 

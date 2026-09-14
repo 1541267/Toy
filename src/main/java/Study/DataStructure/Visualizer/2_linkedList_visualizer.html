@@ -398,7 +398,7 @@
         <ul>
           <li>tail 포인터가 없으면 맨 뒤 추가(add())도 매번 head부터 끝까지 순회해야 해서 <strong>O(n)</strong></li>
           <li>tail 필드를 별도로 관리하면 맨 뒤 추가를 <strong>O(1)</strong>로 개선 가능</li>
-          <li>단, tail 관리는 인덱스 계산보다 <strong>구조적 불변조건</strong>으로 판단하는 게 안전 — 새로 삽입한 노드의 next가 null이면
+          <li>단, tail 관리는 인덱스 계산보다 <strong>구조적 불변조건</strong>으로 판단하는 게 안전 - 새로 삽입한 노드의 next가 null이면
             해당 노드가 tail
           </li>
         </ul>
@@ -408,8 +408,8 @@
         <h3>✂️ 삽입 / 삭제</h3>
         <ul>
           <li><strong>삽입(add(i, e))</strong>: i번째 Prev Node를 찾아서 참조를 바꿔야 함 (단방향이라 앞에서부터 조회 시작)</li>
-          <li><strong>삭제(remove(i))</strong>도 마찬가지로 이전 노드가 필요 → 매번 head부터 순회해서 탐색 O(n)</li>
-          <li>인덱스 접근/삽입/삭제 시 경계 조건 구분 필요 — 삽입(add): 맨 끝(i == size)도 유효한 위치, i &gt; size일 때만 예외 /
+          <li><strong>삭제(remove(i))</strong>도 마찬가지로 이전 노드가 필요 -> 매번 head부터 순회해서 탐색 O(n)</li>
+          <li>인덱스 접근/삽입/삭제 시 경계 조건 구분 필요 - 삽입(add): 맨 끝(i == size)도 유효한 위치, i &gt; size일 때만 예외 /
             조회·삭제(get, remove): 실제 값이 있는 0 ~ size 범위만 유효, i &gt;= size면 예외
           </li>
         </ul>
@@ -433,19 +433,19 @@
             <th>단일 연결 리스트</th>
           </tr>
           <tr>
-            <td>get(i) — head부터 순차 탐색</td>
+            <td>get(i) - head부터 순차 탐색</td>
             <td class="warn">O(n)</td>
           </tr>
           <tr>
-            <td>add(e) 맨 뒤 추가 — tail 덕분</td>
+            <td>add(e) 맨 뒤 추가 - tail 덕분</td>
             <td class="good">O(1)</td>
           </tr>
           <tr>
-            <td>add(0, e), remove(0) — head 참조만 교체</td>
+            <td>add(0, e), remove(0) - head 참조만 교체</td>
             <td class="good">O(1)</td>
           </tr>
           <tr>
-            <td>add(i, e), remove(i) (i&gt;0) — i-1번째까지 순회 필요</td>
+            <td>add(i, e), remove(i) (i&gt;0) - i-1번째까지 순회 필요</td>
             <td class="warn">O(n)</td>
           </tr>
         </table>
@@ -465,7 +465,7 @@
       </div>
 
       <div class="note-card">
-        <h3>🔁 이점 1 — 삭제 시 탐색 불필요</h3>
+        <h3>🔁 이점 1 - 삭제 시 탐색 불필요</h3>
         <ul>
           <li><strong>단일 연결리스트</strong>: 삭제하려면 반드시 prevNode를 앞에서부터 찾아야 함</li>
           <li><strong>이중 연결리스트</strong>: curNode.prev로 즉시 접근 가능 (인덱스로 삭제할 때는 그 인덱스의 노드까지 찾아가는 탐색 자체는
@@ -475,18 +475,18 @@
       </div>
 
       <div class="note-card">
-        <h3>↔️ 이점 2 — tail에서 역방향 순회</h3>
+        <h3>↔️ 이점 2 - tail에서 역방향 순회</h3>
         <ul>
           <li>getNode(i) 호출 시 i가 뒤쪽에 가까우면 tail에서 prev를 타고 거꾸로 탐색</li>
-          <li>i와 (size - i) 중 더 작은 쪽에서 시작 → 평균 탐색 비용이 절반으로 감소</li>
+          <li>i와 (size - i) 중 더 작은 쪽에서 시작 -> 평균 탐색 비용이 절반으로 감소</li>
           <li>Big-O 표기상으로는 여전히 O(n)이지만 상수 인자가 개선</li>
         </ul>
       </div>
 
       <div class="note-card">
-        <h3>🎯 이점 3 — remove(size-1)</h3>
+        <h3>🎯 이점 3 - remove(size-1)</h3>
         <ul>
-          <li>마지막 원소 삭제는 이중 연결리스트에서 <strong>O(1)</strong>로 가능 — tail.prev로 바로 새로운 tail을 얻을 수 있기 때문
+          <li>마지막 원소 삭제는 이중 연결리스트에서 <strong>O(1)</strong>로 가능 - tail.prev로 바로 새로운 tail을 얻을 수 있기 때문
           </li>
           <li>단일 연결리스트였다면 마지막 노드의 "이전 노드"를 알 방법이 없어 O(n) 필요</li>
         </ul>
@@ -495,7 +495,7 @@
       <div class="note-card">
         <h3>🧭 구조 vs 내용 판단 기준</h3>
         <ul>
-          <li>값만 바꾸는 연산(set)은 링크 재구성이 필요 없음 → <strong>getNode(i).data = e</strong>로 충분</li>
+          <li>값만 바꾸는 연산(set)은 링크 재구성이 필요 없음 -> <strong>getNode(i).data = e</strong>로 충분</li>
           <li>add/remove는 리스트의 연결 구조(순서, 개수) 자체가 바뀌므로 이웃 노드의 참조 갱신이 필수</li>
           <li>이 연산이 구조를 바꾸는가, 내용만 바꾸는가가 불필요한 작업을 피하는 판단 기준</li>
         </ul>
@@ -509,7 +509,7 @@
             <th>이중 연결 리스트</th>
           </tr>
           <tr>
-            <td>get(i) — head/tail 중 가까운 쪽에서 탐색</td>
+            <td>get(i) - head/tail 중 가까운 쪽에서 탐색</td>
             <td class="good">O(min(i, size-i))</td>
           </tr>
           <tr>
@@ -521,16 +521,16 @@
             <td class="good">O(1)</td>
           </tr>
           <tr>
-            <td>remove(size-1) — tail.prev로 즉시 접근 (단일 연결리스트라면 O(n))</td>
+            <td>remove(size-1) - tail.prev로 즉시 접근 (단일 연결리스트라면 O(n))</td>
             <td class="good">O(1)</td>
           </tr>
           <tr>
-            <td>add(i, e), remove(i) (일반 위치) — 위치 탐색 비용이 지배적</td>
+            <td>add(i, e), remove(i) (일반 위치) - 위치 탐색 비용이 지배적</td>
             <td class="good">O(min(i, size-i))</td>
           </tr>
         </table>
         <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">LinkedList가 이 구조를 사용 (Doubly
-          Linked List + head/tail 관리) — Deque 인터페이스를 구현하여 스택/큐로도 사용 가능한 이유 (양쪽 끝 모두 O(1) 삽입/삭제가 가능하기
+          Linked List + head/tail 관리) - Deque 인터페이스를 구현하여 스택/큐로도 사용 가능한 이유 (양쪽 끝 모두 O(1) 삽입/삭제가 가능하기
           때문)</p>
       </div>
 
@@ -542,11 +542,11 @@
     <div class="ctrl-group">
       <label>연산</label>
       <select id="opSelect">
-        <option value="addTail">add(e) — 맨 뒤 추가</option>
-        <option value="addAt">add(i, e) — 위치 삽입</option>
-        <option value="removeAt">remove(i) — 삭제</option>
-        <option value="getData">getData(i) — 조회</option>
-        <option value="set">set(i, e) — 값 변경</option>
+        <option value="addTail">add(e) - 맨 뒤 추가</option>
+        <option value="addAt">add(i, e) - 위치 삽입</option>
+        <option value="removeAt">remove(i) - 삭제</option>
+        <option value="getData">getData(i) - 조회</option>
+        <option value="set">set(i, e) - 값 변경</option>
       </select>
     </div>
     <div class="ctrl-group" id="valGroup">
@@ -575,14 +575,14 @@
     <div class="info-chip">size = <strong id="infoSize">0</strong></div>
     <div class="info-chip">head = <strong id="infoHead">null</strong></div>
     <div class="info-chip">tail = <strong id="infoTail">null</strong></div>
-    <div class="info-chip">진행 단계 = <strong id="infoStep">—</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
   </div>
 
   <!-- Visualization Panel -->
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">Doubly Linked List (head/tail 관리 + 양방향 탐색)</div>
-      <div class="panel-step" id="stepCounter">—</div>
+      <div class="panel-step" id="stepCounter">-</div>
     </div>
 
     <div class="list-scroll">
@@ -1002,7 +1002,7 @@
         current: 0,
         visited: [0],
         dir: 'direct',
-        msg: `getNode(${i}) → i==0 → head를 바로 반환 (O(1))`
+        msg: `getNode(${i}) -> i==0 -> head를 바로 반환 (O(1))`
       });
       return steps;
     }
@@ -1011,7 +1011,7 @@
         current: size - 1,
         visited: [size - 1],
         dir: 'direct',
-        msg: `getNode(${i}) → i==size-1 → tail을 바로 반환 (O(1))`
+        msg: `getNode(${i}) -> i==size-1 -> tail을 바로 반환 (O(1))`
       });
       return steps;
     }
@@ -1021,15 +1021,15 @@
         current: null,
         visited: [],
         dir: 'fwd-start',
-        msg: `getNode(${i}) → i(${i}) &lt; size/2(${half}) → head에서 순방향 탐색 시작`
+        msg: `getNode(${i}) -> i(${i}) &lt; size/2(${half}) -> head에서 순방향 탐색 시작`
       });
       const visited = [];
       for (let idx = 0; idx <= i; idx++) {
         visited.push(idx);
         steps.push({
           current: idx, visited: [...visited], dir: 'fwd',
-          msg: idx === i ? `idx=${idx} 도달 → 목표 노드 발견`
-              : `head → 순방향 이동 (curNode = curNode.next), 현재 idx=${idx}`
+          msg: idx === i ? `idx=${idx} 도달 -> 목표 노드 발견`
+              : `head -> 순방향 이동 (curNode = curNode.next), 현재 idx=${idx}`
         });
       }
     } else {
@@ -1037,15 +1037,15 @@
         current: null,
         visited: [],
         dir: 'bwd-start',
-        msg: `getNode(${i}) → i(${i}) ≥ size/2(${half}) → tail에서 역방향 탐색 시작`
+        msg: `getNode(${i}) -> i(${i}) ≥ size/2(${half}) -> tail에서 역방향 탐색 시작`
       });
       const visited = [];
       for (let idx = size - 1; idx >= i; idx--) {
         visited.push(idx);
         steps.push({
           current: idx, visited: [...visited], dir: 'bwd',
-          msg: idx === i ? `idx=${idx} 도달 → 목표 노드 발견`
-              : `tail → 역방향 이동 (curNode = curNode.prev), 현재 idx=${idx}`
+          msg: idx === i ? `idx=${idx} 도달 -> 목표 노드 발견`
+              : `tail -> 역방향 이동 (curNode = curNode.prev), 현재 idx=${idx}`
         });
       }
     }
@@ -1090,7 +1090,7 @@
     const newArr = [...arr, {value}];
     if (arr.length === 0) {
       rsteps.push(
-          {arr: [...arr], highlight: {}, msg: `head == null → 새 노드가 곧 head가 됩니다`, tag: 'insert'});
+          {arr: [...arr], highlight: {}, msg: `head == null -> 새 노드가 곧 head가 됩니다`, tag: 'insert'});
     } else {
       rsteps.push({
         arr: [...arr],
@@ -1102,7 +1102,7 @@
     rsteps.push({
       arr: newArr,
       highlight: {[newArr.length - 1]: 'new'},
-      msg: `refreshTailTracking() → tail 갱신, size++ (O(1) 완료)`,
+      msg: `refreshTailTracking() -> tail 갱신, size++ (O(1) 완료)`,
       tag: 'done'
     });
     return {steps: rsteps, result: newArr};
@@ -1115,7 +1115,7 @@
       rsteps.push({
         arr: [...arr],
         highlight: {},
-        msg: `checkInsertBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        msg: `checkInsertBounds 실패 -> IndexOutOfBoundsException (i=${i}, size=${size})`,
         tag: 'error'
       });
       return {steps: rsteps, result: arr, error: true};
@@ -1124,7 +1124,7 @@
       rsteps.push({
         arr: [...arr],
         highlight: size > 0 ? {0: 'target'} : {},
-        msg: `i==0 → 새 노드를 head 앞에 연결 (O(1))`,
+        msg: `i==0 -> 새 노드를 head 앞에 연결 (O(1))`,
         tag: 'insert'
       });
     } else {
@@ -1132,13 +1132,13 @@
       rsteps.push({
         arr: [...arr],
         highlight: {[i - 1]: 'target'},
-        msg: `prevNode 발견 (idx=${i - 1}) → 그 뒤에 새 노드를 연결`,
+        msg: `prevNode 발견 (idx=${i - 1}) -> 그 뒤에 새 노드를 연결`,
         tag: 'insert'
       });
     }
     const newArr = [...arr.slice(0, i), {value}, ...arr.slice(i)];
     rsteps.push(
-        {arr: newArr, highlight: {[i]: 'new'}, msg: `삽입 완료 (idx=${i}) → size++`, tag: 'done'});
+        {arr: newArr, highlight: {[i]: 'new'}, msg: `삽입 완료 (idx=${i}) -> size++`, tag: 'done'});
     return {steps: rsteps, result: newArr};
   }
 
@@ -1149,7 +1149,7 @@
       rsteps.push({
         arr: [...arr],
         highlight: {},
-        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        msg: `checkElementBounds 실패 -> IndexOutOfBoundsException (i=${i}, size=${size})`,
         tag: 'error'
       });
       return {steps: rsteps, result: arr, error: true};
@@ -1158,14 +1158,14 @@
       rsteps.push({
         arr: [...arr],
         highlight: {0: 'removing'},
-        msg: `i==0 → head = head.next (O(1))`,
+        msg: `i==0 -> head = head.next (O(1))`,
         tag: 'remove'
       });
     } else if (i === size - 1) {
       rsteps.push({
         arr: [...arr],
         highlight: {[size - 1]: 'removing'},
-        msg: `i==size-1 → tail = tail.prev (이중연결이라 O(1) 가능)`,
+        msg: `i==size-1 -> tail = tail.prev (이중연결이라 O(1) 가능)`,
         tag: 'remove'
       });
     } else {
@@ -1173,13 +1173,13 @@
       rsteps.push({
         arr: [...arr],
         highlight: {[i]: 'removing'},
-        msg: `curNode 발견 (idx=${i}) → prevNode.next=nextNode, nextNode.prev=prevNode`,
+        msg: `curNode 발견 (idx=${i}) -> prevNode.next=nextNode, nextNode.prev=prevNode`,
         tag: 'remove'
       });
     }
     const removedVal = arr[i].value;
     const newArr = [...arr.slice(0, i), ...arr.slice(i + 1)];
-    rsteps.push({arr: newArr, highlight: {}, msg: `노드(${removedVal}) 삭제 완료 → size--`, tag: 'done'});
+    rsteps.push({arr: newArr, highlight: {}, msg: `노드(${removedVal}) 삭제 완료 -> size--`, tag: 'done'});
     return {steps: rsteps, result: newArr};
   }
 
@@ -1190,7 +1190,7 @@
       rsteps.push({
         arr: [...arr],
         highlight: {},
-        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        msg: `checkElementBounds 실패 -> IndexOutOfBoundsException (i=${i}, size=${size})`,
         tag: 'error'
       });
       return {steps: rsteps, result: arr, error: true};
@@ -1199,7 +1199,7 @@
     rsteps.push({
       arr: [...arr],
       highlight: {[i]: 'target'},
-      msg: `getData(${i}) → 결과 = ${arr[i].value}`,
+      msg: `getData(${i}) -> 결과 = ${arr[i].value}`,
       tag: 'done'
     });
     return {steps: rsteps, result: arr};
@@ -1212,7 +1212,7 @@
       rsteps.push({
         arr: [...arr],
         highlight: {},
-        msg: `checkElementBounds 실패 → IndexOutOfBoundsException (i=${i}, size=${size})`,
+        msg: `checkElementBounds 실패 -> IndexOutOfBoundsException (i=${i}, size=${size})`,
         tag: 'error'
       });
       return {steps: rsteps, result: arr, error: true};
@@ -1223,7 +1223,7 @@
     rsteps.push({
       arr: newArr,
       highlight: {[i]: 'new'},
-      msg: `getNode(${i}).data = ${value} (${oldVal} → ${value}) → 링크 재구성 없이 값만 변경`,
+      msg: `getNode(${i}).data = ${value} (${oldVal} -> ${value}) -> 링크 재구성 없이 값만 변경`,
       tag: 'done'
     });
     return {steps: rsteps, result: newArr};
@@ -1257,10 +1257,10 @@
             <div class="node-idx">[${idx}]</div>
           </div>`;
         if (idx < arr.length - 1) {
-          html += `<div class="link"><div class="arrow fwd">→</div><div class="arrow bwd">←</div></div>`;
+          html += `<div class="link"><div class="arrow fwd">-></div><div class="arrow bwd">←</div></div>`;
         }
       });
-      html += '<div class="null-cap">→ null</div>';
+      html += '<div class="null-cap">-> null</div>';
       area.innerHTML = html;
     }
 

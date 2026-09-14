@@ -295,7 +295,7 @@
         <div class="dot" style="background:#67e8f9"></div>
         DynamicArray
       </div>
-      <div class="panel-step" id="stepCounter">—</div>
+      <div class="panel-step" id="stepCounter">-</div>
     </div>
     <div class="info-row">
       <span class="badge" id="sizeBadge">size: 0</span>
@@ -583,7 +583,7 @@
     }
     stepsOut.push({
       type: 'grow', arr: [...newArr], size: sz, growFrom: cap, growTo: newCap,
-      msg: `growIfNeeded(): capacity(${cap}) 가득 참 → 새 배열(용량 ${newCap})에 기존 원소 복사`
+      msg: `growIfNeeded(): capacity(${cap}) 가득 참 -> 새 배열(용량 ${newCap})에 기존 원소 복사`
     });
     return {arr: newArr, cap: newCap};
   }
@@ -599,9 +599,9 @@
     a[sz] = value;
     s.push({
       type: 'insert', arr: [...a], size: sz + 1, idx: sz,
-      msg: `arr[${sz}] = ${value}  (size: ${sz} → ${sz + 1})`
+      msg: `arr[${sz}] = ${value}  (size: ${sz} -> ${sz + 1})`
     });
-    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '추가 완료! — add(e), 맨 뒤 추가는 평균 O(1)'});
+    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '추가 완료! - add(e), 맨 뒤 추가는 평균 O(1)'});
     return {steps: s, finalArr: a, finalSize: sz + 1, error: false};
   }
 
@@ -611,7 +611,7 @@
       return {
         steps: [{
           type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz}`
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} - 허용 범위 0 ~ ${sz}`
         }],
         finalArr: currentArr, finalSize: sz, error: true
       };
@@ -627,15 +627,15 @@
       a[j] = a[j - 1];
       s.push({
         type: 'shift', arr: [...a], size: sz, from: j - 1, to: j,
-        msg: `arr[${j}] = arr[${j - 1}]  — 오른쪽 끝부터 한 칸씩 밀기`
+        msg: `arr[${j}] = arr[${j - 1}]  - 오른쪽 끝부터 한 칸씩 밀기`
       });
     }
     a[index] = value;
     s.push({
       type: 'insert', arr: [...a], size: sz + 1, idx: index,
-      msg: `arr[${index}] = ${value}  (size: ${sz} → ${sz + 1})`
+      msg: `arr[${index}] = ${value}  (size: ${sz} -> ${sz + 1})`
     });
-    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '삽입 완료! — add(i,e)는 이동 때문에 O(n)'});
+    s.push({type: 'done', arr: [...a], size: sz + 1, msg: '삽입 완료! - add(i,e)는 이동 때문에 O(n)'});
     return {steps: s, finalArr: a, finalSize: sz + 1, error: false};
   }
 
@@ -645,7 +645,7 @@
       return {
         steps: [{
           type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}`
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} - 허용 범위 0 ~ ${sz - 1}`
         }],
         finalArr: currentArr, finalSize: sz, error: true
       };
@@ -656,15 +656,15 @@
       a[j] = a[j + 1];
       s.push({
         type: 'shift', arr: [...a], size: sz, from: j + 1, to: j,
-        msg: `arr[${j}] = arr[${j + 1}]  — 왼쪽으로 한 칸씩 당기기`
+        msg: `arr[${j}] = arr[${j + 1}]  - 왼쪽으로 한 칸씩 당기기`
       });
     }
     a[sz - 1] = null;
     s.push({
       type: 'clear', arr: [...a], size: sz - 1, idx: sz - 1,
-      msg: `arr[${sz - 1}] = null  (size: ${sz} → ${sz - 1})`
+      msg: `arr[${sz - 1}] = null  (size: ${sz} -> ${sz - 1})`
     });
-    s.push({type: 'done', arr: [...a], size: sz - 1, msg: '삭제 완료! — remove(i)는 당기기 때문에 O(n)'});
+    s.push({type: 'done', arr: [...a], size: sz - 1, msg: '삭제 완료! - remove(i)는 당기기 때문에 O(n)'});
     return {steps: s, finalArr: a, finalSize: sz - 1, error: false};
   }
 
@@ -674,7 +674,7 @@
       return {
         steps: [{
           type: 'error', arr: [...currentArr], size: sz,
-          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} — 허용 범위 0 ~ ${sz - 1}`
+          msg: `인덱스 오류: ${isNaN(index) ? '(숫자 아님)' : index} - 허용 범위 0 ~ ${sz - 1}`
         }],
         finalArr: currentArr, finalSize: sz, error: true
       };
@@ -682,9 +682,9 @@
     const s = [];
     s.push({
       type: 'get', arr: [...currentArr], size: sz, idx: index,
-      msg: `get(${index}) → ${currentArr[index]} 반환`
+      msg: `get(${index}) -> ${currentArr[index]} 반환`
     });
-    s.push({type: 'done', arr: [...currentArr], size: sz, msg: '조회 완료! — get(i)은 인덱스 접근이라 O(1)'});
+    s.push({type: 'done', arr: [...currentArr], size: sz, msg: '조회 완료! - get(i)은 인덱스 접근이라 O(1)'});
     return {steps: s, finalArr: currentArr, finalSize: sz, error: false};
   }
 
@@ -748,7 +748,7 @@
     }];
     stepIdx = 1;
     renderStep(steps[0]);
-    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('stepCounter').textContent = '-';
     setButtonsEnabled(true);
   }
 

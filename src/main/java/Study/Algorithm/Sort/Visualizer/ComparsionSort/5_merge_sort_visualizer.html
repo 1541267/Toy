@@ -101,8 +101,8 @@
         <ul>
           <li><strong>Quick:</strong> 피벗으로 재배치 & 분할 (Partition)</li>
           <li><strong>Merge:</strong> 단순히 반으로 나눈 뒤 Merge 과정에서 정렬</li>
-          <li>LinkedList 정렬 → <strong class="hl">Merge Sort 유리</strong></li>
-          <li>Quick Sort는 Partition 시 임의 접근·swap 필요 → LinkedList 비효율</li>
+          <li>LinkedList 정렬 -> <strong class="hl">Merge Sort 유리</strong></li>
+          <li>Quick Sort는 Partition 시 임의 접근·swap 필요 -> LinkedList 비효율</li>
           <li>배열 접근 O(1) vs LinkedList 접근 O(n)</li>
         </ul>
       </div>
@@ -113,7 +113,7 @@
           <li>안정 정렬 (같은 값의 순서 보장)</li>
           <li>최악의 경우에도 <strong>O(n log n)</strong> 보장</li>
           <li>LinkedList 정렬에 매우 효율적</li>
-          <li>순차적 비교 → 캐시 예측 가능한 접근</li>
+          <li>순차적 비교 -> 캐시 예측 가능한 접근</li>
         </ul>
         <div class="complexity-row">
           <span class="badge good">Best O(n log n)</span>
@@ -125,7 +125,7 @@
       <div class="note-card">
         <h3>❌ 단점</h3>
         <ul>
-          <li><strong>추가 메모리</strong> 필요 — 제자리 정렬 아님</li>
+          <li><strong>추가 메모리</strong> 필요 - 제자리 정렬 아님</li>
           <li>배열 복사 과정으로 메모리 효율 떨어짐</li>
           <li>작은 배열에선 삽입 정렬보다 느릴 수 있음</li>
           <li>캐시 친화적이지 않음 (메모리 접근 많음)</li>
@@ -141,9 +141,9 @@
   <!-- Diff note -->
   <div class="diff-note">
     <strong>merge() vs optimizedMerge() 차이</strong><br>
-    <span class="hlw">merge()</span>: 매 병합마다 <code>Arrays.copyOfRange()</code> 로 L, R 두 배열을 새로 생성 →
+    <span class="hlw">merge()</span>: 매 병합마다 <code>Arrays.copyOfRange()</code> 로 L, R 두 배열을 새로 생성 ->
     메모리 할당 + GC 반복으로 무거움<br>
-    <span class="hl">optimizedMerge()</span>: <code>temp</code> 배열을 최초 한 번만 생성 후 해당 구간만 복사해서 사용 → 왼쪽
+    <span class="hl">optimizedMerge()</span>: <code>temp</code> 배열을 최초 한 번만 생성 후 해당 구간만 복사해서 사용 -> 왼쪽
     잔여 원소만 복사하면 되고 오른쪽 잔여 원소는 arr에 그대로 남아 별도 복사 불필요
   </div>
 
@@ -176,7 +176,7 @@
           <div class="dot" style="background:#fcd34d"></div>
           merge()
         </div>
-        <div class="panel-step" id="stepA">—</div>
+        <div class="panel-step" id="stepA">-</div>
       </div>
       <div class="bar-area" id="barA"></div>
 
@@ -221,7 +221,7 @@
           <div class="dot" style="background:#6ee7b7"></div>
           optimizedMerge()
         </div>
-        <div class="panel-step" id="stepB">—</div>
+        <div class="panel-step" id="stepB">-</div>
       </div>
       <div class="bar-area" id="barB"></div>
 
@@ -269,7 +269,7 @@
     <div class="code-panel" style="margin-bottom: 1rem;">
       <div class="code-panel-header">
         <div class="dot" style="background:#a5b4fc"></div>
-        mergeSort() — 공통 (분할 재귀)
+        mergeSort() - 공통 (분할 재귀)
       </div>
       <pre><span class="kw">private static void</span> <span class="fn">mergeSort</span>(
     <span class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span>[] <span
@@ -277,7 +277,7 @@
     <span class="ty">int</span> <span class="nm">left</span>, <span class="ty">int</span> <span
             class="nm">right</span>) {
 
-  <span class="ck">// left >= right 이면 원소가 1개 이하 → 더 이상 분할 불필요, 재귀 종료</span>
+  <span class="ck">// left >= right 이면 원소가 1개 이하 -> 더 이상 분할 불필요, 재귀 종료</span>
   <span class="kw">if</span> (<span class="nm">left</span> &lt; <span class="nm">right</span>) {
 
     <span class="ck">// 중간 인덱스 계산 (left + right) / 2 대신 오버플로 방지를 위해 아래 방식 사용</span>
@@ -320,7 +320,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#fcd34d"></div>
-          merge() — 기본 (공부용)
+          merge() - 기본 (공부용)
         </div>
         <pre><span class="ck">// merge 구간을 임시 두 배열로 복사</span>
 <span class="kw">private static void</span> <span class="fn">merge</span>(<span
@@ -344,7 +344,7 @@
   <span class="kw">while</span> (<span class="nm">i</span> &lt; <span class="nm">leftSize</span> &amp;&amp; <span
               class="nm">j</span> &lt; <span class="nm">rightSize</span>) {
     <span class="ck">// L[i] &lt; R[j] 로 하면 오른쪽 값이 먼저 들어가</span>
-    <span class="ck">// 안정 정렬이 깨짐 → &lt;= 로 비교해야 안정 정렬 보장</span>
+    <span class="ck">// 안정 정렬이 깨짐 -> &lt;= 로 비교해야 안정 정렬 보장</span>
     <span class="kw">if</span> (<span class="nm">L</span>[<span class="nm">i</span>] &lt;= <span
               class="nm">R</span>[<span class="nm">j</span>]) {
       <span class="nm">arr</span>[<span class="nm">k</span>++] = <span class="nm">L</span>[<span
@@ -373,10 +373,10 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#6ee7b7"></div>
-          optimizedMerge() — 개선 (copyOfRange 최적화)
+          optimizedMerge() - 개선 (copyOfRange 최적화)
         </div>
         <pre><span class="ck">// 기존: 매 merge 마다 Arrays.copyOfRange() 로 L, R 배열을 새로 생성</span>
-<span class="ck">// → 메모리 할당 & GC 제거가 반복돼 무거움</span>
+<span class="ck">// -> 메모리 할당 & GC 제거가 반복돼 무거움</span>
 <span class="ck">// 개선: temp 배열은 최초 한 번만 생성</span>
 <span class="ck">//       merge 시 필요한 구간만 temp 로 복사 후</span>
 <span class="ck">//       temp 에서 읽고 arr 에 기록</span>
@@ -412,11 +412,11 @@
   }
 
   <span class="ck">// 오른쪽 원소가 먼저 선택되면 왼쪽 원소가 arr 에서 덮어써져 사라질 수 있음</span>
-  <span class="ck">// → 남은 왼쪽 원소(temp[i ~ mid])는 반드시 다시 arr 로 복사</span>
+  <span class="ck">// -> 남은 왼쪽 원소(temp[i ~ mid])는 반드시 다시 arr 로 복사</span>
   <span class="ck">//</span>
   <span class="ck">// 반면 오른쪽 잔여(temp[j ~ right])는</span>
   <span class="ck">// k 가 j 위치에 도달하기 전엔 arr 에 원래 값이 그대로 남아 있음</span>
-  <span class="ck">// → 별도 복사 불필요, 왼쪽만 처리하면 됨</span>
+  <span class="ck">// -> 별도 복사 불필요, 왼쪽만 처리하면 됨</span>
   <span class="kw">while</span> (<span class="nm">i</span> &lt;= <span class="nm">mid</span>) {<span
               class="nm">arr</span>[<span class="nm">k</span>++] = <span
               class="nm">temp</span>[<span
@@ -482,12 +482,12 @@
       const L = a.slice(left, mid + 1);
       const R = a.slice(mid + 1, right + 1);
       push('merge-start', {left, mid, right, L: [...L], R: [...R]},
-          `merge() → L복사: [${L}]  R복사: [${R}]  (copyOfRange 2번 호출)`);
+          `merge() -> L복사: [${L}]  R복사: [${R}]  (copyOfRange 2번 호출)`);
 
       let i = 0, j = 0, k = left;
       while (i < L.length && j < R.length) {
         push('compare', {left, right, mid, ci: left + i, cj: mid + 1 + j},
-            `L[${i}]=${L[i]} vs R[${j}]=${R[j]} → ${L[i] <= R[j] ? 'L 선택'
+            `L[${i}]=${L[i]} vs R[${j}]=${R[j]} -> ${L[i] <= R[j] ? 'L 선택'
                 : 'R 선택'} (≤ 비교로 안정정렬 유지)`);
         if (L[i] <= R[j]) { a[k++] = L[i++]; } else { a[k++] = R[j++]; }
         push('place', {left, right, mid, pk: k - 1},
@@ -544,17 +544,17 @@
         temp[x] = a[x];
       }
       push('merge-start', {left, mid, right},
-          `optimizedMerge() → temp[${left}~${right}] 복사 (구간만, 1번 arraycopy)`);
+          `optimizedMerge() -> temp[${left}~${right}] 복사 (구간만, 1번 arraycopy)`);
 
       let i = left, j = mid + 1, k = left;
       while (i <= mid && j <= right) {
         push('compare', {left, right, mid, ci: i, cj: j},
-            `temp[${i}]=${temp[i]} vs temp[${j}]=${temp[j]} → ${temp[i] <= temp[j] ? '왼쪽 선택'
+            `temp[${i}]=${temp[i]} vs temp[${j}]=${temp[j]} -> ${temp[i] <= temp[j] ? '왼쪽 선택'
                 : '오른쪽 선택'}`);
         if (temp[i] <= temp[j]) { a[k++] = temp[i++]; } else { a[k++] = temp[j++]; }
         push('place', {left, right, mid, pk: k - 1}, `arr[${k - 1}] = ${a[k - 1]} 기록`);
       }
-      // 오른쪽 잔여는 arr에 원래 값이 그대로 → 복사 불필요
+      // 오른쪽 잔여는 arr에 원래 값이 그대로 -> 복사 불필요
       while (i <= mid) {
         push('copy-left', {left, right, mid, pk: k},
             `왼쪽 잔여 temp[${i}]=${temp[i]} 복사 (오른쪽 잔여는 이미 arr에 존재)`);
@@ -652,8 +652,8 @@
     const initStep = {type: 'init', arr: [...base], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'};
     renderStep(initStep, 'barA', 'logA');
     renderStep(initStep, 'barB', 'logB');
-    document.getElementById('stepA').textContent = '—';
-    document.getElementById('stepB').textContent = '—';
+    document.getElementById('stepA').textContent = '-';
+    document.getElementById('stepB').textContent = '-';
     document.getElementById('btnPlay').textContent = '▶ 시작';
     document.getElementById('btnPlay').disabled = false;
   }

@@ -94,7 +94,7 @@
   <!-- Header -->
   <div class="header">
     <h1 onclick="location.href = '/Toy'">기수 정렬(Radix Sort)</h1>
-    <p>데이터를 구성하는 자릿수(Radix)로 Counting Sort를 반복 — LSD(하위 자리부터) vs MSD(상위 자리부터) 비교</p>
+    <p>데이터를 구성하는 자릿수(Radix)로 Counting Sort를 반복 - LSD(하위 자리부터) vs MSD(상위 자리부터) 비교</p>
   </div>
 
   <!-- Study Notes -->
@@ -114,7 +114,7 @@
       </div>
 
       <div class="note-card">
-        <h3>⚡ LSD vs MSD — 정렬 방향</h3>
+        <h3>⚡ LSD vs MSD - 정렬 방향</h3>
         <ul>
           <li><strong>LSD(Least Significant Digit)</strong>: <strong class="hl">낮은(작은) 자리수</strong>부터
             정렬
@@ -268,9 +268,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#6ee7b7"></div>
-          lsdRadixSort() — LSD
+          lsdRadixSort() - LSD
         </div>
-        <div class="panel-step" id="stepA">—</div>
+        <div class="panel-step" id="stepA">-</div>
       </div>
       <div class="panel-sub" id="subA">&nbsp;</div>
 
@@ -315,9 +315,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fcd34d"></div>
-          msdRadixSort() — MSD
+          msdRadixSort() - MSD
         </div>
-        <div class="panel-step" id="stepB">—</div>
+        <div class="panel-step" id="stepB">-</div>
       </div>
       <div class="panel-sub" id="subB">&nbsp;</div>
 
@@ -368,13 +368,13 @@
     <strong>lsdRadixSort() vs msdRadixSort() 차이</strong>
     <div class="cols">
       <div>
-        <span class="hl">LSD — 낮은 자리부터</span><br>
+        <span class="hl">LSD - 낮은 자리부터</span><br>
         1의 자리 -> 10의 자리 -> 100의 자리 순으로 <strong>배열 전체</strong>에 대해 Counting Sort를 반복 적용.
         각 라운드는 이전 라운드의 정렬 결과 위에서 안정적으로 동작하며, 자릿수(exponent)가 최댓값을 넘어서면 종료.
         <strong class="hl">재귀 없이 반복문(while)</strong>만으로 동작.
       </div>
       <div>
-        <span class="hlw">MSD — 높은 자리부터</span><br>
+        <span class="hlw">MSD - 높은 자리부터</span><br>
         가장 큰 자릿수를 기준으로 구간을 <strong>10개의 버킷(0~9)</strong>으로 나눈 뒤, 각 버킷(경계 배열 기준)에
         대해 <strong class="hlx">한 자리씩 낮춰가며 재귀 호출</strong>. 구간의 크기가 1 이하가 되거나 더 볼 자릿수가
         없으면 재귀 종료. 위 시각화에서 <strong>흐리게 표시된 막대</strong>는 현재 재귀에서 다루지 않는(다른 구간) 원소.
@@ -384,13 +384,13 @@
 
   <!-- Code Blocks -->
   <div class="code-section">
-    <div class="code-section-title">📄 소스 코드 — 공통 로직 먼저, 이후 LSD -> MSD 순</div>
+    <div class="code-section-title">📄 소스 코드 - 공통 로직 먼저, 이후 LSD -> MSD 순</div>
 
     <!-- 공통: countSort + negativeValueCorrection -->
     <div class="code-panel" style="margin-bottom:1rem;">
       <div class="code-panel-header" style="padding: 0.8rem;">
         <div class="dot" style="background:#7dd3fc"></div>
-        공통 로직 — countSort() &amp; negativeValueCorrection() (LSD/MSD가 함께 사용)
+        공통 로직 - countSort() &amp; negativeValueCorrection() (LSD/MSD가 함께 사용)
       </div>
       <pre><span class="ck">// 특정 자릿수를 기준으로 counting sort 수행</span>
 <span class="ck">// output, countArr 은 호출 전 1회 선언 한 배열을 계속 재사용</span>
@@ -472,7 +472,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#6ee7b7"></div>
-          lsdRadixSort() — LSD
+          lsdRadixSort() - LSD
         </div>
         <pre><span class="ck">// LSD(가장 낮은 수 부터 정렬)</span>
 <span class="kw">private static</span> <span class="ty">void</span> <span
@@ -526,7 +526,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#fcd34d"></div>
-          msdRadixSort() &amp; runMSDRadixSort() — MSD
+          msdRadixSort() &amp; runMSDRadixSort() - MSD
         </div>
         <pre><span class="kw">static</span> <span class="ty">void</span> <span
             class="fn">msdRadixSort</span>(<span class="ty">int</span>[] <span
@@ -662,7 +662,7 @@
 
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
-  // Array helpers — 자릿수가 여러 개 나오도록 넓은 범위 + 음수 보정 시연을 위해 음수도 일부 포함
+  // Array helpers - 자릿수가 여러 개 나오도록 넓은 범위 + 음수 보정 시연을 위해 음수도 일부 포함
   // 각 원소에는 tag(a, b, c ...)를 붙여 "동일 값 원소들의 원래 순서"를 시각적으로 추적 (Stable 확인용)
   function randArr(n) {
     const lo = -20, hi = 180;
@@ -1060,8 +1060,8 @@
 
     renderStep(emptyOutA, idsA, dispMaxA, n);
     renderStep(emptyOutB, idsB, dispMaxB, n);
-    document.getElementById('stepA').textContent = '—';
-    document.getElementById('stepB').textContent = '—';
+    document.getElementById('stepA').textContent = '-';
+    document.getElementById('stepB').textContent = '-';
     document.getElementById('btnPlay').textContent = '▶ 시작';
     document.getElementById('btnPlay').disabled = false;
   }

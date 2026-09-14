@@ -142,7 +142,7 @@
   <!-- Header -->
   <div class="header">
     <h1 onclick="location.href = '/Toy'">버킷 정렬(Bucket Sort)</h1>
-    <p>데이터를 n개의 버킷으로 분산 → 각 버킷 내부를 Insertion Sort로 정렬 → 순서대로 합침 — 정수 vs 실수(0~1) 비교</p>
+    <p>데이터를 n개의 버킷으로 분산 -> 각 버킷 내부를 Insertion Sort로 정렬 -> 순서대로 합침 - 정수 vs 실수(0~1) 비교</p>
   </div>
 
   <!-- Study Notes -->
@@ -154,7 +154,7 @@
         <h3>🔍 개념</h3>
         <ul>
           <li>데이터를 여러 개의 <strong>버킷(bucket)</strong>으로 분산한 뒤 각 버킷 내부에서 정렬을 수행하고, 버킷을 순서대로 합쳐 완성</li>
-          <li>핵심은 값을 <strong class="hl">index로 변환(mapping)</strong>하는 것 — 값의 상대적 위치를 기준으로 버킷에 배치
+          <li>핵심은 값을 <strong class="hl">index로 변환(mapping)</strong>하는 것 - 값의 상대적 위치를 기준으로 버킷에 배치
           </li>
           <li>
             <strong class="hl">bucketIdx Integer Ver</strong>
@@ -189,7 +189,7 @@
           </li>
           <li><strong>TreeMap</strong>: key 순서는 보장되지만 <strong class="hlx">O(log n)</strong> 오버헤드 추가
           </li>
-          <li>분산 → 정렬 → 수집, 3단계로 이뤄짐 (각 버킷은 균등 크기로 n개 생성)</li>
+          <li>분산 -> 정렬 -> 수집, 3단계로 이뤄짐 (각 버킷은 균등 크기로 n개 생성)</li>
         </ul>
       </div>
 
@@ -199,7 +199,7 @@
           <li>데이터가 <strong class="hl">균등 분포(uniform distribution)</strong>일 때</li>
           <li>각 버킷에 들어가는 원소 수가 <strong class="hl">O(1)</strong>에 가까울 때</li>
           <li>버킷 내부 정렬 비용이 작을 때 (Insertion Sort 적합)</li>
-          <li><strong class="hlx">Worst</strong>: 모든 데이터가 하나의 버킷에 몰리는 경우 → 내부 정렬이 O(n²)이면 일반 정렬보다
+          <li><strong class="hlx">Worst</strong>: 모든 데이터가 하나의 버킷에 몰리는 경우 -> 내부 정렬이 O(n²)이면 일반 정렬보다
             느려질 수 있음
           </li>
         </ul>
@@ -218,7 +218,7 @@
       </div>
 
       <div class="note-card" style="grid-column: span 2;">
-        <h3>🎯 정수 vs 실수 — 어느 쪽에 잘 맞는가</h3>
+        <h3>🎯 정수 vs 실수 - 어느 쪽에 잘 맞는가</h3>
         <div class="cols" style="margin-top:0.2rem;">
           <div>
             <span class="hlw">정수(Integer)에서 사용 시</span>
@@ -269,16 +269,16 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#6ee7b7"></div>
-          bucketSortIntegerVer() — 정수
+          bucketSortIntegerVer() - 정수
         </div>
-        <div class="panel-step" id="stepA">—</div>
+        <div class="panel-step" id="stepA">-</div>
       </div>
       <div class="panel-sub" id="subA">&nbsp;</div>
 
       <div class="bar-group-title">① 원본 배열</div>
       <div class="bar-area" id="arrA"></div>
 
-      <div class="bar-group-title">② 버킷 (분산 → 내부 Insertion Sort)</div>
+      <div class="bar-group-title">② 버킷 (분산 -> 내부 Insertion Sort)</div>
       <div class="bucket-area" id="bucketA"></div>
 
       <div class="bar-group-title">③ 결과 배열 (수집)</div>
@@ -319,16 +319,16 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fcd34d"></div>
-          bucketSortDoubleVer() — 실수(0~1)
+          bucketSortDoubleVer() - 실수(0~1)
         </div>
-        <div class="panel-step" id="stepB">—</div>
+        <div class="panel-step" id="stepB">-</div>
       </div>
       <div class="panel-sub" id="subB">&nbsp;</div>
 
       <div class="bar-group-title">① 원본 배열</div>
       <div class="bar-area" id="arrB"></div>
 
-      <div class="bar-group-title">② 버킷 (분산 → 내부 Insertion Sort)</div>
+      <div class="bar-group-title">② 버킷 (분산 -> 내부 Insertion Sort)</div>
       <div class="bucket-area" id="bucketB"></div>
 
       <div class="bar-group-title">③ 결과 배열 (수집)</div>
@@ -391,13 +391,13 @@
 
   <!-- Code Blocks -->
   <div class="code-section">
-    <div class="code-section-title">📄 소스 코드 — 공통 Insertion Sort 먼저, 이후 정수 → 실수 순</div>
+    <div class="code-section-title">📄 소스 코드 - 공통 Insertion Sort 먼저, 이후 정수 -> 실수 순</div>
 
     <!-- 공통: insertionSort -->
     <div class="code-panel" style="margin-bottom:1rem;">
       <div class="code-panel-header">
         <div class="dot" style="background:#7dd3fc"></div>
-        공통 로직 — insertionSortInteger() &amp; insertionSortDouble() (버킷 내부 정렬)
+        공통 로직 - insertionSortInteger() &amp; insertionSortDouble() (버킷 내부 정렬)
       </div>
       <pre><span class="ck">// 버킷 내부는 원소가 매우 적다는 가정 하에 Insertion Sort 사용</span>
 <span class="ck">// cache 친화적이고 구현이 단순하며, 적은 데이터에서는 quick/merge sort보다 빠름</span>
@@ -464,7 +464,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#6ee7b7"></div>
-          bucketSortIntegerVer() — 정수
+          bucketSortIntegerVer() - 정수
         </div>
         <pre><span class="kw">private static</span> <span class="ty">void</span> <span class="fn">bucketSortIntegerVer</span>(<span
             class="ty">int</span>[] <span class="nm">arr</span>) {
@@ -526,7 +526,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#fcd34d"></div>
-          bucketSortDoubleVer() — 실수
+          bucketSortDoubleVer() - 실수
         </div>
         <pre><span class="kw">static</span> <span class="ty">void</span> <span class="fn">bucketSortDoubleVer</span>(<span
             class="ty">double</span>[] <span class="nm">arr</span>) {
@@ -659,7 +659,7 @@
     const output = new Array(n).fill(null);
 
     if (n <= 1) {
-      push('done', {}, '원소가 1개 이하 → 정렬 불필요', buckets, output, -1);
+      push('done', {}, '원소가 1개 이하 -> 정렬 불필요', buckets, output, -1);
       return steps;
     }
 
@@ -673,7 +673,7 @@
         -1);
 
     if (max === min) {
-      push('done', {}, '모든 값이 동일(max == min) → 정렬 불필요, 조기 종료', buckets, output, -1);
+      push('done', {}, '모든 값이 동일(max == min) -> 정렬 불필요, 조기 종료', buckets, output, -1);
       return steps;
     }
 
@@ -693,7 +693,7 @@
         formula = `bucketIdx = floor((${fmt(num, true)}-${fmt(min, true)})/(${fmt(max, true)}-${fmt(
             min, true)})×${n - 1}) = ${bucketIdx}`;
         if (clamped !== bucketIdx) {
-          formula += ` → clamp(min, n-1) = ${clamped}`;
+          formula += ` -> clamp(min, n-1) = ${clamped}`;
         }
         bucketIdx = clamped;
       } else {
@@ -702,11 +702,11 @@
       }
       buckets[bucketIdx].push({...arr[i]});
       push('distribute', {ai: i, bi: bucketIdx},
-          `arr[${i}] = ${fmt(num, isDouble)}${arr[i].tag} → ${formula}`, buckets, output,
+          `arr[${i}] = ${fmt(num, isDouble)}${arr[i].tag} -> ${formula}`, buckets, output,
           bucketIdx);
     }
 
-    push('distribute-done', {}, '분산 완료 → 각 버킷 내부 정렬(Insertion Sort) 시작', buckets, output, -1);
+    push('distribute-done', {}, '분산 완료 -> 각 버킷 내부 정렬(Insertion Sort) 시작', buckets, output, -1);
 
     // ── 정렬 단계 (버킷별 Insertion Sort) ──
     for (let bi = 0; bi < n; bi++) {
@@ -728,7 +728,7 @@
           bucket[prev + 1] = {...bucket[prev]};
           push('shift', {bi, from: prev, to: prev + 1},
               `버킷[${bi}]: list[${prev}](${fmt(bucket[prev].value, isDouble)}) > temp(${fmt(
-                  temp.value, isDouble)}) → list[${prev + 1}]로 이동`,
+                  temp.value, isDouble)}) -> list[${prev + 1}]로 이동`,
               buckets, output, bi);
           prev--;
           if (prev >= 0) {
@@ -740,13 +740,13 @@
         }
         bucket[prev + 1] = temp;
         push('insert', {bi, pos: prev + 1},
-            `버킷[${bi}]: temp=${fmt(temp.value, isDouble)}${temp.tag} → list[${prev + 1}]에 삽입`,
+            `버킷[${bi}]: temp=${fmt(temp.value, isDouble)}${temp.tag} -> list[${prev + 1}]에 삽입`,
             buckets, output, bi);
       }
       push('bucket-done', {bi}, `버킷[${bi}] 정렬 완료`, buckets, output, bi);
     }
 
-    push('sort-done', {}, '모든 버킷 내부 정렬 완료 → 순서대로 수집 시작', buckets, output, -1);
+    push('sort-done', {}, '모든 버킷 내부 정렬 완료 -> 순서대로 수집 시작', buckets, output, -1);
 
     // ── 수집 단계 ──
     let idx = 0;
@@ -754,7 +754,7 @@
       for (const num of buckets[bi]) {
         output[idx] = {...num};
         push('gather', {bi, idx},
-            `버킷[${bi}]의 ${fmt(num.value, isDouble)}${num.tag} → arr[${idx}]에 배치`, buckets, output,
+            `버킷[${bi}]의 ${fmt(num.value, isDouble)}${num.tag} -> arr[${idx}]에 배치`, buckets, output,
             bi);
         idx++;
       }
@@ -893,8 +893,8 @@
     renderStep(stepsA[0], idsA, dispMaxArrA, dispMaxOutA, false);
     renderStep(stepsB[0], idsB, dispMaxArrB, dispMaxOutB, true);
 
-    document.getElementById('stepA').textContent = '—';
-    document.getElementById('stepB').textContent = '—';
+    document.getElementById('stepA').textContent = '-';
+    document.getElementById('stepB').textContent = '-';
     document.getElementById('btnPlay').textContent = '▶ 시작';
     document.getElementById('btnPlay').disabled = false;
   }

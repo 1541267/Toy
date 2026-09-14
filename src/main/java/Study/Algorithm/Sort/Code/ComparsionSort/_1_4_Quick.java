@@ -31,7 +31,7 @@ package Study.Algorithm.Sort.Code.ComparsionSort;
 // 메모리 여유, 불안정 정렬도 괜찮은 경우엔 Quick 을 가장 먼저 고려
 // -> 주기억장치(RAM | ROM)에서 데이터를 가져올 때 필요한 데이터뿐만 아닌 주변 메모리(캐시 라인)까지 함께 Cache 에 저장
 // -> Quick Sort는 배열이 연속된 인덱스에 주로 접근해 Cpu Cache 히트율이 높다
-// -> Heap Sort는 배열을 이진 트리처럼 사용해 부모(0) → 자식(1, 2) → 손자(3, 4, 5, 6) 처럼
+// -> Heap Sort는 배열을 이진 트리처럼 사용해 부모(0) -> 자식(1, 2) -> 손자(3, 4, 5, 6) 처럼
 // -> 멀리 떨어진 인덱스를 반복 접근하기 떄문에 CPU Cache 히트율이 낮음
 
 import Study.Algorithm.Sort.ArrGenerator;

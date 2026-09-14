@@ -64,7 +64,7 @@
   <!-- Header -->
   <div class="header">
     <h1 onclick="location.href = '/Toy'">계수 정렬(Counting Sort)</h1>
-    <p>값의 등장 횟수를 세어(Counting) 비교 없이 정렬 — 안정 버전 vs 불안정 버전 비교</p>
+    <p>값의 등장 횟수를 세어(Counting) 비교 없이 정렬 - 안정 버전 vs 불안정 버전 비교</p>
   </div>
 
   <!-- Study Notes -->
@@ -75,7 +75,7 @@
       <div class="note-card">
         <h3>🔍 개념</h3>
         <ul>
-          <li><strong>Non-Comparison Sort</strong> — 값 자체를 인덱스로 사용, 비교(Comparison) 없음</li>
+          <li><strong>Non-Comparison Sort</strong> - 값 자체를 인덱스로 사용, 비교(Comparison) 없음</li>
           <li>비교 정렬의 <strong>O(n log n) 하한</strong>을 우회 가능</li>
           <li>정렬하려는 값이 <strong>특정 범위</strong> 내에 있을 때 사용</li>
           <li>값을 인덱스로 변환해 빈도를 누적하고 위치를 직접 계산하는 정렬</li>
@@ -99,7 +99,7 @@
       <div class="note-card">
         <h3>✅ 장점</h3>
         <ul>
-          <li>시간 복잡도 <strong>O(n + k)</strong> — 비교 정렬보다 빠를 수 있음</li>
+          <li>시간 복잡도 <strong>O(n + k)</strong> - 비교 정렬보다 빠를 수 있음</li>
           <li>Stable 버전은 <strong>안정 정렬</strong> 보장</li>
           <li>구현이 비교적 단순함</li>
           <li>Radix Sort의 서브 루틴으로 활용 가능</li>
@@ -177,9 +177,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#6ee7b7"></div>
-          countingSort() — Stable
+          countingSort() - Stable
         </div>
-        <div class="panel-step" id="stepA">—</div>
+        <div class="panel-step" id="stepA">-</div>
       </div>
 
       <div class="bar-group-title">① 원본 배열</div>
@@ -223,9 +223,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fcd34d"></div>
-          unStableCountingSort() — Unstable
+          unStableCountingSort() - Unstable
         </div>
-        <div class="panel-step" id="stepB">—</div>
+        <div class="panel-step" id="stepB">-</div>
       </div>
 
       <div class="bar-group-title">① 원본 배열</div>
@@ -271,13 +271,13 @@
     <strong>countingSort() vs unStableCountingSort() 차이</strong>
     <div class="cols">
       <div>
-        <span class="hl">countingSort() — Stable</span><br>
+        <span class="hl">countingSort() - Stable</span><br>
         누적합으로 "값 이하 원소 개수"를 구한 뒤, 원본 배열을 <strong>뒤에서부터</strong> 순회하며
         <code>counting[v]--</code> 후 그 위치에 배치. 원본 원소 하나하나를 그대로 이동시키므로
         동일 값 원소들의 <strong class="hl">상대적 순서가 보존</strong>됨.
       </div>
       <div>
-        <span class="hlw">unStableCountingSort() — Unstable</span><br>
+        <span class="hlw">unStableCountingSort() - Unstable</span><br>
         counting 배열에 등장 횟수만 기록해두고, <strong>어떤 원소가 어디서 왔는지는 저장하지 않음</strong>.
         인덱스 순서대로 "값 i가 counting[i]번 등장했다"는 사실만으로 새로 채워 넣기 때문에,
         <span class="hlx">동일 값 원소들의 원래 순서를 재현할 방법이 없음</span> (위 시각화에서는 이해를 돕기 위해 역순으로 표현).
@@ -294,7 +294,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#6ee7b7"></div>
-          countingSort() — Stable
+          countingSort() - Stable
         </div>
         <pre><span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">countingSort</span>(<span
             class="ty">int</span>[] <span class="nm">arr</span>) {
@@ -351,7 +351,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#fcd34d"></div>
-          unStableCountingSort() — Unstable
+          unStableCountingSort() - Unstable
         </div>
         <pre><span class="ck">// counting[i]번 등장한 요소를 배열 순서 참조 없이 삽입 -> UnStable</span>
 <span class="kw">public static</span> <span class="ty">int</span>[] <span class="fn">unStableCountingSort</span>(<span
@@ -422,7 +422,7 @@
 
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
-  // Array helpers — 값의 범위를 배열 길이보다 작게 만들어 중복(동일 값)이 생기도록 구성
+  // Array helpers - 값의 범위를 배열 길이보다 작게 만들어 중복(동일 값)이 생기도록 구성
   // 각 원소에는 tag(a, b, c ...)를 붙여 "동일 값 원소들의 원래 순서"를 시각적으로 추적
   function randArr(n) {
     const k = Math.max(2, Math.ceil(n * 0.45)); // 값의 범위(range) 크기
@@ -667,8 +667,8 @@
 
     renderStep(emptyOutA, idsA);
     renderStep(emptyOutB, idsB);
-    document.getElementById('stepA').textContent = '—';
-    document.getElementById('stepB').textContent = '—';
+    document.getElementById('stepA').textContent = '-';
+    document.getElementById('stepB').textContent = '-';
     document.getElementById('btnPlay').textContent = '▶ 시작';
     document.getElementById('btnPlay').disabled = false;
   }

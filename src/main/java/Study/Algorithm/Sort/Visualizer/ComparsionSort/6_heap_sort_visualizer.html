@@ -86,7 +86,7 @@
           <li>부모 인덱스 <strong>i</strong> -> 왼쪽 자식 <strong>2i+1</strong>, 오른쪽 자식 <strong>2i+2</strong>
           </li>
           <li>최댓값/최솟값을 여러 번 꺼내야 할 때 사용 (게임 랭킹, 우선순위 큐, 스케줄러)</li>
-          <li>최악의 성능 보장이 필요할 때 적합 — 항상 O(n log n)</li>
+          <li>최악의 성능 보장이 필요할 때 적합 - 항상 O(n log n)</li>
         </ul>
       </div>
 
@@ -123,7 +123,7 @@
         <ul>
           <li>Best/Avg/Worst 모두 <strong>O(n log n)</strong> 시간 보장</li>
           <li>입력 데이터의 상태(정렬 여부)에 관계없이 항상 비슷한 수행 시간을 가짐</li>
-          <li><strong>제자리 정렬</strong> — O(1) 추가 공간</li>
+          <li><strong>제자리 정렬</strong> - O(1) 추가 공간</li>
           <li>부분 정렬에 효율적 (가장 큰/작은 k개 원소 추출)</li>
           <li>우선순위 큐(Priority Queue) 원리 이해에 최적</li>
           <li>메모리 제약 환경에서 유용</li>
@@ -139,9 +139,9 @@
       <div class="note-card">
         <h3>⚠️ 단점</h3>
         <ul>
-          <li><strong>불안정 정렬</strong> — 동일 값의 원래 순서 보장 안 됨</li>
+          <li><strong>불안정 정렬</strong> - 동일 값의 원래 순서 보장 안 됨</li>
           <li>구현이 복잡하고 상수 요소가 높음</li>
-          <li><strong>캐시 지역성 낮음</strong> — 멀리 떨어진 인덱스를 반복 접근</li>
+          <li><strong>캐시 지역성 낮음</strong> - 멀리 떨어진 인덱스를 반복 접근</li>
           <li>부모(0) -> 자식(1,2) -> 손자(3,4,5,6) 처럼 불규칙한 메모리 접근 -> CPU Cache 히트율 낮음</li>
           <li><strong>캐시 지역성 낮음</strong>
             <ul>
@@ -187,9 +187,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#fbbf24"></div>
-          Bottom-Up (Floyd) — Build -> Sort
+          Bottom-Up (Floyd) - Build -> Sort
         </div>
-        <div class="panel-step" id="stepCounterBU">—</div>
+        <div class="panel-step" id="stepCounterBU">-</div>
       </div>
       <div class="bar-area" id="barAreaBU"></div>
       <div class="log-box" id="logBU">시작 버튼을 누르세요.</div>
@@ -199,9 +199,9 @@
       <div class="panel-header">
         <div class="panel-title">
           <div class="dot" style="background:#67e8f9"></div>
-          Top-Down (Insertion) — Build -> Sort
+          Top-Down (Insertion) - Build -> Sort
         </div>
-        <div class="panel-step" id="stepCounterTD">—</div>
+        <div class="panel-step" id="stepCounterTD">-</div>
       </div>
       <div class="bar-area" id="barAreaTD"></div>
       <div class="log-box" id="logTD">시작 버튼을 누르세요.</div>
@@ -242,14 +242,14 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#a5b4fc"></div>
-          heapSort() — 진입점 (Build 방식 선택: 1=Bottom-Up, 2=Top-Down)
+          heapSort() - 진입점 (Build 방식 선택: 1=Bottom-Up, 2=Top-Down)
         </div>
         <pre><span class="kw">private static void</span> <span class="fn">heapSort</span>(<span
             class="ty">int</span>[] <span class="nm">arr</span>, <span class="ty">int</span> <span
             class="nm">selectNum</span>) {
   <span class="ty">int</span> <span class="nm">n</span> = <span class="nm">arr</span>.length;
 
-  <span class="ck">// ① Build Max Heap — 방식 선택</span>
+  <span class="ck">// ① Build Max Heap - 방식 선택</span>
   <span class="kw">switch</span> (<span class="nm">selectNum</span>) {
     <span class="kw">case</span> <span class="nu">1</span>: <span class="ck">// Bottom-Up (Floyd) -> O(n)</span>
       <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
@@ -299,7 +299,7 @@
       <div class="code-panel" id="codePanelSiftUp">
         <div class="code-panel-header">
           <div class="dot" style="background:#fbbf24"></div>
-          siftUp() — Top-Down 삽입 방식
+          siftUp() - Top-Down 삽입 방식
         </div>
         <pre><span class="ck">// 새로 삽입된 노드를 부모와 비교하며</span>
 <span class="ck">// 위쪽 방향으로 끌어올려 힙 속성 유지</span>
@@ -330,7 +330,7 @@
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#67e8f9"></div>
-          heapify() — 최대 힙 속성 재구성
+          heapify() - 최대 힙 속성 재구성
         </div>
         <pre><span class="ck">// 현재 노드를 기준으로 최대 힙 속성을</span>
 <span class="ck">// 만족하도록 아래 방향으로 재구성</span>
@@ -415,7 +415,7 @@
       steps.push({type, arr: [...a], sortedSet: new Set(sorted), msg, ...extra});
     }
 
-    // ── heapify (재귀, 스텝 기록) — Bottom-Up 방식 & Sort 단계 공통 ──
+    // ── heapify (재귀, 스텝 기록) - Bottom-Up 방식 & Sort 단계 공통 ──
     function heapify(heapSize, i) {
       let p = i;
       const l = i * 2 + 1;
@@ -446,7 +446,7 @@
       }
     }
 
-    // ── siftUp (반복, 스텝 기록) — Top-Down 방식 ──
+    // ── siftUp (반복, 스텝 기록) - Top-Down 방식 ──
     function siftUp(i) {
       let child = i;
 
@@ -474,16 +474,16 @@
     // ── ① Build Max Heap ──
     if (mode === 'top-down') {
       push('build-start', {heapSize: 1},
-          '① Build Max Heap 시작 (Top-Down / Insertion) — index 1부터 순서대로 삽입 + siftUp');
+          '① Build Max Heap 시작 (Top-Down / Insertion) - index 1부터 순서대로 삽입 + siftUp');
 
       for (let i = 1; i < n; i++) {
         push('build-iter', {hi: i, heapSize: i},
-            `Build Heap: siftUp(${i}) 호출 — 새 원소 arr[${i}]=${a[i]} 삽입`);
+            `Build Heap: siftUp(${i}) 호출 - 새 원소 arr[${i}]=${a[i]} 삽입`);
         siftUp(i);
       }
     } else {
       push('build-start', {heapSize: n},
-          '① Build Max Heap 시작 (Bottom-Up / Floyd) — 마지막 부모부터 루트(0) 방향으로 heapify');
+          '① Build Max Heap 시작 (Bottom-Up / Floyd) - 마지막 부모부터 루트(0) 방향으로 heapify');
 
       for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
         push('build-iter', {hi: i, heapSize: n},
@@ -495,7 +495,7 @@
     push('build-done', {heapSize: n},
         '✅ Build Max Heap 완료! 루트(arr[0])에 최댓값 위치 -> ② Sort 단계 시작');
 
-    // ── ② Sort (두 방식 공통 — 항상 heapify 사용) ──
+    // ── ② Sort (두 방식 공통 - 항상 heapify 사용) ──
     for (let i = n - 1; i > 0; i--) {
       push('extract', {swapA: 0, swapB: i, heapSize: i + 1},
           `루트 arr[0]=${a[0]} ↔ 마지막 arr[${i}]=${a[i]} Swap -> arr[${i}] 위치 확정`);
@@ -616,8 +616,8 @@
     };
     renderStep(initStep, 'barAreaBU', 'logBU');
     renderStep(initStep, 'barAreaTD', 'logTD');
-    document.getElementById('stepCounterBU').textContent = '—';
-    document.getElementById('stepCounterTD').textContent = '—';
+    document.getElementById('stepCounterBU').textContent = '-';
+    document.getElementById('stepCounterTD').textContent = '-';
     document.getElementById('btnPlay').disabled = false;
   }
 

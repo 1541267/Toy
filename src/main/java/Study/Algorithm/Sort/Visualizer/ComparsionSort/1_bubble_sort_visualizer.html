@@ -64,7 +64,7 @@
         <h3>✅ 장점</h3>
         <ul>
           <li>구현이 간단</li>
-          <li><strong>제자리 정렬</strong> — 추가 메모리 공간 필요 없음</li>
+          <li><strong>제자리 정렬</strong> - 추가 메모리 공간 필요 없음</li>
           <li>안정 정렬</li>
         </ul>
       </div>
@@ -72,7 +72,7 @@
       <div class="note-card">
         <h3>❌ 단점</h3>
         <ul>
-          <li><strong>O(n²)</strong> — 매우 비효율적</li>
+          <li><strong>O(n²)</strong> - 매우 비효율적</li>
           <li>정렬되지 않은 원소를 옮기기 위해 <strong>교환(Swap)이 많이 발생</strong></li>
           <li>배열이 길수록 비효율적</li>
         </ul>
@@ -82,7 +82,7 @@
         <h3>⏱ 복잡도</h3>
         <ul>
           <li>Best (정렬 돼있어 swap이 되지 않은 경우) O(n), Avg & Worst <strong>O(n²)</strong></li>
-          <li>공간 복잡도: 배열 안에서 교환 → <strong>O(1)</strong></li>
+          <li>공간 복잡도: 배열 안에서 교환 -> <strong>O(1)</strong></li>
         </ul>
         <div class="complexity-row">
           <span class="badge good">Best O(n)</span>
@@ -121,7 +121,7 @@
         <div class="dot" style="background:#67e8f9"></div>
         Bubble Sort
       </div>
-      <div class="panel-step" id="stepCounter">—</div>
+      <div class="panel-step" id="stepCounter">-</div>
     </div>
     <div class="bar-area" id="barArea"></div>
     <div class="legend">
@@ -164,12 +164,12 @@
             class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">arr</span>.length - <span
             class="nu">1</span>; <span class="nm">i</span>++) {
   <span class="ty">boolean</span><span class="nm"> swaaped</span> = <span class="nm">false</span>;
-  <span class="ck">// j가 arr.length - i 까지만 순회 → 이미 확정된 뒤쪽은 제외</span>
+  <span class="ck">// j가 arr.length - i 까지만 순회 -> 이미 확정된 뒤쪽은 제외</span>
   <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">j</span> = <span
             class="nu">1</span>; <span class="nm">j</span> &lt; <span class="nm">arr</span>.length - <span
             class="nm">i</span>; <span class="nm">j</span>++) {
 
-    <span class="ck">// 인접한 두 원소 비교, 앞이 크면 교환 → 큰 값이 오른쪽으로 밀림</span>
+    <span class="ck">// 인접한 두 원소 비교, 앞이 크면 교환 -> 큰 값이 오른쪽으로 밀림</span>
     <span class="kw">if</span> (<span class="nm">arr</span>[<span class="nm">j</span> - <span
             class="nu">1</span>] &gt; <span class="nm">arr</span>[<span class="nm">j</span>]) {
       <span class="ty">int</span> <span class="nm">temp</span> = <span class="nm">arr</span>[<span
@@ -182,7 +182,7 @@
   }
   <span class="ck">// 정렬돼있어 한번도 swap이 일어나지 않는 경우 조기 종료로 O(n)</span>
   <span class="kw">if</span> (<span class="nm">!swapped</span>) { break; }
-  <span class="ck">// 1회전 완료 → 인덱스 (arr.length - 1 - i) 에 최댓값 확정</span>
+  <span class="ck">// 1회전 완료 -> 인덱스 (arr.length - 1 - i) 에 최댓값 확정</span>
 }</pre>
     </div>
   </div>
@@ -250,7 +250,7 @@
         arr: [...a],
         boundary: n - i - 1,
         sortedSet: new Set(sortedSet),
-        msg: `${i + 1}회전 완료 — 인덱스 ${n - 1 - i} 확정`
+        msg: `${i + 1}회전 완료 - 인덱스 ${n - 1 - i} 확정`
       });
     }
     sortedSet.add(0);
@@ -270,7 +270,7 @@
     steps = generateSteps(arr);
     stepIdx = 0;
     renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'});
-    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('stepCounter').textContent = '-';
     document.getElementById('btnPlay').disabled = false;
   }
 

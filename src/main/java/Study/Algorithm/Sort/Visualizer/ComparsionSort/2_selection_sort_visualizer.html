@@ -65,7 +65,7 @@
       <div class="note-card">
         <h3>🔍 개념</h3>
         <ul>
-          <li><strong>원소를 넣을 위치(인덱스)가 먼저 고정</strong> — Bubble Sort와의 차이</li>
+          <li><strong>원소를 넣을 위치(인덱스)가 먼저 고정</strong> - Bubble Sort와의 차이</li>
           <li>1회전 시 최솟값이 맨 앞으로, 최솟값 순서로 정렬</li>
           <li>시험에서 n회 회전 후 배열 모양 구하기 문제에 자주 등장</li>
           <li><strong>불안정 정렬(Unstable Sort)</strong></li>
@@ -80,7 +80,7 @@
         <ul>
           <li>둘 다 k번째 반복 이후 첫 k개 요소가 정렬된 상태</li>
           <li><strong>Selection:</strong> K+1 요소 찾기 위해 <strong>모든 요소 탐색</strong></li>
-          <li><strong>Insertion:</strong> K+1 요소 배치에 <strong>필요한 만큼만 탐색</strong> → 더 효율적</li>
+          <li><strong>Insertion:</strong> K+1 요소 배치에 <strong>필요한 만큼만 탐색</strong> -> 더 효율적</li>
         </ul>
       </div>
 
@@ -90,14 +90,14 @@
           <li>알고리즘 단순</li>
           <li>Bubble에 비해 <strong>비교 횟수가 적음</strong></li>
           <li>교환이 많은 자료에서 비교적 효율적</li>
-          <li><strong>제자리 정렬</strong> — 추가 메모리 공간 필요 없음</li>
+          <li><strong>제자리 정렬</strong> - 추가 메모리 공간 필요 없음</li>
         </ul>
       </div>
 
       <div class="note-card">
         <h3>❌ 단점 / 복잡도</h3>
         <ul>
-          <li><strong>O(n²)</strong> — 비효율적</li>
+          <li><strong>O(n²)</strong> - 비효율적</li>
           <li><strong>불안정 정렬</strong></li>
           <li>배열이 길수록 비효율적</li>
         </ul>
@@ -136,7 +136,7 @@
         <div class="dot" style="background:#fcd34d"></div>
         Selection Sort
       </div>
-      <div class="panel-step" id="stepCounter">—</div>
+      <div class="panel-step" id="stepCounter">-</div>
     </div>
     <div class="bar-area" id="barArea"></div>
     <div class="legend">
@@ -202,7 +202,7 @@
   <span class="nm">arr</span>[<span class="nm">index</span>] = <span class="nm">arr</span>[<span
             class="nm">i</span>];
   <span class="nm">arr</span>[<span class="nm">i</span>] = <span class="nm">temp</span>;
-  <span class="ck">// 1회전 완료 → 인덱스 i 에 최솟값 확정</span>
+  <span class="ck">// 1회전 완료 -> 인덱스 i 에 최솟값 확정</span>
 }</pre>
     </div>
   </div>
@@ -329,7 +329,7 @@
     steps = generateSteps(arr);
     stepIdx = 0;
     renderStep({type: 'init', arr: [...arr], sortedSet: new Set(), msg: '시작 버튼을 누르세요.'});
-    document.getElementById('stepCounter').textContent = '—';
+    document.getElementById('stepCounter').textContent = '-';
     document.getElementById('btnPlay').disabled = false;
   }
 

@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>큐(Queue) 시각화</title>
+  <link rel="stylesheet" href="/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .header h1 {
+    cursor: pointer;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 78px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 60px;
+    }
+  }
+
+  .notes-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .panel {
+    margin-bottom: 1rem;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+    align-content: normal;
+  }
+
+  .phase-tag {
+    flex-shrink: 0;
+  }
+
+  /* ── 복잡도 표 ── */
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th,
+    & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 큐 시각화 (배열 슬롯 / 연결리스트 노드 공용) ── */
+  .queue-scroll {
+    padding: 1.75rem 0.5rem 0.5rem;
+  }
+
+  .queue-track {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    row-gap: 30px;
+    column-gap: 6px;
+    width: 100%;
+  }
+
+  .empty-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .item-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .item-tags {
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .item-tag {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    &.front {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+
+    &.rear {
+      background: #4c0519;
+      color: #fb7185;
+      border: 1px solid #881337;
+    }
+  }
+
+  .item-box {
+    width: 3vw;
+    height: 3vw;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 9px;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+
+    &.empty-slot {
+      background: transparent;
+      border: 2px dashed var(--surface-border);
+      color: var(--text-dim);
+      font-size: 0.62rem;
+    }
+
+    &.target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.12);
+    }
+
+    &.new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      text-decoration: line-through;
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+  }
+
+  .item-idx {
+    margin-top: 5px;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    font-family: "Consolas", monospace;
+  }
+
+  @keyframes pop {
+    0% {
+      transform: scale(0.4);
+      opacity: 0;
+    }
+    70% {
+      transform: scale(1.18);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .item-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    flex-shrink: 0;
+    color: #3f4a63;
+    align-self: center;
+    margin-top: -14px;
+    font-size: 13px;
+  }
+
+  .wrap-note {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 0.6rem;
+  }
+
+  /* ── 로그 phase 태그 ── */
+  .phase-insert {
+    background: var(--tag-cyan-bg);
+    color: var(--tag-cyan-text);
+  }
+
+  .phase-remove {
+    background: var(--tag-amber-bg);
+    color: var(--tag-amber-text);
+  }
+
+  .phase-resize {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  .phase-peek {
+    background: var(--tag-purple-bg);
+    color: var(--tag-purple-text);
+  }
+
+  .phase-error {
+    background: #450a0a;
+    color: var(--bad-text);
+  }
+
+  .diff-note {
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="history.back()">큐(Queue)</h1>
+    <p>FIFO - 배열 기반(고정 -> 동적 -> 원형) 3단계 개선 + 연결리스트 기반 구현</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 큐(Queue) 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>📥 Queue 개요</h3>
+        <ul>
+          <li><strong>FIFO(First In First Out)</strong> - 먼저 삽입된 원소가 가장 먼저 출력 (Stack의 LIFO와 대칭)</li>
+          <li><strong>front</strong>: 다음에 나갈(dequeue) 원소의 위치, <strong>rear</strong>: 다음에
+            들어갈(enqueue) 자리
+          </li>
+          <li>enqueue / dequeue / peek 모두 이상적으로 O(1), 배열 기반은 resize 시 Amortized O(1)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧱 고정 배열 선형 큐</h3>
+        <ul>
+          <li>front/rear 인덱스만 증가시키는 단순한 구현</li>
+          <li>한계: rear가 배열 끝(capacity)에 도달하면, front 쪽에 빈 공간이 남아있어도 더 이상 enqueue 불가(메모리 낭비)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔁 동적 배열 선형 큐</h3>
+        <ul>
+          <li>rear==capacity 이면서 front&gt;0(앞쪽 빈 공간 존재) -> <strong>relocation</strong>(앞으로 당김, O(n))
+          </li>
+          <li>진짜 꽉 찼으면(size == capacity) -> <strong>resizing</strong>(용량 2배, O(n))</li>
+          <li>relocation이 매번 발생하진 않지만, 발생 시점마다 O(n) 물리적 이동 비용 존재 - 원형 큐로 가기 전 중간 단계</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🌀 동적 배열 원형 큐 (핵심)</h3>
+        <ul>
+          <li>index를 <strong>(index % capacity)</strong>로 순환<strong>(rotate)</strong>시켜 배열의 물리적 끝과 논리적 끝을 분리</li>
+          <li>진짜 꽉 찼을 때만 index rotate 수행</li>
+          <li>front/rear가 배열 끝에 도달해도 공간이 있으면 0번 인덱스부터 재사용 - relocation 자체가 불필요</li>
+          <li>진짜 꽉 찼을 때만 resize(용량 2배) -> Dynamic Array와 동일한 Amortized O(1) 근거</li>
+          <li><strong>front==rear</strong>가 "꽉 참"과 "빔" 두 상태 모두에 해당할 수 있음 -> size 필드로 명시적으로 구분 (다른
+            방법: 한 칸을 일부러 비워두는 방식도 존재)
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔗 연결리스트 기반 큐</h3>
+        <ul>
+          <li>head = front, tail = rear</li>
+          <li>enqueue: tail.next = newNode, tail = newNode (O(1)) / dequeue: head = head.next
+            (O(1))
+          </li>
+          <li>단일 연결리스트 + tail 포인터만으로 충분 - dequeue는 항상 head 방향으로만 이동하므로 prev가 필요 없음 (이중 연결 불필요)</li>
+          <li>head가 null이 되면(큐가 빔) tail도 반드시 null 처리 - 안 하면 tail이 유령 노드를 참조</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚖️ 배열(원형) vs 연결리스트 선택</h3>
+        <ul>
+          <li><strong>배열(원형 큐)</strong>: 캐시 지역성 좋음, 포인터 오버헤드 없음, 단 resize 시점에 O(n) 스파이크 존재</li>
+          <li><strong>연결리스트</strong>: 항상 균일한 O(1)(스파이크 없음), 재할당 없이 동적 확장 가능, 대신 노드당 포인터 메모리 오버헤드
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 시간/공간 복잡도 비교</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>고정 배열 선형</th>
+            <th>동적 배열 선형</th>
+            <th>동적 배열 원형</th>
+            <th>연결리스트</th>
+          </tr>
+          <tr>
+            <td>enqueue</td>
+            <td class="warn">O(1) (공간 있을 때만)</td>
+            <td class="good">O(1) amortized</td>
+            <td class="good">O(1) amortized</td>
+            <td class="good">O(1)</td>
+          </tr>
+          <tr>
+            <td>dequeue</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+          </tr>
+          <tr>
+            <td>peek</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1)</td>
+          </tr>
+          <tr>
+            <td>공간 재활용</td>
+            <td class="warn">불가 (front 쪽 낭비)</td>
+            <td class="warn">relocation 필요(O(n))</td>
+            <td class="good">modulo로 즉시 재활용</td>
+            <td class="good">필요한 만큼만 노드 생성</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: BFS(너비 우선 탐색), 프로듀서-컨슈머
+          패턴, 작업
+          스케줄링, 메시지 큐 시스템. 동적 배열 원형 큐 구조는 Java의 <strong>ArrayDeque</strong> 내부 구현과 동일한 아이디어.</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>구현 방식</label>
+      <select id="modeSelect">
+        <option value="circular">원형 배열 큐 (Circular)</option>
+        <option value="linked">연결리스트 큐 (Linked)</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="enqueue">enqueue(e) - 삽입</option>
+        <option value="dequeue">dequeue() - 삭제 + 반환</option>
+        <option value="peek">peek() - 조회만</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="valGroup">
+      <label>값</label>
+      <input type="number" id="valInput" value="10">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewQueue">🔄 새 큐</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip" id="capacityChip">capacity = <strong id="infoCapacity">-</strong></div>
+    <div class="info-chip">front = <strong id="infoFront">null</strong></div>
+    <div class="info-chip">rear = <strong id="infoRear">null</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title" id="panelTitle">원형 배열 큐 (Circular Queue)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="queue-scroll">
+      <div class="queue-track" id="queueArea"></div>
+    </div>
+    <div class="wrap-note" id="wrapNote"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본(채워짐)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:transparent;border:2px dashed #334155;"></div>
+        빈 슬롯
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        삽입/조회 대상
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        새로 삽입됨
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        삭제(반환) 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#052e16;border:1px solid #14532d;"></div>
+        FRONT
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#4c0519;border:1px solid #881337;"></div>
+        REAR
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">구현 방식과 연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통 부분 - 4개 구현 전체 동일
+      </div>
+      <pre><span class="kw">private</span> <span class="kw">void</span> <span class="fn">checkQueueSize</span>() {
+  <span class="kw">if</span> (<span class="nm">size</span> == <span class="nu">0</span>) {<span
+            class="kw">throw</span> <span class="kw">new</span> <span class="ty">NoSuchElementException</span>(<span
+            class="st">&quot;Empty Queue&quot;</span>);}
+}</pre>
+    </div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#93c5fd"></div>
+        공통 부분 - 배열 기반 3종(고정/동적/원형) 동일
+      </div>
+      <pre><span class="kw">public</span> <span class="ty">boolean</span> <span
+          class="fn">isFull</span>() {<span class="kw">return</span> <span
+          class="nm">size</span> == <span class="nm">capacity</span>;}
+
+<span class="ck">@SuppressWarnings(&quot;unchecked&quot;)</span>
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">peek</span>() {
+  <span class="fn">checkQueueSize</span>();
+  <span class="kw">return</span> (<span class="ty">E</span>) <span class="nm">queue</span>[<span
+            class="nm">front</span>];
+}</pre>
+    </div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#fcd34d"></div>
+        공통 부분 - 선형 큐 2종(고정/동적) 동일 (원형 큐는 rotateIndex 처리가 추가되어 다름)
+      </div>
+      <pre><span class="ck">@SuppressWarnings(&quot;unchecked&quot;)</span>
+<span class="kw">public</span> <span class="ty">E</span> <span class="fn">dequeue</span>() {
+  <span class="fn">checkQueueSize</span>();
+  <span class="ty">E</span> <span class="nm">value</span> = (<span class="ty">E</span>) <span
+            class="nm">queue</span>[<span class="nm">front</span>];
+  <span class="nm">queue</span>[<span class="nm">front</span>] = <span class="kw">null</span>;
+
+  <span class="nm">size</span>--;
+  <span class="nm">front</span>++;
+
+  <span class="kw">return</span> <span class="nm">value</span>;
+}</pre>
+    </div>
+
+    <div class="code-grid">
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#f87171"></div>
+          ① 고정 배열 선형 큐
+        </div>
+        <pre><span class="ck">// rear가 배열 끝에 도달하면 front에 공간이 남아있어도 enqueue 불가 (메모리 낭비)</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="nm">FixedArrayBasedLinearQueue</span>&lt;<span
+              class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="kw">final</span> <span
+              class="ty">Object</span>[] <span
+              class="nm">queue</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">front</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">rear</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="kw">final</span> <span class="ty">int</span> <span
+              class="nm">capacity</span>;
+
+  <span class="kw">public</span> <span class="fn">FixedArrayBasedLinearQueue</span>() {
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nu">10</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="fn">FixedArrayBasedLinearQueue</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+    <span class="kw">if</span> (<span class="nm">capacity</span> &lt;= <span
+              class="nu">0</span>) {
+          <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalArgumentException</span>
+          (<span class="st">&quot;잘못된 용량 초기화 capacity: &quot;</span> + <span
+              class="nm">capacity</span>);
+    }
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nm">capacity</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">enqueue</span>(<span
+              class="ty">E</span> <span class="nm">e</span>) {
+    <span class="fn">checkEnqueueable</span>();
+
+    <span class="nm">queue</span>[<span class="nm">rear</span>] = <span class="nm">e</span>;
+    <span class="nm">rear</span>++;
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">checkEnqueueable</span>() {
+    <span class="kw">if</span> (<span class="fn">isFull</span>()) {<span
+              class="kw">throw</span> <span
+              class="kw">new</span> <span class="ty">IllegalStateException</span>(<span
+              class="st">&quot;큐가 가득 참&quot;</span>);}
+
+    <span class="kw">if</span> (<span class="nm">rear</span> == <span class="nm">capacity</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span
+              class="st">&quot;마지막 요소가 큐의 끝에 도달함&quot;</span>);
+    }
+  }
+}</pre>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          ② 동적 배열 선형 큐
+        </div>
+        <pre><span class="ck">// relocation으로 앞쪽 빈 공간 재사용, 진짜 꽉 찼을 때만 resize</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="nm">DynamicArrayBasedLinearQueue</span>&lt;<span
+              class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">Object</span>[] <span class="nm">queue</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">front</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">rear</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span> = <span
+              class="nu">0</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">capacity</span>;
+
+  <span class="kw">public</span> <span class="fn">DynamicArrayBasedLinearQueue</span>() {
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nu">10</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="fn">DynamicArrayBasedLinearQueue</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+    <span class="kw">if</span> (<span class="nm">capacity</span> &lt;= <span
+              class="nu">0</span>) {
+          <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalArgumentException</span>
+          (<span class="st">&quot;잘못된 용량 초기화 capacity: &quot;</span> + <span
+              class="nm">capacity</span>);
+    }
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nm">capacity</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">enqueue</span>(<span
+              class="ty">E</span> <span class="nm">e</span>) {
+    <span class="fn">doRelocationOrResizingIfNeeded</span>();
+
+    <span class="nm">queue</span>[<span class="nm">rear</span>] = <span class="nm">e</span>;
+    <span class="nm">rear</span>++;
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">doRelocationOrResizingIfNeeded</span>() {
+    <span class="kw">if</span> ((<span class="nm">rear</span> == <span
+              class="nm">capacity</span> &amp;&amp; <span class="nm">front</span> &gt; <span
+              class="nu">0</span>)) {
+      <span class="fn">relocation</span>();
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="fn">isFull</span>()) {
+      <span class="fn">resizing</span>();
+    }
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span class="fn">resizing</span>() {
+    <span class="nm">capacity</span> *= <span class="nu">2</span>;
+    <span class="nm">queue</span> = <span class="ty">Arrays</span>.<span
+              class="fn">copyOf</span>(<span class="nm">queue</span>, <span
+              class="nm">capacity</span>);
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span class="fn">relocation</span>() {
+    <span class="ty">System</span>.<span class="fn">arraycopy</span>(<span
+              class="nm">queue</span>, <span class="nm">front</span>, <span
+              class="nm">queue</span>, <span class="nu">0</span>, <span class="nm">size</span>);
+    <span class="nm">front</span> = <span class="nu">0</span>;
+    <span class="nm">rear</span> = <span class="nm">size</span>;
+  }
+}</pre>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#86efac"></div>
+          ③ 동적 배열 원형 큐 (최종 개선판)
+        </div>
+        <pre><span class="ck">// index를 capacity로 modulo하여 relocation 없이 앞쪽 빈 공간 즉시 재활용</span>
+<span class="kw">public</span> <span class="kw">class</span> <span class="nm">DynamicArrayBasedCircularQueue</span>&lt;<span
+              class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">Object</span>[] <span class="nm">queue</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">front</span> = <span
+              class="nu">0</span>, <span class="nm">rear</span> = <span class="nu">0</span>, <span
+              class="nm">size</span> = <span class="nu">0</span>, <span class="nm">capacity</span>;
+
+  <span class="kw">public</span> <span class="fn">DynamicArrayBasedCircularQueue</span>() {
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nu">10</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="fn">DynamicArrayBasedCircularQueue</span>(<span
+              class="ty">int</span> <span class="nm">capacity</span>) {
+    <span class="kw">if</span> (<span class="nm">capacity</span> &lt;= <span
+              class="nu">0</span>) {
+          <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalArgumentException</span>
+          (<span class="st">&quot;잘못된 용량 초기화 capacity: &quot;</span> + <span
+              class="nm">capacity</span>);
+    }
+    <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nm">capacity</span>;
+    <span class="kw">this</span>.<span class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">Object</span>[<span class="nm">capacity</span>];
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">enqueue</span>(<span
+              class="ty">E</span> <span class="nm">e</span>) {
+    <span class="fn">doResizingIfNeeded</span>();
+
+    <span class="nm">queue</span>[<span class="nm">rear</span>] = <span class="nm">e</span>;
+
+    <span class="nm">rear</span>++;
+    <span class="nm">size</span>++;
+
+    <span class="kw">if</span> (<span class="nm">rear</span> == <span
+              class="nm">capacity</span>) {<span
+              class="nm">rear</span> = <span class="fn">rotateIndex</span>(<span
+              class="nm">rear</span>);}
+  }
+
+  <span class="ck">@SuppressWarnings(&quot;unchecked&quot;)</span>
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">dequeue</span>() {
+    <span class="fn">checkQueueSize</span>();
+    <span class="ty">E</span> <span class="nm">value</span> = (<span class="ty">E</span>) <span
+              class="nm">queue</span>[<span class="nm">front</span>];
+    <span class="nm">queue</span>[<span class="nm">front</span>] = <span class="kw">null</span>;
+
+    <span class="nm">size</span>--;
+    <span class="nm">front</span>++;
+
+    <span class="kw">if</span> (<span class="nm">front</span> == <span
+              class="nm">capacity</span>) {<span class="nm">front</span> = <span
+              class="fn">rotateIndex</span>(<span class="nm">front</span>);}
+
+    <span class="kw">return</span> <span class="nm">value</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+              class="kw">return</span> <span class="nm">size</span>;}
+
+  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">getCapacity</span>() {<span
+              class="kw">return</span> <span class="nm">capacity</span>;}
+
+  <span class="kw">private</span> <span class="ty">int</span> <span
+              class="fn">rotateIndex</span>(<span
+              class="ty">int</span> <span class="nm">value</span>) {<span
+              class="kw">return</span> <span
+              class="nm">value</span> % <span class="nm">capacity</span>;}
+
+  <span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">doResizingIfNeeded</span>() {
+    <span class="kw">if</span> (<span class="fn">isFull</span>()) {
+      <span class="ty">int</span> <span class="nm">prevCapacity</span> = <span
+              class="nm">capacity</span>;
+      <span class="nm">capacity</span> *= <span class="nu">2</span>;
+      <span class="ty">Object</span>[] <span class="nm">newQueue</span> = <span
+              class="kw">new</span> <span class="ty">Object</span>[<span class="nm">capacity</span>];
+
+      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span
+              class="nm">size</span>; <span
+              class="nm">i</span>++) {
+        <span class="nm">newQueue</span>[<span class="nm">i</span>] = <span
+              class="nm">queue</span>[(<span class="nm">front</span> + <span
+              class="nm">i</span>) % <span class="nm">prevCapacity</span>];
+      }
+
+      <span class="nm">queue</span> = <span class="nm">newQueue</span>;
+      <span class="nm">front</span> = <span class="nu">0</span>;
+      <span class="nm">rear</span> = <span class="nm">size</span>;
+    }
+  }
+}</pre>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#93c5fd"></div>
+          ④ 연결리스트 기반 큐
+        </div>
+        <pre><span class="ck">// head(front) / tail(rear) 포인터로 양쪽 끝 O(1) 접근</span>
+<span class="kw">public</span> <span class="kw">class</span> <span
+              class="nm">LinkedListBasedQueue</span>&lt;<span
+              class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">head</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">tail</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">size</span>;
+
+  <span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; {
+
+    <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">next</span>;
+    <span class="kw">private</span> <span class="ty">E</span> <span class="nm">data</span>;
+
+    <span class="kw">public</span> <span class="fn">Node</span>(<span class="ty">E</span> <span
+              class="nm">data</span>) {
+      <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+      <span class="kw">this</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+    }
+  }
+
+  <span class="kw">public</span> <span class="kw">void</span> <span class="fn">enqueue</span>(<span
+              class="ty">E</span> <span class="nm">e</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span
+              class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+
+    <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {
+      <span class="nm">head</span> = <span class="nm">newNode</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">tail</span>.<span class="nm">next</span> = <span class="nm">newNode</span>;
+    }
+
+    <span class="nm">tail</span> = <span class="nm">newNode</span>;
+    <span class="nm">size</span>++;
+  }
+
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">dequeue</span>() {
+    <span class="fn">checkQueueSize</span>();
+
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">output</span> = <span
+              class="nm">head</span>;
+    <span class="nm">head</span> = <span class="nm">head</span>.<span class="nm">next</span>;
+    <span class="nm">size</span>--;
+
+    <span class="ck">// 큐가 비었을 경우 tail 처리</span>
+    <span class="kw">if</span> (<span class="nm">head</span> == <span class="kw">null</span>) {<span
+              class="nm">tail</span> = <span class="kw">null</span>;}
+
+    <span class="kw">return</span> <span class="nm">output</span>.<span class="nm">data</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">E</span> <span class="fn">peek</span>() {
+    <span class="fn">checkQueueSize</span>();
+    <span class="kw">return</span> <span class="nm">head</span>.<span class="nm">data</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">size</span>() {<span
+              class="kw">return</span> <span class="nm">size</span>;}
+}</pre>
+      </div>
+
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  function randVal() { return Math.floor(Math.random() * 90) + 10; }
+
+  let mode = 'circular';
+  let circState = null;   // {capacity, slots, front, rear, size}
+  let linkedState = null; // [{value}, ...]  index0 = front
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── 초기 상태 생성 ──
+  function initCircular() {
+    const capacity = 6;
+    const slots = new Array(capacity).fill(null);
+    const front = 2;
+    slots[2] = {value: randVal()};
+    slots[3] = {value: randVal()};
+    slots[4] = {value: randVal()};
+    return {capacity, slots, front, rear: 5, size: 3};
+  }
+
+  function initLinked() {
+    const arr = [];
+    for (let i = 0; i < 3; i++) { arr.push({value: randVal()}); }
+    return arr;
+  }
+
+  // ── 원형 큐 planning ──
+  function planEnqueueCircular(state, value) {
+    const rsteps = [];
+    let {capacity, front, rear, size} = state;
+    let slots = state.slots.slice();
+
+    if (size === capacity) {
+      rsteps.push({
+        mode: 'circular',
+        capacity,
+        slots: slots.slice(),
+        front,
+        rear,
+        size,
+        highlight: {},
+        msg: `isFull() -> size(${size}) == capacity(${capacity}) -> resize 필요`,
+        tag: 'resize'
+      });
+      const prevCapacity = capacity;
+      capacity = capacity * 2;
+      const newSlots = new Array(capacity).fill(null);
+      for (let i = 0; i < size; i++) { newSlots[i] = slots[(front + i) % prevCapacity]; }
+      slots = newSlots;
+      front = 0;
+      rear = size;
+      rsteps.push({
+        mode: 'circular',
+        capacity,
+        slots: slots.slice(),
+        front,
+        rear,
+        size,
+        highlight: {},
+        msg: `newQueue[i] = queue[(front+i) % ${prevCapacity}] -> 순서 유지한 채 재배치 완료, capacity=${capacity}, front=0, rear=${rear}`,
+        tag: 'resize'
+      });
+    }
+
+    rsteps.push({
+      mode: 'circular', capacity, slots: slots.slice(), front, rear, size,
+      highlight: {[rear]: 'target'}, msg: `queue[rear=${rear}] = ${value} 저장`, tag: 'insert'
+    });
+
+    const insertedIdx = rear;
+    const newSlots2 = slots.slice();
+    newSlots2[insertedIdx] = {value};
+    let newRear = rear + 1;
+    if (newRear === capacity) { newRear = newRear % capacity; }
+    const newSize = size + 1;
+
+    rsteps.push({
+      mode: 'circular', capacity, slots: newSlots2, front, rear: newRear, size: newSize,
+      highlight: {[insertedIdx]: 'new'},
+      msg: `rear = (rear+1) % capacity -> rear=${newRear}, size++ (완료, O(1) amortized)`, tag: 'done'
+    });
+
+    return {
+      steps: rsteps,
+      result: {capacity, slots: newSlots2, front, rear: newRear, size: newSize}
+    };
+  }
+
+  function planDequeueCircular(state) {
+    const rsteps = [];
+    const {capacity, front, rear, size} = state;
+    if (size === 0) {
+      rsteps.push({
+        mode: 'circular',
+        capacity,
+        slots: state.slots.slice(),
+        front,
+        rear,
+        size,
+        highlight: {},
+        msg: `checkQueueSize() 실패 -> NoSuchElementException("Empty Queue")`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: state, error: true};
+    }
+    const removedVal = state.slots[front].value;
+    rsteps.push({
+      mode: 'circular',
+      capacity,
+      slots: state.slots.slice(),
+      front,
+      rear,
+      size,
+      highlight: {[front]: 'removing'},
+      msg: `queue[front=${front}] 반환 예정 -> 값=${removedVal}`,
+      tag: 'remove'
+    });
+
+    const newSlots = state.slots.slice();
+    newSlots[front] = null;
+    let newFront = front + 1;
+    if (newFront === capacity) { newFront = newFront % capacity; }
+    const newSize = size - 1;
+
+    rsteps.push({
+      mode: 'circular', capacity, slots: newSlots, front: newFront, rear, size: newSize,
+      highlight: {},
+      msg: `queue[front]=null 처리(Loitering 방지) -> front=(front+1)%capacity -> front=${newFront}, size--`,
+      tag: 'done'
+    });
+
+    return {
+      steps: rsteps,
+      result: {capacity, slots: newSlots, front: newFront, rear, size: newSize}
+    };
+  }
+
+  function planPeekCircular(state) {
+    const rsteps = [];
+    if (state.size === 0) {
+      rsteps.push({
+        mode: 'circular', ...state,
+        slots: state.slots.slice(),
+        highlight: {},
+        msg: `checkQueueSize() 실패 -> NoSuchElementException("Empty Queue")`,
+        tag: 'error'
+      });
+      return {steps: rsteps, result: state, error: true};
+    }
+    rsteps.push({
+      mode: 'circular', ...state, slots: state.slots.slice(),
+      highlight: {[state.front]: 'target'},
+      msg: `peek() -> queue[front=${state.front}] 값 = ${state.slots[state.front].value} (상태 변화 없음)`,
+      tag: 'peek'
+    });
+    return {steps: rsteps, result: state};
+  }
+
+  // ── 연결리스트 큐 planning ──
+  function planEnqueueLinked(list, value) {
+    const rsteps = [];
+    if (list.length === 0) {
+      rsteps.push({
+        mode: 'linked', arr: [...list], highlight: {},
+        msg: `head(front) == null -> 새 노드가 곧 front이자 rear가 됩니다`, tag: 'insert'
+      });
+    } else {
+      rsteps.push({
+        mode: 'linked', arr: [...list], highlight: {[list.length - 1]: 'target'},
+        msg: `tail(rear).next = 새 노드`, tag: 'insert'
+      });
+    }
+    const newArr = [...list, {value}];
+    rsteps.push({
+      mode: 'linked', arr: newArr, highlight: {[newArr.length - 1]: 'new'},
+      msg: `tail(rear) = 새 노드, size++ (O(1) 완료)`, tag: 'done'
+    });
+    return {steps: rsteps, result: newArr};
+  }
+
+  function planDequeueLinked(list) {
+    const rsteps = [];
+    if (list.length === 0) {
+      rsteps.push({
+        mode: 'linked', arr: [...list], highlight: {},
+        msg: `checkQueueSize() 실패 -> NoSuchElementException("Empty Queue")`, tag: 'error'
+      });
+      return {steps: rsteps, result: list, error: true};
+    }
+    const removedVal = list[0].value;
+    rsteps.push({
+      mode: 'linked', arr: [...list], highlight: {0: 'removing'},
+      msg: `front(head) 반환 예정 -> 값=${removedVal}`, tag: 'remove'
+    });
+    const newArr = list.slice(1);
+    let msg2 = `head = head.next 이동 완료 -> 이전 노드는 참조가 끊겨 GC 대상, size--`;
+    if (newArr.length === 0) { msg2 += ` -> 리스트가 비어짐 -> tail(rear) = null 처리`; }
+    rsteps.push({mode: 'linked', arr: newArr, highlight: {}, msg: msg2, tag: 'done'});
+    return {steps: rsteps, result: newArr};
+  }
+
+  function planPeekLinked(list) {
+    const rsteps = [];
+    if (list.length === 0) {
+      rsteps.push({
+        mode: 'linked', arr: [...list], highlight: {},
+        msg: `checkQueueSize() 실패 -> NoSuchElementException("Empty Queue")`, tag: 'error'
+      });
+      return {steps: rsteps, result: list, error: true};
+    }
+    rsteps.push({
+      mode: 'linked', arr: [...list], highlight: {0: 'target'},
+      msg: `peek() -> head.data = ${list[0].value} (상태 변화 없음)`, tag: 'peek'
+    });
+    return {steps: rsteps, result: list};
+  }
+
+  // ── 렌더링 ──
+  function renderCircular(step) {
+    const area = document.getElementById('queueArea');
+    const {slots, front, rear, size, capacity} = step;
+    let html = '';
+    for (let idx = 0; idx < capacity; idx++) {
+      const slot = slots[idx];
+      const hl = step.highlight[idx];
+      let cls = 'item-box' + (slot ? '' : ' empty-slot') + (hl ? ' ' + hl : '');
+      let tags = '';
+      if (size > 0 && idx === front) { tags += '<span class="item-tag front">FRONT</span>'; }
+      if (idx === rear && !(size
+          === capacity)) { tags += '<span class="item-tag rear">REAR↧</span>'; }
+      html += `<div class="item-wrap">
+          ${tags ? `<div class="item-tags">${tags}</div>` : ''}
+          <div class="${cls}">${slot ? slot.value : ''}</div>
+          <div class="item-idx">[${idx}]</div>
+        </div>`;
+    }
+    area.innerHTML = html;
+    document.getElementById('wrapNote').textContent =
+        `index ${capacity - 1} 다음은 다시 index 0 (modulo 연산으로 순환) - REAR↧는 "다음 삽입 위치"를 의미`;
+
+    document.getElementById('capacityChip').style.display = 'flex';
+    document.getElementById('infoCapacity').textContent = capacity;
+    document.getElementById('infoSize').textContent = size;
+    document.getElementById('infoFront').textContent = size > 0 ? slots[front].value : 'null';
+    const rearIdx = (rear - 1 + capacity) % capacity;
+    document.getElementById('infoRear').textContent = size > 0 ? slots[rearIdx].value : 'null';
+  }
+
+  function renderLinked(step) {
+    const area = document.getElementById('queueArea');
+    const arr = step.arr;
+    if (arr.length === 0) {
+      area.innerHTML = '<div class="empty-msg">큐가 비어 있습니다 (front = null, rear = null)</div>';
+    } else {
+      let html = '';
+      arr.forEach((node, idx) => {
+        const hl = step.highlight[idx];
+        let cls = 'item-box' + (hl ? ' ' + hl : '');
+        let tags = '';
+        if (idx === 0) { tags += '<span class="item-tag front">FRONT</span>'; }
+        if (idx === arr.length - 1) { tags += '<span class="item-tag rear">REAR</span>'; }
+        html += `<div class="item-wrap">
+            ${tags ? `<div class="item-tags">${tags}</div>` : ''}
+            <div class="${cls}">${node.value}</div>
+            <div class="item-idx">[${idx}]</div>
+          </div>`;
+        if (idx < arr.length - 1) { html += `<div class="item-link">-></div>`; }
+      });
+      area.innerHTML = html;
+    }
+    document.getElementById('wrapNote').textContent =
+        `단일 연결 + tail 포인터만 사용 (prev 불필요) - enqueue는 rear(tail) 방향, dequeue는 front(head) 방향으로만 진행`;
+
+    document.getElementById('capacityChip').style.display = 'none';
+    document.getElementById('infoSize').textContent = arr.length;
+    document.getElementById('infoFront').textContent = arr.length ? arr[0].value : 'null';
+    document.getElementById('infoRear').textContent = arr.length ? arr[arr.length - 1].value
+        : 'null';
+  }
+
+  function renderStep(step) {
+    if (step.mode === 'circular') { renderCircular(step); } else { renderLinked(step); }
+
+    const tagMap = {
+      'insert': '<span class="phase-tag phase-insert">삽입</span>',
+      'remove': '<span class="phase-tag phase-remove">삭제</span>',
+      'resize': '<span class="phase-tag phase-resize">🔧 리사이즈</span>',
+      'peek': '<span class="phase-tag phase-peek">조회</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+      'error': '<span class="phase-tag phase-error">오류</span>',
+    };
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const value = parseInt(document.getElementById('valInput').value);
+    let plan;
+
+    if (mode === 'circular') {
+      if (op === 'enqueue') {
+        plan = planEnqueueCircular(circState, isNaN(value) ? 0 : value);
+      } else if (op === 'dequeue') {
+        plan = planDequeueCircular(circState);
+      } else { plan = planPeekCircular(circState); }
+      circState = plan.result;
+    } else {
+      if (op === 'enqueue') {
+        plan = planEnqueueLinked(linkedState, isNaN(value) ? 0 : value);
+      } else if (op === 'dequeue') {
+        plan = planDequeueLinked(linkedState);
+      } else { plan = planPeekLinked(linkedState); }
+      linkedState = plan.result;
+    }
+
+    steps = plan.steps;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('valGroup').style.display = (op === 'enqueue') ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  function resetQueue() {
+    stopPlay();
+    mode = document.getElementById('modeSelect').value;
+    document.getElementById('panelTitle').textContent =
+        mode === 'circular' ? '원형 배열 큐 (Circular Queue)' : '연결리스트 큐 (Linked Queue)';
+
+    if (mode === 'circular') {
+      circState = initCircular();
+      steps = [{
+        mode: 'circular', ...circState, slots: circState.slots.slice(), highlight: {},
+        msg: '새 원형 큐를 생성했습니다 (capacity=6). 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''
+      }];
+    } else {
+      linkedState = initLinked();
+      steps = [{
+        mode: 'linked', arr: [...linkedState], highlight: {},
+        msg: '새 연결리스트 큐를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''
+      }];
+    }
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  }
+
+  // ── Event Listeners ──
+  document.getElementById('modeSelect').addEventListener('change', resetQueue);
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('valInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewQueue').addEventListener('click', resetQueue);
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  updateOpUI();
+  resetQueue();
+</script>
+</html>
