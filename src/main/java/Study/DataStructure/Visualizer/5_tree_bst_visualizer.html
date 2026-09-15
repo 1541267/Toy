@@ -1,0 +1,1197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>이진 트리 & 이진 탐색 트리(BST) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 72px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 60px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 복잡도 표 ── */
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th,
+    & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
+  .phase-traverse {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  /* ── 트리 시각화 ── */
+  .tree-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .tree-canvas-wrap {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .tree-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  .tree-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .tree-edges line.tree-edge {
+    stroke: #334155;
+    stroke-width: 2;
+  }
+
+  .nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .empty-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .tnode-wrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    &.root {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+  }
+
+  .tnode {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+
+    &.state-visited {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.15);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.15);
+    }
+
+    &.state-new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.state-removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      text-decoration: line-through;
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+
+    &.state-successor {
+      background: var(--state-alt2);
+      border-color: var(--tag-purple-text);
+      color: #f5f3ff;
+      transform: scale(1.1);
+    }
+  }
+
+  /* ── 결과/큐 스트립 ── */
+  .output-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .output-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 2px;
+  }
+
+  .output-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    font-family: "Consolas", monospace;
+
+    &.active {
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+  }
+
+  .queue-chip {
+    background: var(--tag-blue-bg);
+    border: 1px solid var(--tag-blue-text);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--tag-blue-text);
+    font-family: "Consolas", monospace;
+  }
+
+  /* ── 구분선(세로) 반응형 ── */
+  @media (max-width: 620px) {
+    .divider-v {
+      display: none;
+    }
+  }
+
+  /* 공용 css의 반응형 규칙이 적용되지 않는 경우를 대비한 안전장치 */
+  @media (max-width: 820px) {
+    .code-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">이진 트리 & 이진 탐색 트리(BST)</h1>
+    <p>순회(Traversal) 4종 + BST insert/search/delete(successor 전략) 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 트리 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="section-divider">🌳 이진 트리 (Binary Tree)</div>
+
+      <div class="note-card">
+        <h3>🌳 트리(Tree)란</h3>
+        <ul>
+          <li>배열/연결리스트 같은 <strong>선형 구조</strong>와 다른 <strong>비선형 구조</strong></li>
+          <li>정렬 안 된 배열: 탐색 O(n) / 연결리스트: 탐색 O(n) / 정렬된 배열: 탐색 O(log n)이지만 삽입·삭제 O(n)</li>
+          <li>탐색 빠르면 삽입·삭제 느리고, 삽입·삭제 빠르면 탐색이 느린 트레이드오프를 완화하려는 구조 → 균형 트리(BST/AVL/Red-Black)는 셋 다 O(log n)을 노림</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔤 용어</h3>
+        <ul>
+          <li><strong>root</strong>: 부모가 없는 최상위 노드 / <strong>leaf</strong>: 자식이 없는 노드</li>
+          <li><strong>depth</strong>: root → 해당 노드까지의 간선 수 (root의 depth = 0)</li>
+          <li><strong>height</strong>: 노드 → 가장 먼 leaf까지의 간선 수 (leaf의 height = 0)</li>
+          <li><strong>degree</strong>: 노드가 가진 자식의 수, 이진트리는 모든 노드의 degree가 최대 2</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🧭 순회(Traversal) 4가지</h3>
+        <ul>
+          <li><strong>preOrder</strong>: 노드 진입하자마자(자식 보기 전) 저장 → root가 항상 맨 먼저</li>
+          <li><strong>inOrder</strong>: 왼쪽 서브트리 끝나고 돌아온 직후, 오른쪽 가기 직전 저장 → <strong>BST에서는 이 순서가 곧 정렬된 순서</strong></li>
+          <li><strong>postOrder</strong>: 왼쪽/오른쪽 다 처리하고 나서야 저장 → 자식 결과가 먼저 필요한 계산(디렉토리 용량 합산, 트리 삭제)에 사용</li>
+          <li><strong>levelOrder</strong>: Queue를 이용한 BFS → 같은 depth끼리 좌→우로 방문, poll 하면서 자식을 다시 add</li>
+          <li>pre/in/post는 <strong>동일한 재귀 뼈대</strong>에서 저장(add)하는 위치만 다름</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 순회 시간/공간 복잡도</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>순회 방식</th>
+            <th>시간복잡도</th>
+            <th>추가 공간복잡도</th>
+          </tr>
+          <tr>
+            <td>preOrder / inOrder / postOrder (재귀)</td>
+            <td class="good">O(n)</td>
+            <td>O(h) - 호출 스택에 root~현재 경로만 쌓임</td>
+          </tr>
+          <tr>
+            <td>levelOrder (Queue 기반 BFS)</td>
+            <td class="good">O(n)</td>
+            <td>O(w) - 큐에는 항상 같은 depth 노드들만 담김 (w=가장 넓은 레벨의 노드 수)</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">4가지 모두 노드를 정확히 한 번씩 방문하므로 시간복잡도는 O(n)으로 동일, 추가 공간복잡도(h vs w)만 다름</p>
+      </div>
+
+      <div class="section-divider">🔍 이진 탐색 트리 (Binary Search Tree)</div>
+
+      <div class="note-card">
+        <h3>🔍 BST 규칙</h3>
+        <ul>
+          <li>모든 노드에 대해 <strong>왼쪽 서브트리 값 &lt; 노드 값 &lt; 오른쪽 서브트리 값</strong></li>
+          <li>탐색: 찾는 값이 크면 오른쪽, 작으면 왼쪽으로만 이동 → 매 단계 후보가 절반씩 줄어듦(이분탐색과 동일 원리)</li>
+          <li>삽입/삭제도 탐색과 같은 방식으로 위치를 찾고 링크만 변경</li>
+          <li>inOrder 순회 = 오름차순 정렬 결과 (BST의 핵심 성질, 정합성 검증 수단으로도 사용)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚠️ 편향 트리(Skewed Tree) 함정</h3>
+        <ul>
+          <li>[1, 2, 3, 4, ...]처럼 이미 정렬된 순서로 insert하면 매번 compare&gt;0만 나와서 오른쪽으로만 자식이 붙음</li>
+          <li>사실상 연결리스트가 되어 탐색/삽입/삭제 모두 최악의 경우 <strong>O(n)</strong>으로 저하</li>
+          <li>이 문제를 구조적으로 방지하는 게 AVL Tree / Red-Black Tree (회전으로 균형 유지)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✏️ insert(e) - 반복문 + parent 추적</h3>
+        <ul>
+          <li>curNode를 root부터 시작해서 compareTo 결과에 따라 left/right로 내려가며, 동시에 parent도 한 칸씩 같이 따라 내려감</li>
+          <li>curNode가 null이 되는 시점(= 빈 자리를 찾은 시점)에 반복 종료</li>
+          <li>마지막에 parent와 비교해서 그 자리(left/right)에 새 노드를 연결, 중복 값은 예외 처리</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔎 search(e)</h3>
+        <ul>
+          <li>insert와 동일한 탐색 로직(compareTo로 left/right 이동)</li>
+          <li>값을 찾으면 그 노드를 즉시 반환, 끝까지 못 찾으면(curNode==null) null 반환</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🗑 delete(e) - 재귀 + "서브트리의 새 루트를 리턴" 패턴</h3>
+        <ul>
+          <li>doDelete(node, e)가 이 서브트리의 (바뀌었을 수도 있는) 루트를 리턴하고, 호출부는 <strong>node.left = doDelete(...)</strong> 형태로 그 결과를 자기 자식 자리에 그대로 대입 → 이 패턴 하나로 모든 링크 갱신이 자동 처리됨</li>
+          <li>delete(e) 호출부에서도 <strong>root = doDelete(root, e)</strong>로 재대입 필요 (내부 변화는 지역 변수의 변화일 뿐, 명시적 대입이 있어야 실제 링크가 갱신됨)</li>
+        </ul>
+        <div class="cols">
+          <ul>
+            <li><strong>자식 없음(leaf)</strong>: node=null 리턴 → 부모→이 노드로의 링크가 끊어짐 (실제 삭제)</li>
+            <li><strong>자식 하나</strong>: 있는 자식을 그대로 리턴 → 그 자식이 삭제된 노드의 자리를 대신 차지</li>
+          </ul>
+          <ul>
+            <li><strong>자식 둘 다 있음</strong>: successor(오른쪽 서브트리의 최솟값)를 찾아 값만 복사 후, 오른쪽 서브트리에서 진짜 successor 노드를 재귀로 삭제</li>
+            <li>successor는 정의상 왼쪽 자식을 가질 수 없으므로(있었다면 그게 더 작은 successor여야 함) 삭제는 항상 leaf/자식하나 케이스로 축소됨</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ BST 시간복잡도</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>평균 (균형 잡힌 경우)</th>
+            <th>최악 (편향된 경우)</th>
+          </tr>
+          <tr>
+            <td>search(e)</td>
+            <td class="good">O(log n)</td>
+            <td class="warn">O(n)</td>
+          </tr>
+          <tr>
+            <td>insert(e)</td>
+            <td class="good">O(log n)</td>
+            <td class="warn">O(n)</td>
+          </tr>
+          <tr>
+            <td>delete(e)</td>
+            <td class="good">O(log n)</td>
+            <td class="warn">O(n)</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: TreeMap/TreeSet(균형 BST 기반), 파일시스템 디렉토리, DOM 트리, DB 인덱스(B-Tree 계열), 자동완성(Trie도 트리의 일종)</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="insert">insert(e) - 삽입</option>
+        <option value="search">search(e) - 탐색</option>
+        <option value="delete">delete(e) - 삭제</option>
+        <option value="preOrder">preOrder() - 전위 순회</option>
+        <option value="inOrder">inOrder() - 중위 순회</option>
+        <option value="postOrder">postOrder() - 후위 순회</option>
+        <option value="levelOrder">levelOrder() - 레벨 순회</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="valGroup">
+      <label>값</label>
+      <input type="number" id="valInput" value="42">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewList">🔄 새 트리</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip">root = <strong id="infoRoot">null</strong></div>
+    <div class="info-chip">height = <strong id="infoHeight">-1</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Binary Search Tree</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="tree-scroll">
+      <div class="tree-canvas-wrap" id="treeCanvasWrap">
+        <div class="tree-canvas" id="treeCanvas">
+          <svg class="tree-edges" id="treeEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-strip" id="outputStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 방문 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        지나온 경로 (visited)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        대상 노드 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        새로 삽입 / 값 변경
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        삭제 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9;"></div>
+        successor
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통 부분 - Node
+      </div>
+      <pre>
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">E</span> <span class="nm">data</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span>;
+
+  <span class="kw">public</span> <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>) {
+    <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+    <span class="kw">this</span>.<span class="nm">left</span> = <span class="kw">null</span>;
+    <span class="kw">this</span>.<span class="nm">right</span> = <span class="kw">null</span>;
+  }
+}
+</pre>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          이진 트리 - 순회(Traversal)
+        </div>
+        <pre><span class="ck">// root -> left -> right</span>
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">preOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">preOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">preOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
+  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
+}
+
+<span class="ck">// left -> root -> right</span>
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">inOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">inOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">inOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+
+  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
+}
+
+<span class="ck">// left -> right -> root</span>
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">postOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">postOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">postOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+
+  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
+  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+}
+
+<span class="ck">// BFS, Queue 사용</span>
+<span class="kw">private</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">levelOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span class="kw">return</span> <span class="nm">result</span>;}
+
+  <span class="ty">Queue</span>&lt;<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt;&gt; <span class="nm">queue</span> = <span class="kw">new</span> <span class="ty">ArrayDeque</span>&lt;&gt;();
+  <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">root</span>);
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">queue</span>.<span class="fn">poll</span>();
+    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">left</span>);}
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">right</span> != <span class="kw">null</span>) {<span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">right</span>);}
+  }
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+        </pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          이진 탐색 트리 (BST) - insert / search / delete
+        </div>
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삽입하려는 요소가 null&quot;</span>);}
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span class="nm">root</span> = <span class="nm">newNode</span>; <span class="kw">return</span>;}
+
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="kw">null</span>;
+
+  <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
+    <span class="nm">parent</span> = <span class="nm">curNode</span>;
+    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;중복된 요소 삽입 시도&quot;</span>);
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
+    }
+  }
+
+  <span class="kw">if</span> (<span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">parent</span>.<span class="nm">data</span>) &lt; <span class="nu">0</span>) {
+    <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">newNode</span>;
+  } <span class="kw">else</span> {
+    <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">newNode</span>;
+  }
+}
+
+<span class="kw">public</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">search</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
+
+  <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
+    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {<span class="kw">return</span> <span class="nm">curNode</span>;}
+    <span class="nm">curNode</span> = <span class="nm">compare</span> &lt; <span class="nu">0</span> ? <span class="nm">curNode</span>.<span class="nm">left</span> : <span class="nm">curNode</span>.<span class="nm">right</span>;
+  }
+  <span class="kw">return</span> <span class="kw">null</span>;
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">delete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span> <span class="kw">null</span>;}
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+
+  <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">e</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &gt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> && <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="nm">node</span> = <span class="kw">null</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="nm">node</span> = <span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span class="fn">findMin</span>(<span class="nm">node</span>.<span class="nm">right</span>);
+      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span class="nm">data</span>;
+      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">successor</span>.<span class="nm">data</span>);
+    }
+  }
+  <span class="kw">return</span> <span class="nm">node</span>;
+}
+
+<span class="ck">// 왼쪽 자식이 없을 때까지 계속 left로 이동 -> 서브트리의 최솟값</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">node</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;}
+  <span class="kw">return</span> <span class="nm">curNode</span>;
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  let idCounter = 1;
+  let root = null;
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function newNode(value) { return {id: idCounter++, value, left: null, right: null}; }
+
+  function cloneTree(node) {
+    if (!node) { return null; }
+    return {id: node.id, value: node.value, left: cloneTree(node.left), right: cloneTree(node.right)};
+  }
+
+  function buildBalanced(sorted) {
+    if (sorted.length === 0) { return null; }
+    const mid = Math.floor(sorted.length / 2);
+    const node = newNode(sorted[mid]);
+    node.left = buildBalanced(sorted.slice(0, mid));
+    node.right = buildBalanced(sorted.slice(mid + 1));
+    return node;
+  }
+
+  function randomTree(n) {
+    const vals = new Set();
+    while (vals.size < n) { vals.add(Math.floor(Math.random() * 90) + 10); }
+    const sorted = [...vals].sort((a, b) => a - b);
+    return buildBalanced(sorted);
+  }
+
+  function treeSize(node) { return node ? 1 + treeSize(node.left) + treeSize(node.right) : 0; }
+  function treeHeight(node) { return node ? 1 + Math.max(treeHeight(node.left), treeHeight(node.right)) : -1; }
+
+  function buildVisitHighlight(visitedIds, currentId, currentState) {
+    const h = {};
+    visitedIds.forEach(id => { h[id] = 'visited'; });
+    if (currentId !== null && currentId !== undefined) { h[currentId] = currentState; }
+    return h;
+  }
+
+  // ── BST 연산 planner ──
+  function planInsert(rootNode, value) {
+    const steps = [];
+    if (isNaN(value)) {
+      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    if (!rootNode) {
+      const nn = newNode(value);
+      steps.push({tree: null, highlight: {}, msg: `root == null -> 새 노드(${value})가 root가 됩니다`, tag: 'insert', output: []});
+      steps.push({tree: cloneTree(nn), highlight: {[nn.id]: 'new'}, msg: `insert(${value}) 완료`, tag: 'done', output: []});
+      return {steps, result: nn};
+    }
+    const workRoot = cloneTree(rootNode);
+    let cur = workRoot, parent = null, dir = null;
+    const visited = [];
+    while (cur) {
+      const compare = value - cur.value;
+      if (compare === 0) {
+        visited.push(cur.id);
+        steps.push({tree: cloneTree(workRoot), highlight: buildVisitHighlight(visited, cur.id, 'target'), msg: `중복된 값(${value}) 발견 -> IllegalArgumentException`, tag: 'error', output: []});
+        return {steps, result: rootNode};
+      }
+      visited.push(cur.id);
+      steps.push({tree: cloneTree(workRoot), highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${compare < 0 ? `${value} < ${cur.value}: 왼쪽으로 이동` : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []});
+      parent = cur;
+      if (compare < 0) { dir = 'left'; cur = cur.left; } else { dir = 'right'; cur = cur.right; }
+    }
+    const nn = newNode(value);
+    if (dir === 'left') { parent.left = nn; } else { parent.right = nn; }
+    steps.push({tree: cloneTree(workRoot), highlight: {...buildVisitHighlight(visited, null, null), [nn.id]: 'new'},
+      msg: `parent(${parent.value}).${dir} = 새 노드(${value}) 연결 완료 -> size++`, tag: 'done', output: []});
+    return {steps, result: workRoot};
+  }
+
+  function planSearch(rootNode, value) {
+    const steps = [];
+    if (isNaN(value)) {
+      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    if (!rootNode) {
+      steps.push({tree: null, highlight: {}, msg: 'root == null -> 검색 결과 없음', tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    const base = cloneTree(rootNode);
+    let cur = rootNode;
+    const visited = [];
+    while (cur) {
+      if (cur.value === value) {
+        steps.push({tree: cloneTree(base), highlight: buildVisitHighlight(visited, cur.id, 'target'), msg: `값(${value}) 발견 -> search(${value}) 성공`, tag: 'done', output: []});
+        return {steps, result: rootNode};
+      }
+      steps.push({tree: cloneTree(base), highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${value < cur.value ? `${value} < ${cur.value}: 왼쪽으로 이동` : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []});
+      visited.push(cur.id);
+      cur = value < cur.value ? cur.left : cur.right;
+    }
+    steps.push({tree: cloneTree(base), highlight: {}, msg: `값(${value})을 찾지 못함 -> curNode==null, null 반환`, tag: 'error', output: []});
+    return {steps, result: rootNode};
+  }
+
+  function removeNodeInPlace(target, parent, side, holder) {
+    const child = target.left || target.right || null;
+    if (parent === null) { holder.root = child; }
+    else if (side === 'left') { parent.left = child; }
+    else { parent.right = child; }
+  }
+
+  function planDelete(rootNode, value) {
+    const steps = [];
+    if (isNaN(value)) {
+      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    if (!rootNode) {
+      steps.push({tree: null, highlight: {}, msg: '트리가 비어있는 상태 -> IllegalStateException', tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    const workRoot = cloneTree(rootNode);
+    const holder = {root: workRoot};
+    let cur = workRoot, parent = null, side = null;
+    const visited = [];
+    while (cur && cur.value !== value) {
+      steps.push({tree: cloneTree(holder.root), highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${value < cur.value ? '왼쪽' : '오른쪽'}으로 이동 (현재 ${cur.value})`, tag: 'traverse', output: []});
+      visited.push(cur.id);
+      parent = cur;
+      if (value < cur.value) { side = 'left'; cur = cur.left; } else { side = 'right'; cur = cur.right; }
+    }
+    if (!cur) {
+      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: `값(${value})을 찾지 못함 -> 삭제할 노드 없음`, tag: 'error', output: []});
+      return {steps, result: rootNode};
+    }
+    steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'target'}, msg: `삭제 대상 노드(${value}) 발견`, tag: 'remove', output: []});
+
+    if (!cur.left && !cur.right) {
+      removeNodeInPlace(cur, parent, side, holder);
+      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: '자식 없음(leaf) -> node=null 리턴, 부모 링크 제거', tag: 'done', output: []});
+    } else if (!cur.left || !cur.right) {
+      const childVal = (cur.left || cur.right).value;
+      removeNodeInPlace(cur, parent, side, holder);
+      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: `자식이 하나 -> 자식(${childVal})이 그대로 그 자리를 대신함`, tag: 'done', output: []});
+    } else {
+      let succParent = cur, succSide = 'right', succ = cur.right;
+      const succVisited = [];
+      while (succ.left) {
+        steps.push({tree: cloneTree(holder.root), highlight: {...buildVisitHighlight(succVisited, succ.id, 'current'), [cur.id]: 'target'},
+          msg: `findMin: 오른쪽 서브트리에서 왼쪽 끝까지 이동 (현재 ${succ.value})`, tag: 'traverse', output: []});
+        succVisited.push(succ.id);
+        succParent = succ; succSide = 'left'; succ = succ.left;
+      }
+      steps.push({tree: cloneTree(holder.root), highlight: {[succ.id]: 'successor', [cur.id]: 'target'}, msg: `successor 발견: ${succ.value} (오른쪽 서브트리 최솟값)`, tag: 'remove', output: []});
+      const oldVal = cur.value;
+      cur.value = succ.value;
+      steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'new', [succ.id]: 'removing'},
+        msg: `node.data = successor.data (${oldVal} -> ${cur.value}) -> 값만 교체, 이 순간 트리에 값이 중복된 과도 상태`, tag: 'insert', output: []});
+      removeNodeInPlace(succ, succParent, succSide, holder);
+      steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'new'}, msg: '오른쪽 서브트리에서 진짜 successor 노드 제거 완료 -> size--', tag: 'done', output: []});
+    }
+    return {steps, result: holder.root};
+  }
+
+  // ── 순회 planner ──
+  function genOrderEvents(node, order) {
+    const events = [];
+    function visit(n) {
+      if (!n) { return; }
+      events.push({type: 'enter', id: n.id, value: n.value});
+      if (order === 'pre') { events.push({type: 'add', id: n.id, value: n.value}); }
+      visit(n.left);
+      if (order === 'in') { events.push({type: 'add', id: n.id, value: n.value}); }
+      visit(n.right);
+      if (order === 'post') { events.push({type: 'add', id: n.id, value: n.value}); }
+    }
+    visit(node);
+    return events;
+  }
+
+  function planTraversal(rootNode, order) {
+    const steps = [];
+    const label = order === 'pre' ? 'preOrder' : order === 'in' ? 'inOrder' : 'postOrder';
+    if (!rootNode) {
+      steps.push({tree: null, highlight: {}, msg: 'root == null -> 결과 없음 (빈 리스트)', tag: 'done', output: []});
+      return {steps, result: rootNode};
+    }
+    const events = genOrderEvents(rootNode, order);
+    const done = new Set();
+    const output = [];
+    events.forEach(ev => {
+      if (ev.type === 'enter') {
+        const hl = {}; done.forEach(id => { hl[id] = 'visited'; });
+        hl[ev.id] = 'current';
+        steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `${label}(${ev.value}) 진입 -> 자식 노드로 재귀 호출 진행`, tag: 'traverse', output: [...output]});
+      } else {
+        done.add(ev.id);
+        output.push(ev.value);
+        const hl = {}; done.forEach(id => { hl[id] = 'visited'; });
+        hl[ev.id] = 'new';
+        steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `result.add(${ev.value}) -> 저장 순서에 포함 (현재 결과: [${output.join(', ')}])`, tag: 'insert', output: [...output]});
+      }
+    });
+    const hlFinal = {}; done.forEach(id => { hlFinal[id] = 'visited'; });
+    steps.push({tree: cloneTree(rootNode), highlight: hlFinal, msg: `${label} 순회 완료 -> [${output.join(', ')}]`, tag: 'done', output: [...output]});
+    return {steps, result: rootNode};
+  }
+
+  function planLevelOrder(rootNode) {
+    const steps = [];
+    if (!rootNode) {
+      steps.push({tree: null, highlight: {}, msg: 'root == null -> 결과 없음', tag: 'done', output: [], queue: []});
+      return {steps, result: rootNode};
+    }
+    const queue = [rootNode];
+    const output = [];
+    const doneIds = new Set();
+    steps.push({tree: cloneTree(rootNode), highlight: {}, msg: `queue.add(root) -> 초기 큐: [${queue.map(n => n.value).join(', ')}]`, tag: 'traverse', output: [...output], queue: queue.map(n => n.value)});
+    while (queue.length) {
+      const cur = queue.shift();
+      doneIds.add(cur.id);
+      output.push(cur.value);
+      const hl = {}; doneIds.forEach(id => { if (id !== cur.id) { hl[id] = 'visited'; } }); hl[cur.id] = 'current';
+      steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `poll() -> ${cur.value} 방문, result에 추가`, tag: 'insert', output: [...output], queue: queue.map(n => n.value)});
+      if (cur.left) { queue.push(cur.left); }
+      if (cur.right) { queue.push(cur.right); }
+      if (cur.left || cur.right) {
+        const hl2 = {}; doneIds.forEach(id => { hl2[id] = 'visited'; });
+        steps.push({tree: cloneTree(rootNode), highlight: hl2, msg: `자식 큐에 추가 -> 현재 큐: [${queue.map(n => n.value).join(', ')}]`, tag: 'traverse', output: [...output], queue: queue.map(n => n.value)});
+      }
+    }
+    const hlFinal = {}; doneIds.forEach(id => { hlFinal[id] = 'visited'; });
+    steps.push({tree: cloneTree(rootNode), highlight: hlFinal, msg: `levelOrder 완료 -> [${output.join(', ')}]`, tag: 'done', output: [...output], queue: []});
+    return {steps, result: rootNode};
+  }
+
+  // ── 렌더 ──
+  function layoutTree(rootNode) {
+    const nodes = [];
+    const counter = {x: 0};
+    let maxDepth = 0;
+    function walk(node, depth) {
+      if (!node) { return; }
+      walk(node.left, depth + 1);
+      const x = counter.x++;
+      nodes.push({id: node.id, value: node.value, x, y: depth});
+      maxDepth = Math.max(maxDepth, depth);
+      walk(node.right, depth + 1);
+    }
+    walk(rootNode, 0);
+    return {nodes, maxX: counter.x - 1, maxDepth};
+  }
+
+  function collectEdges(node) {
+    const edges = [];
+    function walk(n) {
+      if (!n) { return; }
+      if (n.left) { edges.push({parent: n.id, child: n.left.id}); walk(n.left); }
+      if (n.right) { edges.push({parent: n.id, child: n.right.id}); walk(n.right); }
+    }
+    walk(node);
+    return edges;
+  }
+
+  function renderTree(rootNode, highlight) {
+    const wrap = document.getElementById('treeCanvasWrap');
+    const canvas = document.getElementById('treeCanvas');
+    const svg = document.getElementById('treeEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    if (!rootNode) {
+      wrap.style.width = '100%';
+      wrap.style.height = '80px';
+      canvas.style.transform = 'none';
+      canvas.style.width = '100%';
+      canvas.style.height = '80px';
+      svg.style.display = 'none';
+      layer.innerHTML = '<div class="empty-msg">트리가 비어 있습니다 (root = null)</div>';
+      return;
+    }
+    svg.style.display = 'block';
+
+    const {nodes, maxX, maxDepth} = layoutTree(rootNode);
+    const edges = collectEdges(rootNode);
+    const spacingX = 62, spacingY = 76, padX = 32, padTop = 30, nodeSize = 44;
+    const width = Math.max((maxX + 1) * spacingX + padX * 2, 320);
+    const height = (maxDepth + 1) * spacingY + padTop + nodeSize;
+
+    // 컨테이너 폭보다 트리가 넓으면 스크롤 대신 축소해서 한 화면에 표시
+    const scrollEl = document.querySelector('.tree-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const posMap = {};
+    nodes.forEach(n => {
+      posMap[n.id] = {cx: padX + n.x * spacingX + spacingX / 2, cy: padTop + n.y * spacingY + nodeSize / 2};
+    });
+
+    let edgeSvg = '';
+    edges.forEach(e => {
+      const p = posMap[e.parent], c = posMap[e.child];
+      edgeSvg += `<line x1="${p.cx}" y1="${p.cy}" x2="${c.cx}" y2="${c.cy}" class="tree-edge" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    nodes.forEach(n => {
+      const pos = posMap[n.id];
+      const hl = highlight[n.id];
+      let cls = 'tnode';
+      if (hl) { cls += ' state-' + hl; }
+      const isRoot = n.id === rootNode.id;
+      html += `<div class="tnode-wrap" style="left:${pos.cx - nodeSize / 2}px; top:${pos.cy - nodeSize / 2}px;">
+          ${isRoot ? '<div class="pos-tag root">ROOT</div>' : ''}
+          <div class="${cls}">${n.value}</div>
+        </div>`;
+    });
+    layer.innerHTML = html;
+  }
+
+  function renderOutput(output, queue) {
+    const el = document.getElementById('outputStrip');
+    let html = '<span class="output-label">결과</span>';
+    if (!output || output.length === 0) {
+      html += '<span class="output-chip">-</span>';
+    } else {
+      output.forEach(v => { html += `<span class="output-chip active">${v}</span>`; });
+    }
+    if (queue && queue.length) {
+      html += '<span class="output-label" style="margin-left:14px;">큐</span>';
+      queue.forEach(v => { html += `<span class="queue-chip">${v}</span>`; });
+    }
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">삽입</span>',
+    'remove': '<span class="phase-tag phase-remove">삭제</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderTree(step.tree, step.highlight);
+    renderOutput(step.output, step.queue);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoSize').textContent = treeSize(step.tree);
+    document.getElementById('infoRoot').textContent = step.tree ? step.tree.value : 'null';
+    document.getElementById('infoHeight').textContent = treeHeight(step.tree);
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) { stopPlay(); return; }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) { stopPlay(); needsNewRun = true; }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const value = parseInt(document.getElementById('valInput').value);
+    let plan;
+    if (op === 'insert') { plan = planInsert(root, value); }
+    else if (op === 'search') { plan = planSearch(root, value); }
+    else if (op === 'delete') { plan = planDelete(root, value); }
+    else if (op === 'preOrder') { plan = planTraversal(root, 'pre'); }
+    else if (op === 'inOrder') { plan = planTraversal(root, 'in'); }
+    else if (op === 'postOrder') { plan = planTraversal(root, 'post'); }
+    else if (op === 'levelOrder') { plan = planLevelOrder(root); }
+
+    steps = plan.steps;
+    root = plan.result;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    const needsVal = op === 'insert' || op === 'search' || op === 'delete';
+    document.getElementById('valGroup').style.display = needsVal ? 'flex' : 'none';
+  }
+
+  function markDirty() { stopPlay(); needsNewRun = true; }
+
+  document.getElementById('opSelect').addEventListener('change', () => { updateOpUI(); markDirty(); });
+  document.getElementById('valInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewList').addEventListener('click', () => {
+    stopPlay();
+    root = randomTree(6);
+    steps = [{tree: cloneTree(root), highlight: {}, msg: '새 트리를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: '', output: []}];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  updateOpUI();
+  root = randomTree(6);
+  steps = [{tree: cloneTree(root), highlight: {}, msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: '', output: []}];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>
