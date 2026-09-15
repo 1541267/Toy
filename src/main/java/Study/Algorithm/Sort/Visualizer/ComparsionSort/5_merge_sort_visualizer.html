@@ -9,27 +9,17 @@
 <style>
   :root {
     --bar-area-height: 140px;
+    --diffnote-lh: 1.7;
+    --diffnote-mb: 1.5rem;
   }
 
   .bar {
-    &.range {
-      background: var(--state-range);
-    }
-
     &.left-half {
       background: var(--state-info);
     }
 
     &.right-half {
       background: var(--state-alt2);
-    }
-
-    &.comparing {
-      background: var(--state-compare);
-    }
-
-    &.swap {
-      background: var(--state-swap);
     }
   }
 
@@ -60,12 +50,6 @@
 
   .an {
     color: #ff5555;
-  }
-
-  /* 코드 강조: 주석성 안내문구 */
-  .diff-note {
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
   }
 </style>
 

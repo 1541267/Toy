@@ -11,10 +11,8 @@
     --controls-mb: 1rem;
     --controls-gap: 0.7rem 1rem;
     --phasetag-mr: 7px;
-  }
-
-  .header h1 {
-    cursor: pointer;
+    --diffnote-lh: 1.7;
+    --diffnote-mb: 1.5rem;
   }
 
   .btn-row {
@@ -44,18 +42,8 @@
     }
   }
 
-  .notes-body {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-
   .note-card {
     flex: 1 1 320px;
-  }
-
-  .panel {
-    margin-bottom: 1rem;
   }
 
   .log-box {
@@ -271,20 +259,6 @@
     font-family: "Consolas", monospace;
   }
 
-  @keyframes pop {
-    0% {
-      transform: scale(0.4);
-      opacity: 0;
-    }
-    70% {
-      transform: scale(1.18);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-
   .link {
     display: flex;
     flex-direction: column;
@@ -337,25 +311,6 @@
     color: var(--tag-purple-text);
   }
 
-  .phase-insert {
-    background: var(--tag-cyan-bg);
-    color: var(--tag-cyan-text);
-  }
-
-  .phase-remove {
-    background: var(--tag-amber-bg);
-    color: var(--tag-amber-text);
-  }
-
-  .phase-error {
-    background: #450a0a;
-    color: var(--bad-text);
-  }
-
-  .diff-note {
-    line-height: 1.7;
-    margin-bottom: 1.5rem;
-  }
 </style>
 
 <body>

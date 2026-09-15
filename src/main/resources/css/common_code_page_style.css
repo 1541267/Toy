@@ -78,6 +78,9 @@
   --phasetag-mr: 5px;
   --bar-area-height: 160px;
   --bar-area-mb: 0.75rem;
+  --diffnote-lh: 1.75;
+  --diffnote-mb: 1.25rem;
+  --panelheader-mb: 0.75rem;
 }
 
 /* ── 리셋 & 베이스 ── */
@@ -109,6 +112,7 @@ body {
     letter-spacing: -0.5px;
     margin: 0 0 0.3rem;
     color: var(--text-heading);
+    cursor: pointer;
   }
 
   & p {
@@ -359,7 +363,7 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--panelheader-mb);
 }
 
 .panel-title {
@@ -441,6 +445,63 @@ body {
     border: 1px dashed var(--surface-border);
     height: 8px !important;
   }
+
+  /* 비교 정렬 계열(버블/선택/삽입/퀵/머지)에서 동일하게 쓰는 비교/교환/범위 상태 */
+  &.comparing {
+    background: var(--state-compare);
+  }
+
+  &.swap {
+    background: var(--state-swap);
+  }
+
+  &.range {
+    background: var(--state-range);
+  }
+
+  /* 카운팅/라딕스/버킷 정렬에서 동일하게 쓰는 분배·배치·채움 상태 */
+  &.active {
+    background: var(--state-compare);
+  }
+
+  &.placed {
+    background: var(--state-swap);
+  }
+
+  &.filled {
+    background: var(--state-success);
+  }
+
+  /* 카운팅/라딕스의 카운트 배열(히스토그램) 상태 */
+  &.count-base {
+    background: #2d3a6e;
+  }
+
+  &.count-active {
+    background: var(--state-compare);
+  }
+
+  &.count-prefix {
+    background: var(--state-swap);
+  }
+
+  &.count-consume {
+    background: var(--state-alt2);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.18);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ── 범례(legend) ── */
@@ -493,6 +554,60 @@ body {
 .phase-done {
   background: var(--tag-green-bg);
   color: var(--tag-green-text);
+}
+
+/* 여러 시각화 파일에서 동일한 색 조합으로 반복되는 phase-tag
+   (클래스명은 각 파일의 JS 로직과 묶여 있어 그대로 두고, 2개 이상 파일에서
+   완전히 동일하게 쓰이는 색상 조합만 공용화. 값이 다른 파일은 자기 파일
+   <style>에서 그대로 override) */
+.phase-compare {
+  background: var(--tag-cyan-bg);
+  color: var(--tag-cyan-text);
+}
+
+.phase-count {
+  background: var(--tag-cyan-bg);
+  color: var(--tag-cyan-text);
+}
+
+.phase-swap {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+
+.phase-shift {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+
+.phase-prefix {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+
+.phase-place {
+  background: var(--tag-purple-bg);
+  color: var(--tag-purple-text);
+}
+
+.phase-insert {
+  background: var(--tag-cyan-bg);
+  color: var(--tag-cyan-text);
+}
+
+.phase-remove {
+  background: var(--tag-amber-bg);
+  color: var(--tag-amber-text);
+}
+
+.phase-error {
+  background: #450a0a;
+  color: var(--bad-text);
+}
+
+.phase-flow {
+  background: #1e293b;
+  color: var(--tag-blue-text);
 }
 
 /* 로그에서 자주 쓰이는 강조 텍스트 */
@@ -651,8 +766,8 @@ pre {
   padding: 0.85rem 1.1rem;
   font-size: 0.78rem;
   color: var(--text-sub);
-  line-height: 1.75;
-  margin-bottom: 1.25rem;
+  line-height: var(--diffnote-lh);
+  margin-bottom: var(--diffnote-mb);
 
   & strong {
     color: var(--accent-strong);

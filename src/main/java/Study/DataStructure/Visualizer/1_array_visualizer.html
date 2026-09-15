@@ -15,10 +15,6 @@
     --legenddot-border: 1px solid transparent;
   }
 
-  .header h1 {
-    cursor: pointer;
-  }
-
   .ctrl-group input[type=number] {
     width: 62px;
   }
@@ -137,12 +133,7 @@
     }
   }
 
-  /* ── 로그 phase 태그 ── */
-  .phase-shift {
-    background: var(--tag-amber-bg);
-    color: var(--tag-amber-text);
-  }
-
+  /* ── 로그 phase 태그 (전용 색상만; compare/swap/insert 계열은 공용 CSS에 없는 값이라 유지) ── */
   .phase-insert {
     background: #1c0a2e;
     color: #e9d5ff;
@@ -168,11 +159,6 @@
     color: var(--tag-red-text);
   }
 
-  @media (max-width: 820px) {
-    .code-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
 <body>
