@@ -208,7 +208,6 @@ public class _5_2_BST {
     }
 
     public void printTree() {
-      System.out.println("==========================================================");
       printTree(root, "", "");
       System.out.println("==========================================================");
     }
@@ -216,8 +215,8 @@ public class _5_2_BST {
     private void printTree(Node<E> node, String prefix, String branch) {
       if (node == null) {return;}
       System.out.println(prefix + branch + node.data);
-      printTree(node.left, prefix + "    ", "L── ");
-      printTree(node.right, prefix + "    ", "R── ");
+      printTree(node.left, prefix + "  ", "L─ ");
+      printTree(node.right, prefix + "  ", "R─ ");
     }
 
     public String toString(Node<E> node) {
@@ -229,7 +228,7 @@ public class _5_2_BST {
 
     Node<Integer> BasicBSTRoot = new Node<>(10);
 
-    _5_2_BST.BasicBST<Integer> BasicBST = new BasicBST<>(BasicBSTRoot);
+    BasicBST<Integer> BasicBST = new BasicBST<>(BasicBSTRoot);
 
     BasicBST.insert(1);
     BasicBST.printTree();
