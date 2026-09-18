@@ -26,7 +26,7 @@ package Study.DataStructure.Code;
     -> 회전 함수는 rotateLeft/rotateRight 두 개만 있으면 됨 (LR/RL은 이 둘의 조합)
     -> 회전 후에는 반드시 자식 노드 -> 새 루트 순서로 updateHeight() 호출 (순서 반대로 하면 잘못된 높이가 나옴)
 
-  - 회전 tkdtp 과정
+  - 회전 과정
     -> RotateLeft & Right 간단히 생각하면 기준 노드를 반시계(Left), 시계(Right) 돌리는 동작
     -> 돌리면서 BST의 구조를 유지하기 위해 기존 Left or Right 노드의 자식을 기준 노드의 자식으로 넣어줘야 함
     예로 A < X < Y < C < B 의 BST 상태

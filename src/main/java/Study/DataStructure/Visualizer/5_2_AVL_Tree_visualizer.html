@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AVL 트리 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & input[type=number] {
+      width: 84px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+      padding: 5px 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 66px;
+    }
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  .phase-tag {
+    flex-shrink: 0;
+  }
+
+  /* ── 복잡도 표 ── */
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th,
+    & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 트리 시각화 ──
+     노드가 늘어나 트리 폭이 화면(특히 모바일)보다 커지면, 가로 스크롤 대신
+     tree-canvas 전체를 transform: scale()로 축소해서 한 화면에 들어오도록 함
+     (wrap은 축소된 실제 크기로, canvas는 원본 크기 그대로 유지한 채 스케일만 적용) */
+  .tree-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .empty-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .tree-canvas-wrap {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .tree-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  .tree-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+
+    & .tree-edge {
+      stroke: #3f4a63;
+      stroke-width: 2;
+      transition: stroke 0.15s;
+    }
+  }
+
+  .nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .node-pos {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .avl-node {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+
+    &.visited-fwd {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.current-fwd {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.12);
+    }
+
+    &.visited-bwd {
+      background: var(--tag-purple-bg);
+      border-color: var(--state-alt2);
+      color: var(--tag-purple-text);
+    }
+
+    &.current-bwd {
+      background: var(--state-alt2);
+      border-color: var(--tag-purple-text);
+      color: #f5f3ff;
+      transform: scale(1.12);
+    }
+
+    &.target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.12);
+    }
+
+    &.new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      text-decoration: line-through;
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+  }
+
+  .node-meta {
+    margin-top: 3px;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    font-family: "Consolas", monospace;
+    white-space: nowrap;
+  }
+
+  /* ── 로그 phase 태그 ── */
+  .phase-traverse {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  .phase-traverse-bwd {
+    background: var(--tag-purple-bg);
+    color: var(--tag-purple-text);
+  }
+
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">AVL 트리 (Self-Balancing BST)</h1>
+    <p>삽입/삭제마다 균형(balance factor -1~1)을 재조정하는 자가 균형 이진 탐색 트리</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 AVL 트리 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🤔 왜 필요한가</h3>
+        <ul>
+          <li>일반 BST는 삽입 순서에 따라 모양이 완전히 달라짐</li>
+          <li>정렬된 데이터를 순서대로 삽입하면 트리가 한쪽으로 길게 늘어져 사실상 연결리스트가 됨 (높이
+            <strong>O(n)</strong></li>
+          <li>get/insert/remove 모두 O(log n)을 전제로 설계된 BST의 장점이 이 경우 전부 사라짐</li>
+          <li>AVL은 삽입/삭제마다 스스로 구조를 재조정해서 "트리는 균형 잡혀 있다"는 가정이 깨지지 않도록 함</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚖️ 균형 조건</h3>
+        <ul>
+          <li>모든 노드의 <strong>balance factor</strong>(왼쪽 서브트리 높이 - 오른쪽 서브트리 높이)가
+            <strong>-1, 0, 1</strong> 중 하나</li>
+          <li>조건을 벗어나면(-2 또는 +2) 즉시 rotation으로 고침</li>
+          <li>null의 height는 -1, leaf의 height는 0 -> updateHeight()의 "1 + max(left, right)" 공식이 leaf에서도
+            일관되게 성립
+          </li>
+          <li>null-safe height 조회는 인스턴스 메서드가 아닌 static 메서드로 분리 (null에는 메서드 호출 자체가 불가능하기 때문)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔄 회전 4가지 패턴</h3>
+        <ul>
+          <li><strong>LL</strong>: 왼쪽 자식의 왼쪽이 무거움 -> rotateRight 1회</li>
+          <li><strong>RR</strong>: 오른쪽 자식의 오른쪽이 무거움 -> rotateLeft 1회</li>
+          <li><strong>LR</strong>: 왼쪽 자식의 오른쪽이 무거움 -> 왼쪽 자식 기준 rotateLeft 후 rotateRight (2회)</li>
+          <li><strong>RL</strong>: 오른쪽 자식의 왼쪽이 무거움 -> 오른쪽 자식 기준 rotateRight 후 rotateLeft (2회)</li>
+          <li>회전 함수는 rotateLeft/rotateRight 두 개만 있으면 됨 (LR/RL은 이 둘의 조합)</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🌀 회전 과정</h3>
+        <ul>
+          <li>rotateLeft &amp; rotateRight는 간단히 생각하면 기준 노드를 <strong>반시계(Left)</strong>, <strong>시계(Right)</strong>
+            방향으로 돌리는 동작
+          </li>
+          <li>돌리면서 BST의 구조(왼쪽 &lt; 노드 &lt; 오른쪽)를 유지하기 위해, 기존 Left 혹은 Right 노드가 갖고 있던 자식을 회전 후
+            기준 노드의 자식으로 다시 넣어줘야 함
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🌀 회전 과정 예시 1 - RL 케이스 (A &lt; X &lt; Y &lt; C &lt; B)</h3>
+        <p class="rotation-step">A 기준 RL 상태 (R인 B의 L(Y)이 무거움, 높이가 그쪽으로 몰려있음)</p>
+        <pre class="rotation-diagram">     A
+      \
+       B
+      /
+     Y
+    / \
+   X   C</pre>
+
+        <p class="rotation-step"><strong>1단계</strong>: 먼저 A의 Right(B)를 기준으로 <strong>rotateRight</strong> 1회 진행</p>
+        <pre class="rotation-diagram">     A
+      \
+       Y
+      /\ \
+     X  C  B</pre>
+        <p class="rotation-step">Y와 B가 회전하며 부분적으로 RR 모양이 되지만, Y가 원래 갖고 있던 자식 X와 C가 그대로 남아있어
+          BST 구조가 깨짐</p>
+
+        <p class="rotation-step">기존 구조인 A &lt; X &lt; Y &lt; C &lt; B를 유지하려면 C가 B의 Left로 이동해야 함</p>
+        <pre class="rotation-diagram">     A
+      \
+       Y
+      / \
+     X   B
+        /
+       C</pre>
+
+        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 RR이 된 상태에서 A 기준 <strong>rotateLeft</strong> 1회 진행 →
+          Y가 새 루트가 되는 모양</p>
+        <pre class="rotation-diagram">     Y
+    / \
+   A,X B
+      /
+     C</pre>
+        <p class="rotation-step">여기서 X는 기존 트리에서 Y보단 작고 A보단 크므로, A의 Right로 이동해야 BST 구조가 유지됨</p>
+
+        <p class="rotation-step">최종 결과</p>
+        <pre class="rotation-diagram">     Y
+   /   \
+  A     B
+   \   /
+    X C</pre>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🌀 회전 과정 예시 2 - LR 케이스 (B &lt; X &lt; Y &lt; C &lt; A)</h3>
+        <p class="rotation-step">A 기준 LR 상태 (L(B) R(Y) 조합)</p>
+        <pre class="rotation-diagram">     A
+    /
+   B
+    \
+     Y
+    / \
+   X   C</pre>
+
+        <p class="rotation-step"><strong>1단계</strong>: B를 기준으로 <strong>rotateLeft</strong> 1회 수행</p>
+        <pre class="rotation-diagram">       A
+      /
+     Y
+    / /\
+   B X  C</pre>
+        <p class="rotation-step">BST 구조를 유지하려면, B보단 크고 Y보단 작은 X가 B의 Right로 이동해야 함</p>
+        <pre class="rotation-diagram">       A
+      /
+     Y
+    / \
+   B   C
+    \
+     X</pre>
+
+        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 LL이 된 상태에서 A 기준 <strong>rotateRight</strong> 1회 수행</p>
+        <pre class="rotation-diagram">       Y
+      /\ \
+     B  C A
+      \
+       X</pre>
+        <p class="rotation-step">B &lt; X &lt; Y &lt; C &lt; A 순서를 유지하려면 C는 Y보단 크고 A보단 작으므로, C가 A의 Left로
+          이동해야 함</p>
+
+        <p class="rotation-step">최종 결과</p>
+        <pre class="rotation-diagram">       Y
+      /  \
+     B    A
+      \   /
+       X C</pre>
+      </div>
+
+      <div class="note-card">
+        <h3>🧭 재귀 구조에서 재조정 위치</h3>
+        <ul>
+          <li>Java는 포인터가 없으므로, 재귀 insert/delete는 처리 후 서브트리의 새 루트를 반환해야 부모가 다시 연결 가능</li>
+          <li>재귀에서 돌아오는 길(자식 호출 이후)마다 updateHeight() -> balance factor 체크 -> 필요시 회전을 반복</li>
+          <li>insert/delete 양쪽에서 이 로직이 동일하므로 rebalance() 공용 메서드로 사용</li>
+          <li>회전 시 자식의 서브트리를 반드시 반대편으로 옮겨야 BST 성질(왼쪽 &lt; 노드 &lt; 오른쪽) 유지</li>
+          <li>회전 후에는 반드시 자식 노드 -&gt; 새 루트 순서로 updateHeight() 호출</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>➕ Insert에서의 재조정</h3>
+        <ul>
+          <li>삽입은 한 번에 한 노드만 추가되므로, 불균형이 발생한 자식의 balance factor가 정확히 0이 될 수 없음</li>
+          <li>즉 LL/RR과 LR/RL을 구별할 때 0을 어느 쪽으로 볼지 고민할 필요가 없음</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>➖ Delete에서의 재조정 (Insert와 다른 점)</h3>
+        <ul>
+          <li>리프 노드를 삭제해서 node 자체가 null이 되는 경우가 있음 -> rebalance() 호출 전 null 가드 필요</li>
+          <li>삭제는 서브트리 전체가 통째로 낮아질 수 있어 불균형 자식의 balance factor가 정확히 0인 상황이 생길 수 있음
+            (삽입에는 없던 케이스)
+          </li>
+          <li>자식이 둘인 노드 삭제 시: 오른쪽 서브트리의 최솟값(successor)으로 <strong>값만</strong> 교체하고, 그 successor
+            노드를 재귀적으로 삭제 -> 구조가 아닌 값만 옮기는 방식이라 재배선 부담이 적음
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⚖️ Red-Black Tree와의 트레이드오프</h3>
+        <ul>
+          <li>AVL: 균형 조건이 엄격(-1~1) -> 트리가 더 평평함 -> search가 빠름, 대신 insert/delete 시 rotation이 더 잦음</li>
+          <li>Red-Black: 균형 조건이 느슨함(빨강 노드 규칙 등 5가지 속성) -> AVL보다 트리가 조금 더 기울 수 있지만, 삽입/삭제 시
+            recoloring 위주로 처리되어 rotation 빈도가 AVL보다 적음 -> 쓰기가 잦은 워크로드에 유리
+          </li>
+          <li>실무 사용처: Java TreeMap/TreeSet, C++ std::map, 리눅스 커널 스케줄러(CFS) 등이 Red-Black Tree 사용</li>
+        </ul>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>AVL</th>
+            <th>Red-Black</th>
+          </tr>
+          <tr>
+            <td>search(get)</td>
+            <td class="good">O(log n), 더 평평해서 상수 인자 우수</td>
+            <td class="good">O(log n)</td>
+          </tr>
+          <tr>
+            <td>insert / delete</td>
+            <td class="warn">O(log n), rotation 빈도 높음</td>
+            <td class="good">O(log n), recoloring 위주라 rotation 적음</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="insertAVL">insert(e) - 삽입</option>
+        <option value="deleteAVL">delete(e) - 삭제</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>값</label>
+      <input type="number" id="valInput" value="50">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewTree">🔄 새 트리</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip">root = <strong id="infoRoot">null</strong></div>
+    <div class="info-chip">height = <strong id="infoHeight">0</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">AVL Tree (균형 조건: balance factor ∈ [-1, 1])</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="tree-scroll">
+      <div class="tree-canvas-wrap" id="treeCanvasWrap">
+        <div class="tree-canvas" id="treeCanvas">
+          <svg class="tree-svg" id="treeSvg"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 비교 중인 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        지나온 탐색 경로
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9;"></div>
+        현재 successor 후보
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#2e1065;"></div>
+        successor 탐색 경로
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        회전 축 / 대상 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        새로 삽입 / 값 복사
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        삭제 대상
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        전체 코드
+      </div>
+      <pre>
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; {
+
+  <span class="ty">E</span> <span class="nm">data</span>;
+  <span class="ty">int</span> <span class="nm">height</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span>;
+
+  <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>) {
+    <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+    <span class="kw">this</span>.<span class="nm">height</span> = <span class="nu">0</span>;
+  }
+
+  <span class="ck">// null-safe, 인스턴스(this) 동작이 아닌 어떤 노드든 적용 가능한 범용 유틸리티</span>
+  <span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">int</span> <span class="fn">getHeight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+    <span class="kw">return</span> <span class="nm">node</span> == <span class="kw">null</span> ? -<span class="nu">1</span> : <span class="nm">node</span>.<span class="nm">height</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">getBalanceFactor</span>() {
+    <span class="kw">return</span> <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">left</span>) - <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>);
+  }
+
+  <span class="kw">private</span> <span class="kw">void</span> <span class="fn">updateHeight</span>() {
+    <span class="kw">this</span>.<span class="nm">height</span> = <span class="nu">1</span> + <span class="ty">Math</span>.<span class="fn">max</span>(<span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">left</span>), <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>));
+  }
+}
+
+<span class="ck">// insert(), doDelete()에서 공용으로 사용</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rebalance</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="nm">node</span>.<span class="fn">updateHeight</span>();
+  <span class="ty">int</span> <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="fn">getBalanceFactor</span>();
+
+  <span class="kw">if</span> (<span class="nm">balanceFactor</span> &gt; <span class="nu">1</span>) {
+    <span class="ck">// LL(왼쪽 1회) or LR(왼쪽 1회 후 오른쪽 1회) 검사</span>
+    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="nm">left</span>.<span class="fn">getBalanceFactor</span>();
+    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; <span class="nu">0</span>) { <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">rotateLeft</span>(<span class="nm">node</span>.<span class="nm">left</span>); }
+    <span class="nm">node</span> = <span class="fn">rotateRight</span>(<span class="nm">node</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; -<span class="nu">1</span>) {
+    <span class="ck">// RR(오른쪽 1회) or RL(오른쪽 1회 후 왼쪽 1회) 검사</span>
+    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="nm">right</span>.<span class="fn">getBalanceFactor</span>();
+    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &gt; <span class="nu">0</span>) { <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">rotateRight</span>(<span class="nm">node</span>.<span class="nm">right</span>); }
+    <span class="nm">node</span> = <span class="fn">rotateLeft</span>(<span class="nm">node</span>);
+  }
+  <span class="kw">return</span> <span class="nm">node</span>;
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span class="nm">right</span>.<span class="nm">left</span>;
+
+  <span class="nm">right</span>.<span class="nm">left</span> = <span class="nm">node</span>;
+  <span class="nm">node</span>.<span class="nm">right</span> = <span class="nm">rightLeft</span>;
+
+  <span class="nm">node</span>.<span class="fn">updateHeight</span>();
+  <span class="nm">right</span>.<span class="fn">updateHeight</span>();
+  <span class="kw">return</span> <span class="nm">right</span>;
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span> = <span class="nm">node</span>.<span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">leftRight</span> = <span class="nm">left</span>.<span class="nm">right</span>;
+
+  <span class="nm">left</span>.<span class="nm">right</span> = <span class="nm">node</span>;
+  <span class="nm">node</span>.<span class="nm">left</span> = <span class="nm">leftRight</span>;
+
+  <span class="nm">node</span>.<span class="fn">updateHeight</span>();
+  <span class="nm">left</span>.<span class="fn">updateHeight</span>();
+  <span class="kw">return</span> <span class="nm">left</span>;
+}
+</pre>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          삽입 (Insert)
+        </div>
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삽입 하려는 데이터가 null&quot;</span>);
+  }
+  <span class="nm">root</span> = <span class="fn">insert</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">insert</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">curNode</span> == <span class="kw">null</span>) { <span class="kw">return</span> <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>); }
+
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+
+  <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;중복 요소 삽입&quot;</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+    <span class="nm">curNode</span>.<span class="nm">left</span> = <span class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">left</span>, <span class="nm">e</span>);
+  } <span class="kw">else</span> {
+    <span class="nm">curNode</span>.<span class="nm">right</span> = <span class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+  }
+  <span class="kw">return</span> <span class="fn">rebalance</span>(<span class="nm">curNode</span>);
+}
+        </pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          삭제 (Delete)
+        </div>
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">delete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalStateException</span>(<span class="st">&quot;비어있는 AVL 트리 삭제 시도&quot;</span>);
+  }
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삭제 시도 하려는 데이터가 Null&quot;</span>);
+  }
+  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) { <span class="kw">return</span> <span class="kw">null</span>; }
+
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+
+  <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">e</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &gt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> &amp;&amp; <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="kw">return</span> <span class="kw">null</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="nm">node</span> = <span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span class="fn">findMin</span>(<span class="nm">node</span>.<span class="nm">right</span>);
+      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span class="nm">data</span>;
+      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">successor</span>.<span class="nm">data</span>);
+    }
+  }
+  <span class="kw">return</span> <span class="fn">rebalance</span>(<span class="nm">node</span>);
+}
+
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">node</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) { <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>; }
+  <span class="kw">return</span> <span class="nm">curNode</span>;
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ── 트리 레이아웃 상수 ──
+  const R = 22, GAPX = 56, GAPY = 72, PAD = 30;
+
+  // ── 데이터 모델 ──
+  let idCounter = 0;
+  function makeNode(value) { return {id: idCounter++, value, height: 0, left: null, right: null}; }
+  function h(n) { return n ? n.height : -1; }
+  function bf(n) { return n ? h(n.left) - h(n.right) : 0; }
+  function updateHeight(n) { n.height = 1 + Math.max(h(n.left), h(n.right)); }
+  function cloneTree(n) {
+    if (!n) { return null; }
+    return {id: n.id, value: n.value, height: n.height, left: cloneTree(n.left), right: cloneTree(n.right)};
+  }
+  function countNodes(n) { return n ? 1 + countNodes(n.left) + countNodes(n.right) : 0; }
+
+  function rotateLeft(node) {
+    const right = node.right;
+    const rightLeft = right.left;
+    right.left = node;
+    node.right = rightLeft;
+    updateHeight(node);
+    updateHeight(right);
+    return right;
+  }
+  function rotateRight(node) {
+    const left = node.left;
+    const leftRight = left.right;
+    left.right = node;
+    node.left = leftRight;
+    updateHeight(node);
+    updateHeight(left);
+    return left;
+  }
+
+  // 애니메이션 없이 조용히 삽입 (새 랜덤 트리 생성용)
+  function quietInsert(node, value) {
+    if (!node) { return makeNode(value); }
+    if (value === node.value) { return node; }
+    if (value < node.value) { node.left = quietInsert(node.left, value); }
+    else { node.right = quietInsert(node.right, value); }
+    updateHeight(node);
+    const b = bf(node);
+    if (b > 1) {
+      if (bf(node.left) < 0) { node.left = rotateLeft(node.left); }
+      return rotateRight(node);
+    }
+    if (b < -1) {
+      if (bf(node.right) > 0) { node.right = rotateRight(node.right); }
+      return rotateLeft(node);
+    }
+    return node;
+  }
+
+  let treeRoot = null;
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function buildRandomTree(n) {
+    treeRoot = null;
+    idCounter = 0;
+    const used = new Set();
+    let count = 0;
+    let guard = 0;
+    while (count < n && guard < 200) {
+      guard++;
+      const v = Math.floor(Math.random() * 90) + 10;
+      if (used.has(v)) { continue; }
+      used.add(v);
+      treeRoot = quietInsert(treeRoot, v);
+      count++;
+    }
+  }
+
+  function pushStep(rootRef, highlight, msg, tag) {
+    steps.push({tree: cloneTree(rootRef), highlight: {...highlight}, msg, tag});
+  }
+
+  function buildVisitHighlight(visited, currentId, bwd) {
+    const hmap = {};
+    visited.forEach(id => { hmap[id] = bwd ? 'visited-bwd' : 'visited-fwd'; });
+    hmap[currentId] = bwd ? 'current-bwd' : 'current-fwd';
+    return hmap;
+  }
+
+  // 삽입/삭제 양쪽에서 공용으로 쓰는 재조정 상승 로직 (Java의 rebalance()에 대응)
+  function ascendAndRebalance(stack) {
+    for (let i = stack.length - 1; i >= 0; i--) {
+      const node = stack[i].node;
+      updateHeight(node);
+      pushStep(treeRoot, {[node.id]: 'current-fwd'},
+          `${node.value}: 높이 갱신 (h=${node.height}), balance factor=${bf(node)}`, 'traverse');
+
+      const b = bf(node);
+      if (b > 1 || b < -1) {
+        let newSub;
+        if (b > 1) {
+          let caseLabel = 'LL';
+          if (bf(node.left) < 0) {
+            caseLabel = 'LR';
+            pushStep(treeRoot, {[node.id]: 'target', [node.left.id]: 'target'},
+                `${node.value}: LR 불균형 -> 왼쪽 자식(${node.left.value}) 기준 rotateLeft 먼저 수행`, 'insert');
+            node.left = rotateLeft(node.left);
+          }
+          pushStep(treeRoot, {[node.id]: 'target'}, `${node.value}: ${caseLabel} 불균형 -> rotateRight 수행`, 'insert');
+          newSub = rotateRight(node);
+        } else {
+          let caseLabel = 'RR';
+          if (bf(node.right) > 0) {
+            caseLabel = 'RL';
+            pushStep(treeRoot, {[node.id]: 'target', [node.right.id]: 'target'},
+                `${node.value}: RL 불균형 -> 오른쪽 자식(${node.right.value}) 기준 rotateRight 먼저 수행`, 'insert');
+            node.right = rotateRight(node.right);
+          }
+          pushStep(treeRoot, {[node.id]: 'target'}, `${node.value}: ${caseLabel} 불균형 -> rotateLeft 수행`, 'insert');
+          newSub = rotateLeft(node);
+        }
+        if (i === 0) { treeRoot = newSub; }
+        else { stack[i - 1].node[stack[i - 1].dir] = newSub; }
+        pushStep(treeRoot, {[newSub.id]: 'new'}, `회전 완료 -> 이 서브트리의 새 루트 = ${newSub.value}`, 'insert');
+      }
+    }
+  }
+
+  function insertAnimate(value) {
+    steps = [];
+    pushStep(treeRoot, {}, `insert(${value}) 호출 -> 삽입 위치 탐색 시작`, 'traverse');
+
+    if (!treeRoot) {
+      const leaf = makeNode(value);
+      treeRoot = leaf;
+      pushStep(treeRoot, {[leaf.id]: 'new'}, `root == null -> 새 노드(${value})가 곧 root`, 'insert');
+      pushStep(treeRoot, {}, `삽입 완료`, 'done');
+      return {steps, error: false};
+    }
+
+    let cur = treeRoot;
+    const ancestors = [];
+    const visited = [];
+    while (true) {
+      if (value === cur.value) {
+        pushStep(treeRoot, {[cur.id]: 'target'}, `중복 값(${value}) 존재 -> IllegalArgumentException`, 'error');
+        return {steps, error: true};
+      }
+      visited.push(cur.id);
+      pushStep(treeRoot, buildVisitHighlight(visited, cur.id, false),
+          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동` : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
+          'traverse');
+      if (value < cur.value) {
+        if (!cur.left) { ancestors.push({node: cur, dir: 'left'}); break; }
+        ancestors.push({node: cur, dir: 'left'});
+        cur = cur.left;
+      } else {
+        if (!cur.right) { ancestors.push({node: cur, dir: 'right'}); break; }
+        ancestors.push({node: cur, dir: 'right'});
+        cur = cur.right;
+      }
+    }
+
+    const leaf = makeNode(value);
+    const last = ancestors[ancestors.length - 1];
+    last.node[last.dir] = leaf;
+    pushStep(treeRoot, {[leaf.id]: 'new'}, `리프 위치에 새 노드(${value}) 생성 및 연결`, 'insert');
+
+    ascendAndRebalance(ancestors);
+    pushStep(treeRoot, {}, `삽입 완료, 재조정 종료`, 'done');
+    return {steps, error: false};
+  }
+
+  function deleteAnimate(value) {
+    steps = [];
+    if (!treeRoot) {
+      pushStep(treeRoot, {}, `트리가 비어있어 삭제할 수 없음 (IllegalStateException)`, 'error');
+      return {steps, error: true};
+    }
+    pushStep(treeRoot, {}, `delete(${value}) 호출 -> 대상 노드 탐색 시작`, 'traverse');
+
+    let cur = treeRoot;
+    const ancestors = [];
+    const visited = [];
+    while (cur && cur.value !== value) {
+      visited.push(cur.id);
+      pushStep(treeRoot, buildVisitHighlight(visited, cur.id, false),
+          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동` : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
+          'traverse');
+      if (value < cur.value) { ancestors.push({node: cur, dir: 'left'}); cur = cur.left; }
+      else { ancestors.push({node: cur, dir: 'right'}); cur = cur.right; }
+    }
+
+    if (!cur) {
+      pushStep(treeRoot, {}, `값(${value})을 가진 노드를 찾지 못함 -> 삭제할 대상 없음`, 'error');
+      return {steps, error: true};
+    }
+    pushStep(treeRoot, {[cur.id]: 'removing'}, `삭제 대상 노드(${value}) 발견`, 'remove');
+
+    let rebalanceStack;
+
+    if (cur.left && cur.right) {
+      pushStep(treeRoot, {[cur.id]: 'target'}, `자식이 둘 -> 오른쪽 서브트리의 최솟값(successor) 탐색 시작`, 'remove');
+      const succAncestors = [{node: cur, dir: 'right'}];
+      let succ = cur.right;
+      const succVisited = [cur.id];
+      while (succ.left) {
+        succVisited.push(succ.id);
+        pushStep(treeRoot, buildVisitHighlight(succVisited, succ.id, true),
+            `successor 탐색 중 (현재 값=${succ.value}) -> 계속 왼쪽으로 이동`, 'traverse-bwd');
+        succAncestors.push({node: succ, dir: 'left'});
+        succ = succ.left;
+      }
+      pushStep(treeRoot, {[succ.id]: 'target'}, `successor = ${succ.value} 발견`, 'remove');
+
+      const oldVal = cur.value;
+      cur.value = succ.value;
+      pushStep(treeRoot, {[cur.id]: 'new'}, `${oldVal} -> ${succ.value} 값 복사 (구조가 아닌 값만 교체)`, 'insert');
+
+      const lastSucc = succAncestors[succAncestors.length - 1];
+      lastSucc.node[lastSucc.dir] = succ.right || null;
+      pushStep(treeRoot, {}, `successor 노드(${succ.value}) 제거 (오른쪽 자식으로 대체)`, 'remove');
+
+      rebalanceStack = ancestors.concat(succAncestors);
+    } else if (cur.left || cur.right) {
+      const child = cur.left || cur.right;
+      if (ancestors.length === 0) { treeRoot = child; }
+      else { const last = ancestors[ancestors.length - 1]; last.node[last.dir] = child; }
+      pushStep(treeRoot, {[child.id]: 'new'}, `자식 하나 -> 해당 자식(${child.value})으로 대체`, 'remove');
+      rebalanceStack = ancestors;
+    } else {
+      if (ancestors.length === 0) { treeRoot = null; }
+      else { const last = ancestors[ancestors.length - 1]; last.node[last.dir] = null; }
+      pushStep(treeRoot, {}, `리프 노드 -> 그대로 제거`, 'remove');
+      rebalanceStack = ancestors;
+    }
+
+    ascendAndRebalance(rebalanceStack);
+    pushStep(treeRoot, {}, `삭제 완료, 재조정 종료`, 'done');
+    return {steps, error: false};
+  }
+
+  // ── 렌더 ──
+  function computeLayout(tree) {
+    const positions = {};
+    let counter = 0;
+    let maxDepth = 0;
+    (function walk(node, depth) {
+      if (!node) { return; }
+      walk(node.left, depth + 1);
+      positions[node.id] = {x: counter, y: depth};
+      counter++;
+      maxDepth = Math.max(maxDepth, depth);
+      walk(node.right, depth + 1);
+    })(tree, 0);
+    return {positions, count: counter, maxDepth};
+  }
+
+  // 트리 폭이 컨테이너보다 넓어지면(모바일 등) 가로 스크롤 대신 canvas를
+  // transform: scale()로 축소해서 한 화면 안에 들어오도록 함
+  function renderTree(tree, highlight) {
+    const wrap = document.getElementById('treeCanvasWrap');
+    const canvas = document.getElementById('treeCanvas');
+    const svg = document.getElementById('treeSvg');
+    const layer = document.getElementById('nodesLayer');
+
+    if (!tree) {
+      wrap.style.width = '100%';
+      wrap.style.height = '80px';
+      canvas.style.transform = 'none';
+      canvas.style.width = '100%';
+      canvas.style.height = '80px';
+      svg.style.display = 'none';
+      layer.innerHTML = '<div class="empty-msg">트리가 비어 있습니다 (root = null)</div>';
+      return;
+    }
+    svg.style.display = 'block';
+
+    const {positions, count, maxDepth} = computeLayout(tree);
+    const W = PAD * 2 + Math.max(count - 1, 0) * GAPX + R * 2;
+    const H = PAD * 2 + maxDepth * GAPY + R * 2 + 22;
+    const center = p => ({cx: PAD + p.x * GAPX + R, cy: PAD + p.y * GAPY + R});
+
+    // 컨테이너 폭보다 트리가 넓으면 스크롤 대신 축소해서 한 화면에 표시
+    const scrollEl = document.querySelector('.tree-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / W) : 1;
+
+    wrap.style.width = (W * scale) + 'px';
+    wrap.style.height = (H * scale) + 'px';
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    let edgeSvg = '';
+    (function collectEdges(node) {
+      if (!node) { return; }
+      const pc = center(positions[node.id]);
+      if (node.left) {
+        const cc = center(positions[node.left.id]);
+        edgeSvg += `<line class="tree-edge" x1="${pc.cx}" y1="${pc.cy}" x2="${cc.cx}" y2="${cc.cy}"/>`;
+      }
+      if (node.right) {
+        const cc = center(positions[node.right.id]);
+        edgeSvg += `<line class="tree-edge" x1="${pc.cx}" y1="${pc.cy}" x2="${cc.cx}" y2="${cc.cy}"/>`;
+      }
+      collectEdges(node.left);
+      collectEdges(node.right);
+    })(tree);
+    svg.innerHTML = edgeSvg;
+
+    let nodesHtml = '';
+    (function walk(node) {
+      if (!node) { return; }
+      const c = center(positions[node.id]);
+      const hl = highlight[node.id];
+      const cls = 'avl-node' + (hl ? ' ' + hl : '');
+      nodesHtml += `<div class="node-pos" style="left:${c.cx}px;top:${c.cy}px;">
+          <div class="${cls}">${node.value}</div>
+          <div class="node-meta">h:${node.height} bf:${bf(node)}</div>
+        </div>`;
+      walk(node.left);
+      walk(node.right);
+    })(tree);
+    layer.innerHTML = nodesHtml;
+  }
+
+  function renderStep(step) {
+    renderTree(step.tree, step.highlight);
+
+    const tagMap = {
+      'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+      'traverse-bwd': '<span class="phase-tag phase-traverse-bwd">successor 탐색</span>',
+      'insert': '<span class="phase-tag phase-insert">삽입 / 회전</span>',
+      'remove': '<span class="phase-tag phase-remove">삭제</span>',
+      'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+      'error': '<span class="phase-tag phase-error">오류</span>',
+    };
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+
+    const size = countNodes(step.tree);
+    document.getElementById('infoSize').textContent = size;
+    document.getElementById('infoRoot').textContent = step.tree ? step.tree.value : 'null';
+    document.getElementById('infoHeight').textContent = step.tree ? step.tree.height : 0;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) { stopPlay(); return; }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const value = parseInt(document.getElementById('valInput').value);
+    const v = isNaN(value) ? 0 : value;
+    let plan;
+    if (op === 'insertAVL') { plan = insertAnimate(v); }
+    else { plan = deleteAnimate(v); }
+
+    steps = plan.steps;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  // Event Listeners
+  document.getElementById('opSelect').addEventListener('change', markDirty);
+  document.getElementById('valInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) { stopPlay(); return; }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewTree').addEventListener('click', () => {
+    stopPlay();
+    buildRandomTree(7);
+    steps = [{
+      tree: cloneTree(treeRoot),
+      highlight: {},
+      msg: '새 AVL 트리를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: ''
+    }];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  // 화면 크기가 바뀌면(회전, 리사이즈 등) 현재 프레임을 다시 그려 scale을 재계산
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  // 초기화
+  buildRandomTree(7);
+  steps = [{tree: cloneTree(treeRoot), highlight: {}, msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''}];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>
