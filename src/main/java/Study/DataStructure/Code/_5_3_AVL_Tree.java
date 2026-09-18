@@ -161,12 +161,12 @@ public class _5_3_AVL_Tree {
 
     public AVL(Node<E> root) {this.root = root;}
 
-    public void insert(E e) {
+    public void doInsert(E e) {
       if (e == null) {throw new IllegalArgumentException("삽입 하려는 데이터가 null");}
-      root = insert(root, e);
+      root = doInsert(root, e);
     }
 
-    private Node<E> insert(Node<E> curNode, E e) {
+    private Node<E> doInsert(Node<E> curNode, E e) {
       if (curNode == null) {return new Node<>(e);}
 
       int compare = e.compareTo(curNode.data);
@@ -174,9 +174,9 @@ public class _5_3_AVL_Tree {
       if (compare == 0) {
         throw new IllegalArgumentException("중복 요소 삽입");
       } else if (compare < 0) {
-        curNode.left = insert(curNode.left, e);
+        curNode.left = doInsert(curNode.left, e);
       } else {
-        curNode.right = insert(curNode.right, e);
+        curNode.right = doInsert(curNode.right, e);
       }
       return rebalance(curNode);
     }
@@ -297,36 +297,36 @@ public class _5_3_AVL_Tree {
 
   public static void main(String[] args) {
     // LL Case, RotateRight 1회 
-    _5_3_AVL_Tree.AVL<Integer> LLAVL = new AVL<>(new Node<>(30));
-    LLAVL.insert(20);
-    LLAVL.insert(10);
+    AVL<Integer> LLAVL = new AVL<>(new Node<>(30));
+    LLAVL.doInsert(20);
+    LLAVL.doInsert(10);
     System.out.println("[삽입 LL]");
     LLAVL.printTree();
 
     // LR Case, Left 1회 Right 1회
     AVL<Integer> LRAVL = new AVL<>(new Node<>(30));
-    LRAVL.insert(10);
-    LRAVL.insert(20);
+    LRAVL.doInsert(10);
+    LRAVL.doInsert(20);
     System.out.println("[삽입 LR]");
     LRAVL.printTree();
 
     // RR Case, Left 1회
     AVL<Integer> RRAVL = new AVL<>(new Node<>(10));
-    RRAVL.insert(20);
-    RRAVL.insert(30);
+    RRAVL.doInsert(20);
+    RRAVL.doInsert(30);
     System.out.println("[삽입 RR]");
     RRAVL.printTree();
 
     // RL Case, Right 1회 Left 1회
     AVL<Integer> RLAVL = new AVL<>(new Node<>(10));
-    RLAVL.insert(30);
-    RLAVL.insert(20);
+    RLAVL.doInsert(30);
+    RLAVL.doInsert(20);
     System.out.println("[삽입 RL]");
     RLAVL.printTree();
 
     // 삭제로 인한 LL 재조정: 오른쪽 노드를 지워서 왼쪽이 상대적으로 무거워짐
     AVL<Integer> deleteLL = new AVL<>(new Node<>(50));
-    for (int v : new int[]{30, 70, 20, 40, 60, 80, 10}) {deleteLL.insert(v);}
+    for (int v : new int[]{30, 70, 20, 40, 60, 80, 10}) {deleteLL.doInsert(v);}
     deleteLL.printTree();
     System.out.println("80 삭제, LL 발생 및 재조정");
     deleteLL.delete(80);
@@ -334,7 +334,7 @@ public class _5_3_AVL_Tree {
 
     // 삭제로 인한 RR 재조정: 위 트리를 좌우 대칭시킨 버전
     AVL<Integer> deleteRR = new AVL<>(new Node<>(50));
-    for (int v : new int[]{70, 30, 80, 60, 40, 20, 90}) {deleteRR.insert(v);}
+    for (int v : new int[]{70, 30, 80, 60, 40, 20, 90}) {deleteRR.doInsert(v);}
     deleteRR.printTree();
     System.out.println("20 삭제, RR 발생 및 재조정");
     deleteRR.delete(20);
@@ -342,7 +342,7 @@ public class _5_3_AVL_Tree {
 
     // 리프 노드 삭제 (재조정 없음, 구조만 확인)
     AVL<Integer> deleteLeaf = new AVL<>(new Node<>(50));
-    for (int v : new int[]{30, 70, 20, 40}) {deleteLeaf.insert(v);}
+    for (int v : new int[]{30, 70, 20, 40}) {deleteLeaf.doInsert(v);}
     deleteLeaf.printTree();
     System.out.println("20(리프 노드) 삭제");
     deleteLeaf.delete(20);
@@ -350,7 +350,7 @@ public class _5_3_AVL_Tree {
 
     // 자식이 둘인 노드 삭제 (successor로 대체되는 경로 확인)
     AVL<Integer> deleteTwoChildren = new AVL<>(new Node<>(50));
-    for (int v : new int[]{30, 70, 20, 40, 60, 80}) {deleteTwoChildren.insert(v);}
+    for (int v : new int[]{30, 70, 20, 40, 60, 80}) {deleteTwoChildren.doInsert(v);}
     deleteTwoChildren.printTree();
     deleteTwoChildren.delete(30);
     deleteTwoChildren.printTree();
