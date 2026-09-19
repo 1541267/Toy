@@ -209,7 +209,7 @@ public class _5_1_BinaryTree {
     root.left.right = new Node<>("E");
     root.right.right = new Node<>("F");
 
-    _5_1_BinaryTree.BinaryTree<String> tree = new _5_1_BinaryTree.BinaryTree<>(root);
+    BinaryTree<String> tree = new BinaryTree<>(root);
 
     tree.doSelectedOrderThenPrint("PreOrder");
     tree.doSelectedOrderThenPrint("InOrder");

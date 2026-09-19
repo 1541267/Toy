@@ -437,6 +437,7 @@ body {
   }
 
   /* 비교 정렬 계열(버블/선택/삽입/퀵/머지)에서 동일하게 쓰는 비교/교환/범위 상태 */
+
   &.comparing {
     background: var(--state-compare);
   }
@@ -450,6 +451,7 @@ body {
   }
 
   /* 카운팅/라딕스/버킷 정렬에서 동일하게 쓰는 분배·배치·채움 상태 */
+
   &.active {
     background: var(--state-compare);
   }
@@ -463,6 +465,7 @@ body {
   }
 
   /* 카운팅/라딕스의 카운트 배열(히스토그램) 상태 */
+
   &.count-base {
     background: #2d3a6e;
   }
@@ -651,6 +654,8 @@ body {
   border: 1px solid var(--panel-border);
   border-radius: 10px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .code-panel-header {
@@ -675,6 +680,8 @@ body {
 pre {
   margin: 0;
   padding: 1rem 1.1rem;
+  flex: 1;
+  min-height: 0;
   overflow-x: auto;
   font-size: 0.72rem;
   line-height: 1.7;

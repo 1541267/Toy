@@ -1,0 +1,1442 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>레드-블랙 트리(Red-Black Tree) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 72px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 60px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
+  .phase-traverse {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  /* ── 트리 시각화 ── */
+  .tree-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .tree-canvas-wrap {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .tree-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  .tree-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .tree-edges line.tree-edge {
+    stroke: #334155;
+    stroke-width: 2;
+  }
+
+  .nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .empty-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  .rbnode-wrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    &.root {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+
+    &.db {
+      background: var(--tag-red-bg);
+      color: var(--tag-red-text);
+      border: 1px solid #f87171;
+      animation: pop 0.35s ease;
+    }
+  }
+
+  /* 노드 실제 색(RED/BLACK) - RB Tree의 색은 데이터 그 자체이므로 fill로 표현 */
+  .rbnode {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s, box-shadow 0.2s;
+
+    &.color-red {
+      background: var(--bad-bg);
+      border-color: #b91c1c;
+      color: var(--bad-text);
+    }
+
+    &.color-black {
+      background: #1e2433;
+      border-color: #475569;
+      color: #cbd5e1;
+    }
+
+    /* 상태(highlight) - 실제 색과 별개로 테두리/그림자만 덧씌움 */
+
+    &.state-current {
+      border-color: var(--state-compare);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.45);
+      transform: scale(1.15);
+    }
+
+    &.state-target {
+      border-color: var(--warn-text);
+      box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.45);
+      transform: scale(1.15);
+    }
+
+    &.state-sibling {
+      border-color: #67e8f9;
+      box-shadow: 0 0 0 3px rgba(103, 232, 249, 0.4);
+    }
+
+    &.state-successor {
+      border-color: var(--tag-purple-text);
+      box-shadow: 0 0 0 3px rgba(196, 181, 253, 0.4);
+      transform: scale(1.1);
+    }
+
+    &.state-new {
+      box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.5);
+      animation: pop 0.35s ease;
+    }
+
+    &.state-removing {
+      text-decoration: line-through;
+      opacity: 0.45;
+      transform: scale(0.85);
+    }
+  }
+
+  /* ── 상태 스트립(현재 진행 중인 특수 상태 안내) ── */
+  .status-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .status-chip {
+    background: var(--tag-red-bg);
+    border: 1px solid #f87171;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--tag-red-text);
+    font-family: "Consolas", monospace;
+    font-weight: 700;
+  }
+
+  /* ── 구분선(세로) 반응형 ── */
+  @media (max-width: 620px) {
+    .divider-v {
+      display: none;
+    }
+  }
+
+  /* 공용 css의 반응형 규칙이 적용되지 않는 경우를 대비한 안전장치 */
+  @media (max-width: 820px) {
+    .code-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">레드-블랙 트리 (Red-Black Tree)</h1>
+    <p>insert/insertFixup + delete/deleteFixup(sibling·near& far 케이스) 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 RBT 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>📜 5가지 규칙</h3>
+        <ul style="list-style: decimal;">
+          <li>모든 노드는 <strong>RED 또는 BLACK</strong></li>
+          <li><strong>root는 항상 BLACK</strong></li>
+          <li>모든 leaf(NIL/null)는 <strong>BLACK</strong>으로 간주</li>
+          <li><strong>RED 노드의 자식은 반드시 BLACK</strong> (연속된 RED 불가)</li>
+          <li>임의의 노드에서 하위 leaf까지의 모든 경로에서 <strong>BLACK 개수(black-height, bh)가 동일</strong></li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>📐 규칙 ④+⑤가 O(log n)을 보장하는 원리</h3>
+        <ul>
+          <li>규칙 ④: 어떤 경로든 RED가 연속 못 나오므로 경로 길이의 최소 절반은 BLACK</li>
+          <li>규칙 ⑤: 모든 경로의 BLACK 개수(bh)는 동일</li>
+          <li>최단 경로(전부 BLACK) 길이 ≥ bh, 최장 경로(BLACK-RED 번갈아) 길이 <= 2×bh</li>
+          <li>최장 경로가 최단 경로의 2배를 넘지 않음
+            <ul>
+              <li>"적당한 균형"이 수학적으로 보장되어 height = O(log n)</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⚖️ AVL 대비 트레이드오프</h3>
+        <ul>
+          <li>AVL: 모든 노드에서 균형 조건이 엄격(|height 차이| <= 1) -> 탐색은 최적에 가깝지만 삽입/삭제 시 rotation이 잦음</li>
+          <li>RBT: 균형 조건이 느슨함 -> 탐색은 AVL보다 살짝 느릴 수 있지만 삽입/삭제는 recoloring만으로 끝나는 경우가 많아 훨씬 빠름</li>
+          <li>그래도 height는 여전히 <strong>O(log n)</strong> 보장 (AVL보다 상수배 정도 더 클 뿐)</li>
+          <li>삽입/삭제가 잦은 실무 상황에 유리 -> Java TreeMap/TreeSet, C++ std::map, Linux CFS 스케줄러 등이 채택</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">➕ insert(e)</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>✏️ 삽입 전략</h3>
+        <ul>
+          <li>새 노드는 <strong>항상 RED</strong>로 삽입 (BLACK으로 넣으면 그 경로 bh가 무조건 늘어 규칙⑤가 100% 깨짐 / RED면 운
+            좋으면 규칙④만 깨지거나 아예 안 깨질 수도 있음 -> 위반 최소화 전략)
+          </li>
+          <li>BST 삽입과 동일하게 위치 탐색(parent 포인터로 추적), 삽입 직후 유일하게 깨질 수 있는 규칙은 ④(부모도 RED인 Red-Red
+            violation)뿐
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔴 케이스 1: 삼촌 RED</h3>
+        <ul>
+          <li>recoloring만으로 해결 (parent & uncle -> BLACK, grandParent -> RED)</li>
+          <li>rotation 없이 문제를 grandParent로 전파 -> node = grandParent, 루프 계속</li>
+          <li>root까지 전파되면 root를 다시 BLACK으로 강제 (모든 경로에 균일하게 +1 되는 것이므로 규칙⑤ 유지)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚫ 케이스 2& 3: 삼촌 BLACK</h3>
+        <ul>
+          <li>지그재그(LR/RL) 모양이면 먼저 rotation으로 일자로 편 뒤 이어서 처리</li>
+          <li>일자(LL/RR) 모양이면 rotation 1회 + recoloring(grandParent RED, parent BLACK)으로 즉시 종료</li>
+          <li>AVL과의 결정적 차이: rotation 판단 기준이 height 차이가 아니라 <strong>색</strong></li>
+        </ul>
+      </div>
+
+      <div class="section-divider">➖ delete(e)</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🗑 물리적으로 제거되는 노드(y) 색에 따른 4가지 분류</h3>
+        <ul>
+          <li><strong>y = RED & leaf</strong>: 그냥 제거, 아무 규칙도 안 깨짐 -> fixup 불필요</li>
+          <li><strong>y = RED & 자식1개</strong>: 구조적으로 불가능 (규칙⑤ 위반이 되므로 애초에 존재 불가)</li>
+          <li><strong>y = BLACK & leaf</strong>: Double Black 발생(규칙⑤ 위반) -> deleteFixup 필요</li>
+          <li><strong>y = BLACK & 자식1개(항상 RED)</strong>: 자식을 그 자리로 올리고 BLACK 재색칠하면 bh 그대로 보존 ->
+            fixup
+            불필요
+          </li>
+        </ul>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">자식 2개인 경우 successor(오른쪽 서브트리
+          최솟값)를 찾아 값만 복사 후, successor 자체를 삭제 대상으로 삼음<br/> -> successor는 왼쪽 자식이 없으므로 항상 leaf 또는 자식1개(오른쪽만)
+          케이스로 자연 축소</p>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🔧 deleteFixup: 판단 기준은 형제(sibling)</h3>
+        <ul>
+          <li>insert는 "삼촌 색"으로 케이스를 나눴다면, delete는 <strong>형제(sibling) 색 + 형제의 자식(조카,
+            near/far)</strong> 색으로 케이스를 나눔
+          </li>
+          <li>near child: deficient(부족한 자리)에 가까운 조카 / far child: 먼 조카</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔴 sibling RED</h3>
+        <ul>
+          <li>parent는 반드시 BLACK(규칙④에 의해 자동)</li>
+          <li>종결 케이스 아님 — BLACK sibling 형태로 바꾸는 전처리</li>
+          <li>parent를 deficient 반대 방향으로 rotate + parent↔sibling 색 교환</li>
+          <li>회전 후 자동으로 새 BLACK sibling이 계산되어 다음 케이스로 자연 진입</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚫ sibling BLACK, near/far 둘 다 BLACK</h3>
+        <ul>
+          <li>sibling을 RED로 재색칠 -> 양쪽이 동등하게 1씩 부족한 대칭 상태로 전환</li>
+          <li>parent RED면 그 자리에서 BLACK으로 바꿔 즉시 해결</li>
+          <li>parent BLACK이면 문제를 grandParent로 전파 (grandParent가 root의 parent, 즉 null이면 자연 종료)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚫ near RED, far BLACK</h3>
+        <ul>
+          <li>지그재그 모양, 바로 해결 불가 — far RED 모양으로 바꿔주는 전처리</li>
+          <li>sibling 기준 near 방향으로 rotate + sibling RED & near BLACK 재색칠</li>
+          <li>이러면 새 sibling(=near)의 far 자식이 RED인 모양으로 자동 전환 -> 다음 케이스로 이어짐</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚫ far RED (종결 케이스)</h3>
+        <ul>
+          <li>parent를 deficient 반대 방향으로 rotate</li>
+          <li>sibling이 원래 parent의 색을 물려받고, parent와 far는 BLACK</li>
+          <li>deficient 경로 +1, far 경로도 RED->BLACK으로 +1 -> 색 구성이 삭제 전과 동일해져 완전 종료</li>
+        </ul>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="insert">insert(e) - 삽입</option>
+        <option value="delete">delete(e) - 삭제</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="valGroup">
+      <label>값</label>
+      <input type="number" id="valInput" value="42">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewList">🔄 새 트리</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip">root = <strong id="infoRoot">null</strong></div>
+    <div class="info-chip">height = <strong id="infoHeight">-1</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Red-Black Tree</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="tree-scroll">
+      <div class="tree-canvas-wrap" id="treeCanvasWrap">
+        <div class="tree-canvas" id="treeCanvas">
+          <svg class="tree-edges" id="treeEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="status-strip" id="statusStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1c0a0a;border:2px solid #b91c1c;"></div>
+        RED 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:2px solid #475569;"></div>
+        BLACK 노드
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 탐색/판단 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        삭제 대상
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#67e8f9;"></div>
+        형제(sibling)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9;"></div>
+        successor
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#34d399;"></div>
+        색/구조 변경됨
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        Double Black 위치
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통 부분
+      </div>
+      <pre><span class="kw">enum</span> <span class="ty">COLOR</span> {<span class="nm">RED</span>, <span
+          class="nm">BLACK</span>}
+
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+            class="ty">E</span>&gt; {
+  <span class="ty">E</span> <span class="nm">data</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>, <span
+            class="nm">right</span>, <span class="nm">parent</span>;
+  <span class="ty">COLOR</span> <span class="nm">color</span>;
+}
+
+<span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">COLOR</span> <span
+            class="fn">getColor</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">node</span>) {
+  <span class="kw">return</span> <span class="nm">node</span> == <span
+            class="kw">null</span> ? <span class="ty">COLOR</span>.<span
+            class="nm">BLACK</span> : <span class="nm">node</span>.<span class="nm">color</span>;
+}
+
+<span class="ck">// 왼쪽 자식이 없을 때까지 계속 left로 이동 -> 서브트리의 최솟값</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">curNode</span> = <span class="nm">node</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span
+            class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">curNode</span> = <span
+            class="nm">curNode</span>.<span class="nm">left</span>;}
+  <span class="kw">return</span> <span class="nm">curNode</span>;
+}
+
+<span class="ck">// rotate는 회전 후 새로운 서브트리 루트를 반환</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span
+            class="nm">right</span>.<span class="nm">left</span>;
+
+  <span class="nm">node</span>.<span class="nm">right</span> = <span class="nm">rightLeft</span>;
+  <span class="kw">if</span> (<span class="nm">rightLeft</span> != <span
+            class="kw">null</span>) {<span class="nm">rightLeft</span>.<span
+            class="nm">parent</span> = <span class="nm">node</span>;}
+
+  <span class="nm">right</span>.<span class="nm">left</span> = <span class="nm">node</span>;
+  <span class="nm">node</span>.<span class="nm">parent</span> = <span class="nm">right</span>;
+  <span class="nm">right</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
+
+  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {<span
+            class="nm">root</span> = <span class="nm">right</span>;}
+  <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">parent</span>.<span
+            class="nm">left</span> == <span class="nm">node</span>) {<span class="nm">parent</span>.<span
+            class="nm">left</span> = <span class="nm">right</span>;}
+  <span class="kw">else</span> {<span class="nm">parent</span>.<span class="nm">right</span> = <span
+            class="nm">right</span>;}
+
+  <span class="kw">return</span> <span class="nm">right</span>;
+}
+
+<span class="ck">// rotateRight는 rotateLeft의 완전 대칭 (left <-> right)</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+            class="nm">node</span>) { <span class="ck">/* 대칭 구현 */</span> }
+</pre>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          insert(e) / insertFixup(node)
+        </div>
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span
+            class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">parent</span> = <span class="kw">null</span>, <span
+              class="nm">curNode</span> = <span class="nm">root</span>;
+
+  <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
+    <span class="nm">parent</span> = <span class="nm">curNode</span>;
+    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">curNode</span>.<span
+              class="nm">data</span>);
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {<span
+              class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;중복 요소&quot;</span>);}
+    <span class="nm">curNode</span> = <span class="nm">compare</span> &lt; <span class="nu">0</span> ? <span
+              class="nm">curNode</span>.<span class="nm">left</span> : <span
+              class="nm">curNode</span>.<span class="nm">right</span>;
+  }
+
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
+              class="nm">e</span>, <span class="ty">COLOR</span>.<span class="nm">RED</span>); <span
+              class="ck">// 삽입은 항상 RED</span>
+  <span class="nm">newNode</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
+
+  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {<span
+              class="nm">root</span> = <span class="nm">newNode</span>;}
+  <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">parent</span>.<span
+              class="nm">data</span>) &lt; <span class="nu">0</span>) {<span
+              class="nm">parent</span>.<span class="nm">left</span> = <span
+              class="nm">newNode</span>;}
+  <span class="kw">else</span> {<span class="nm">parent</span>.<span class="nm">right</span> = <span
+              class="nm">newNode</span>;}
+
+  <span class="fn">insertFixup</span>(<span class="nm">newNode</span>);
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">insertFixup</span>(<span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="kw">while</span> (<span class="fn">getColor</span>(<span class="nm">node</span>.<span
+              class="nm">parent</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">grandParent</span> = <span class="nm">parent</span>.<span
+              class="nm">parent</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">uncle</span> = <span class="nm">grandParent</span>.<span
+              class="nm">left</span> == <span class="nm">parent</span> ? <span class="nm">grandParent</span>.<span
+              class="nm">right</span> : <span class="nm">grandParent</span>.<span
+              class="nm">left</span>;
+
+    <span class="kw">if</span> (<span class="fn">getColor</span>(<span
+              class="nm">uncle</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// 케이스 1: 삼촌 RED -> recolor 후 조부모로 전파</span>
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="nm">uncle</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>;
+      <span class="nm">node</span> = <span class="nm">grandParent</span>;
+    } <span class="kw">else</span> {
+      <span class="ck">// 케이스 2/3: 삼촌 BLACK -> 지그재그면 먼저 정리 후 회전 1회 + recolor</span>
+      <span class="kw">if</span> (<span class="nm">grandParent</span>.<span class="nm">left</span> == <span
+              class="nm">parent</span>) {
+        <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">right</span> == <span
+              class="nm">node</span>) {<span class="nm">parent</span> = <span
+              class="fn">rotateLeft</span>(<span class="nm">parent</span>);}
+        <span class="fn">rotateRight</span>(<span class="nm">grandParent</span>);
+      } <span class="kw">else</span> {
+        <span class="kw">if</span> (<span class="nm">parent</span>.<span
+              class="nm">left</span> == <span class="nm">node</span>) {<span
+              class="nm">parent</span> = <span class="fn">rotateRight</span>(<span
+              class="nm">parent</span>);}
+        <span class="fn">rotateLeft</span>(<span class="nm">grandParent</span>);
+      }
+      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>;
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="kw">break</span>;
+    }
+  }
+  <span class="nm">root</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
+              class="nm">BLACK</span>; <span class="ck">// 규칙2: root는 항상 BLACK</span>
+}
+        </pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          doDelete(e) / removeLeafOrSingleChild / deleteFixup
+        </div>
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span
+            class="fn">doDelete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="ck">// BST 탐색으로 대상 노드 curNode 발견</span>
+  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span
+              class="kw">null</span> && <span class="nm">curNode</span>.<span
+              class="nm">right</span> != <span class="kw">null</span>) {
+    <span class="ck">// 자식 둘: successor로 값 교체 후 successor를 삭제 대상으로</span>
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span
+              class="fn">findMin</span>(<span class="nm">curNode</span>.<span
+              class="nm">right</span>);
+    <span class="nm">curNode</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span
+              class="nm">data</span>;
+    <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">successor</span>);
+  } <span class="kw">else</span> {
+    <span class="ck">// 자식 0개 또는 1개: 바로 처리</span>
+    <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">curNode</span>);
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">removeLeafOrSingleChild</span>(<span
+              class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span>) {
+  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> == <span
+              class="kw">null</span> && <span class="nm">curNode</span>.<span
+              class="nm">right</span> == <span class="kw">null</span>) {
+    <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">curNode</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="fn">removeNode</span>(<span class="nm">curNode</span>); <span class="ck">// RED leaf -> fixup 불필요</span>
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">curNode</span>.<span
+              class="nm">parent</span> == <span class="kw">null</span>) {
+      <span class="nm">root</span> = <span class="kw">null</span>; <span
+              class="ck">// root이자 유일 노드</span>
+    } <span class="kw">else</span> {
+      <span class="ck">// BLACK leaf -> Double Black, fixup 필요</span>
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span
+              class="nm">curNode</span>.<span class="nm">parent</span>;
+      <span class="ty">Side</span> <span class="nm">side</span> = <span
+              class="nm">parent</span>.<span class="nm">left</span> == <span
+              class="nm">curNode</span> ? <span class="ty">Side</span>.<span class="nm">LEFT</span> : <span
+              class="ty">Side</span>.<span class="nm">RIGHT</span>;
+      <span class="ck">// parent.left/right = null (실제 삭제)</span>
+      <span class="fn">deleteFixup</span>(<span class="nm">parent</span>, <span
+              class="nm">side</span>);
+    }
+  } <span class="kw">else</span> {
+    <span class="ck">// 자식 1개: BLACK-삭제노드 + RED-자식만 가능 -> 재연결 후 BLACK 재색칠</span>
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">child</span> = <span class="nm">curNode</span>.<span class="nm">left</span> == <span
+              class="kw">null</span> ? <span class="nm">curNode</span>.<span class="nm">right</span> : <span
+              class="nm">curNode</span>.<span class="nm">left</span>;
+    <span class="ck">// parent와 child 재연결, child.color = BLACK</span>
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">deleteFixup</span>(<span class="ty">Node</span>&lt;<span
+              class="ty">E</span>&gt; <span class="nm">parent</span>, <span
+              class="ty">Side</span> <span class="nm">side</span>) {
+  <span class="kw">while</span> (<span class="nm">parent</span> != <span class="kw">null</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">sibling</span> = <span
+              class="nm">side</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span> ? <span
+              class="nm">parent</span>.<span class="nm">right</span> : <span
+              class="nm">parent</span>.<span class="nm">left</span>;
+
+    <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">sibling</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// sibling RED -> 전처리: parent<->sibling 색 교환 + rotate, 루프 계속</span>
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>; <span
+              class="nm">sibling</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="ck">// side 방향 반대로 rotate(parent)</span>
+    } <span class="kw">else</span> {
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">near</span> = <span class="ck">/* deficient 쪽 조카 */</span>;
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">far</span> = <span class="ck">/* 반대쪽 조카 */</span>;
+
+      <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">near</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span> && <span
+              class="fn">getColor</span>(<span class="nm">far</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
+        <span class="nm">sibling</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>;
+        <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">parent</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>) {<span
+              class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
+              class="nm">BLACK</span>; <span class="kw">break</span>;}
+        <span class="ck">// 아니면 parent = grandParent, side 재계산 후 루프 계속(전파)</span>
+      } <span class="kw">else</span> <span class="kw">if</span> (<span
+              class="fn">getColor</span>(<span class="nm">near</span>) == <span
+              class="ty">COLOR</span>.<span class="nm">RED</span>) {
+        <span class="ck">// near RED, far BLACK -> sibling 기준 rotate로 far-RED 모양으로 전환, 루프 계속</span>
+      } <span class="kw">else</span> {
+        <span class="ck">// far RED -> parent 반대방향 rotate + 3색 변경, 완전 종료</span>
+        <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span
+              class="nm">parent</span>.<span class="nm">color</span>;
+        <span class="nm">sibling</span>.<span class="nm">color</span> = <span
+              class="nm">parentColor</span>;
+        <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
+              class="nm">BLACK</span>;
+        <span class="nm">far</span>.<span class="nm">color</span> = <span
+              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+        <span class="kw">break</span>;
+      }
+    }
+  }
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  let idCounter = 1;
+  const holder = {root: null};
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── 트리 모델 (parent 포인터 포함) ──
+  function newNode(value, color) {
+    return {
+      id: idCounter++,
+      value,
+      color,
+      left: null,
+      right: null,
+      parent: null
+    };
+  }
+
+  function getColor(node) { return node ? node.color : 'BLACK'; }
+
+  function cloneTree(node, parent) {
+    if (!node) { return null; }
+    const n = {
+      id: node.id,
+      value: node.value,
+      color: node.color,
+      left: null,
+      right: null,
+      parent: parent || null
+    };
+    n.left = cloneTree(node.left, n);
+    n.right = cloneTree(node.right, n);
+    return n;
+  }
+
+  function findById(node, id) {
+    if (!node) { return null; }
+    if (node.id === id) { return node; }
+    return findById(node.left, id) || findById(node.right, id);
+  }
+
+  function buildBalancedBlack(sorted) {
+    // 데모용 초기 트리를 단순 삽입 순서로 구성(랜덤 값을 실제 insert 로직으로 순차 삽입)
+    const h = {root: null};
+    sorted.forEach(v => { doInsertQuiet(h, v); });
+    return h.root;
+  }
+
+  function randomTree(n) {
+    const vals = new Set();
+    while (vals.size < n) { vals.add(Math.floor(Math.random() * 90) + 10); }
+    return buildBalancedBlack([...vals]);
+  }
+
+  function treeSize(node) { return node ? 1 + treeSize(node.left) + treeSize(node.right) : 0; }
+
+  function treeHeight(node) {
+    return node ? 1 + Math.max(treeHeight(node.left), treeHeight(node.right)) : -1;
+  }
+
+  // ── rotate (실제 rotate 로직, parent 포인터까지 갱신) ──
+  function rotateLeft(h, node) {
+    const parent = node.parent;
+    const right = node.right;
+    const rightLeft = right.left;
+
+    node.right = rightLeft;
+    if (rightLeft) { rightLeft.parent = node; }
+
+    right.left = node;
+    node.parent = right;
+    right.parent = parent;
+
+    if (!parent) { h.root = right; } else if (parent.left
+        === node) { parent.left = right; } else { parent.right = right; }
+
+    return right;
+  }
+
+  function rotateRight(h, node) {
+    const parent = node.parent;
+    const left = node.left;
+    const leftRight = left.right;
+
+    node.left = leftRight;
+    if (leftRight) { leftRight.parent = node; }
+
+    left.right = node;
+    node.parent = left;
+    left.parent = parent;
+
+    if (!parent) { h.root = left; } else if (parent.left
+        === node) { parent.left = left; } else { parent.right = left; }
+
+    return left;
+  }
+
+  function findMin(node) {
+    let cur = node;
+    while (cur.left) { cur = cur.left; }
+    return cur;
+  }
+
+  // ── 조용히 삽입만 하는 헬퍼 (초기 랜덤 트리 구성용, 단계 기록 없음) ──
+  function doInsertQuiet(h, value) {
+    let parent = null, cur = h.root;
+    while (cur) {
+      parent = cur;
+      if (value === cur.value) { return; }
+      cur = value < cur.value ? cur.left : cur.right;
+    }
+    const nn = newNode(value, 'RED');
+    nn.parent = parent;
+    if (!parent) { h.root = nn; } else if (value
+        < parent.value) { parent.left = nn; } else { parent.right = nn; }
+
+    let node = nn;
+    while (node.parent && node.parent.color === 'RED') {
+      let p = node.parent;
+      const gp = p.parent;
+      const uncle = gp.left === p ? gp.right : gp.left;
+      if (getColor(uncle) === 'RED') {
+        p.color = 'BLACK';
+        uncle.color = 'BLACK';
+        gp.color = 'RED';
+        node = gp;
+      } else {
+        if (gp.left === p) {
+          if (p.right === node) { p = rotateLeft(h, p); }
+          rotateRight(h, gp);
+        } else {
+          if (p.left === node) { p = rotateRight(h, p); }
+          rotateLeft(h, gp);
+        }
+        gp.color = 'RED';
+        p.color = 'BLACK';
+        break;
+      }
+    }
+    h.root.color = 'BLACK';
+  }
+
+  // ── 스텝 스냅샷 헬퍼 ──
+  function snap(highlight, msg, tag, dbInfo) {
+    return {
+      tree: cloneTree(holder.root, null),
+      highlight: highlight || {},
+      msg,
+      tag: tag || '',
+      dbInfo: dbInfo || null
+    };
+  }
+
+  // ── insert planner ──
+  function planInsert(value) {
+    const steps = [];
+    if (isNaN(value)) {
+      steps.push(snap({}, '값이 올바른 숫자가 아닙니다', 'error'));
+      return steps;
+    }
+    if (findValue(holder.root, value)) {
+      steps.push(snap({}, `중복된 값(${value}) 삽입 시도 -> IllegalArgumentException`, 'error'));
+      return steps;
+    }
+
+    let parent = null, cur = holder.root;
+    const visited = [];
+    while (cur) {
+      visited.push(cur.id);
+      const compare = value - cur.value;
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      hl[cur.id] = 'current';
+      steps.push(snap(hl, `compareTo -> ${compare < 0 ? `${value} < ${cur.value}: 왼쪽으로 이동`
+          : `${value} > ${cur.value}: 오른쪽으로 이동`}`, 'traverse'));
+      parent = cur;
+      cur = compare < 0 ? cur.left : cur.right;
+    }
+
+    const nn = newNode(value, 'RED');
+    nn.parent = parent;
+    if (!parent) { holder.root = nn; } else if (value
+        < parent.value) { parent.left = nn; } else { parent.right = nn; }
+
+    steps.push(snap({[nn.id]: 'new'}, parent ? `parent(${parent.value})에 새 노드(${value})를 RED로 연결`
+        : `root == null -> 새 노드(${value})가 root가 됨`, 'insert'));
+
+    let node = nn;
+    while (node.parent && node.parent.color === 'RED') {
+      let p = node.parent;
+      const gp = p.parent;
+      const uncle = gp.left === p ? gp.right : gp.left;
+
+      if (getColor(uncle) === 'RED') {
+        p.color = 'BLACK';
+        uncle.color = 'BLACK';
+        gp.color = 'RED';
+        const hl = {[p.id]: 'new', [gp.id]: 'new'};
+        if (uncle) { hl[uncle.id] = 'new'; }
+        steps.push(snap(hl,
+            `삼촌(${uncle.value}) RED -> parent/uncle BLACK, grandParent(${gp.value}) RED로 recolor 후 문제를 조부모로 전파`,
+            'insert'));
+        node = gp;
+      } else {
+        const hlBefore = {[node.id]: 'target', [p.id]: 'current', [gp.id]: 'current'};
+        steps.push(snap(hlBefore, `삼촌 BLACK -> 회전으로 해소 (grandParent: ${gp.value})`, 'remove'));
+
+        if (gp.left === p) {
+          if (p.right === node) {
+            rotateLeft(holder, p);
+            p = node;
+            steps.push(snap({[p.id]: 'new'}, 'LR 모양 -> 먼저 좌회전으로 지그재그 정리', 'insert'));
+          }
+          rotateRight(holder, gp);
+        } else {
+          if (p.left === node) {
+            rotateRight(holder, p);
+            p = node;
+            steps.push(snap({[p.id]: 'new'}, 'RL 모양 -> 먼저 우회전으로 지그재그 정리', 'insert'));
+          }
+          rotateLeft(holder, gp);
+        }
+        gp.color = 'RED';
+        p.color = 'BLACK';
+        steps.push(snap({[p.id]: 'new', [gp.id]: 'new'},
+            `회전 1회 + recolor(parent BLACK, 이전 grandParent RED) 완료 -> 종료`, 'done'));
+        break;
+      }
+    }
+    holder.root.color = 'BLACK';
+    steps.push(snap({[holder.root.id]: 'new'}, `root는 항상 BLACK -> insert(${value}) 완료`, 'done'));
+    return steps;
+  }
+
+  function findValue(node, value) {
+    if (!node) { return null; }
+    if (node.value === value) { return node; }
+    return value < node.value ? findValue(node.left, value) : findValue(node.right, value);
+  }
+
+  // ── delete planner ──
+  function planDelete(value) {
+    const steps = [];
+    if (isNaN(value)) {
+      steps.push(snap({}, '값이 올바른 숫자가 아닙니다', 'error'));
+      return steps;
+    }
+    if (!holder.root) {
+      steps.push(snap({}, '비어있는 트리에서 삭제 시도 -> IllegalStateException', 'error'));
+      return steps;
+    }
+
+    let cur = holder.root;
+    const visited = [];
+    while (cur && cur.value !== value) {
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      hl[cur.id] = 'current';
+      steps.push(snap(hl, `compareTo -> ${value < cur.value ? '왼쪽' : '오른쪽'}으로 이동 (현재 ${cur.value})`,
+          'traverse'));
+      visited.push(cur.id);
+      cur = value < cur.value ? cur.left : cur.right;
+    }
+    if (!cur) {
+      steps.push(snap({}, `값(${value})을 찾지 못함 -> 삭제할 노드 없음`, 'error'));
+      return steps;
+    }
+    steps.push(snap({[cur.id]: 'target'}, `삭제 대상 노드(${value}) 발견 (색: ${cur.color})`, 'remove'));
+
+    if (cur.left && cur.right) {
+      let succ = cur.right;
+      const succVisited = [];
+      while (succ.left) {
+        const hl = {[cur.id]: 'target'};
+        succVisited.forEach(id => { hl[id] = 'visited'; });
+        hl[succ.id] = 'current';
+        steps.push(snap(hl, `findMin: 오른쪽 서브트리에서 왼쪽 끝까지 이동 (현재 ${succ.value})`, 'traverse'));
+        succVisited.push(succ.id);
+        succ = succ.left;
+      }
+      steps.push(snap({[succ.id]: 'successor', [cur.id]: 'target'},
+          `successor 발견: ${succ.value} (색: ${succ.color})`, 'remove'));
+      const oldVal = cur.value;
+      cur.value = succ.value;
+      steps.push(snap({[cur.id]: 'new'},
+          `node.data = successor.data (${oldVal} -> ${cur.value}) -> 값만 교체, 진짜 삭제는 successor(${succ.value})에서 진행`,
+          'insert'));
+      cur = succ;
+    }
+
+    // 이제 cur는 자식 0개 또는 1개
+    if (!cur.left && !cur.right) {
+      if (cur.color === 'RED') {
+        steps.push(snap({[cur.id]: 'removing'}, `RED leaf -> fixup 불필요, 그냥 제거`, 'done'));
+        detach(cur);
+      } else if (!cur.parent) {
+        steps.push(snap({}, `root이자 유일한 노드 -> 트리가 빔`, 'done'));
+        holder.root = null;
+      } else {
+        const parent = cur.parent;
+        const side = parent.left === cur ? 'LEFT' : 'RIGHT';
+        detach(cur);
+        steps.push(snap({}, `BLACK leaf 제거 -> Double Black 발생, deleteFixup 필요`, 'remove',
+            {parentId: parent.id, side}));
+        deleteFixup(parent, side, steps);
+      }
+    } else {
+      const child = cur.left || cur.right;
+      const parent = cur.parent;
+      if (!parent) {
+        holder.root = child;
+        child.parent = null;
+        child.color = 'BLACK';
+        steps.push(snap({[child.id]: 'new'}, `자식(${child.value})이 root를 대신하고 BLACK으로 재색칠`, 'done'));
+      } else {
+        if (parent.left === cur) { parent.left = child; } else { parent.right = child; }
+        child.parent = parent;
+        child.color = 'BLACK';
+        steps.push(snap({[child.id]: 'new'},
+            `BLACK 삭제노드, 자식(${child.value})은 RED -> 자식을 그 자리로 올리고 BLACK 재색칠 (fixup 불필요)`, 'done'));
+      }
+    }
+
+    return steps;
+  }
+
+  function detach(node) {
+    if (!node.parent) {
+      holder.root = null;
+      return;
+    }
+    if (node.parent.left === node) { node.parent.left = null; } else { node.parent.right = null; }
+    node.parent = null;
+  }
+
+  function deleteFixup(parentIn, sideIn, steps) {
+    let parent = parentIn, side = sideIn;
+    while (parent) {
+      let sibling = side === 'LEFT' ? parent.right : parent.left;
+      const siblingColor = getColor(sibling);
+
+      if (siblingColor === 'RED') {
+        parent.color = 'RED';
+        sibling.color = 'BLACK';
+        steps.push(snap({[parent.id]: 'new', [sibling.id]: 'sibling'},
+            `sibling(${sibling.value}) RED -> parent/sibling 색 교환 (전처리)`, 'remove',
+            {parentId: parent.id, side}));
+
+        if (side === 'LEFT') { rotateLeft(holder, parent); } else { rotateRight(holder, parent); }
+        steps.push(snap({[parent.id]: 'current'}, `회전 완료 -> 새로운 BLACK sibling으로 재판단`, 'traverse',
+            {parentId: parent.id, side}));
+        continue;
+      } else {
+        const near = side === 'LEFT' ? sibling.left : sibling.right;
+        const far = side === 'LEFT' ? sibling.right : sibling.left;
+        const nearColor = getColor(near), farColor = getColor(far);
+        const hlBase = {[parent.id]: 'current'};
+        if (sibling) { hlBase[sibling.id] = 'sibling'; }
+
+        if (nearColor === 'BLACK' && farColor === 'BLACK') {
+          sibling.color = 'RED';
+          steps.push(snap({...hlBase, [sibling.id]: 'new'},
+              `near/far 둘 다 BLACK -> sibling(${sibling.value}) RED로 재색칠 (양쪽이 동등하게 부족한 상태로 전환)`,
+              'remove', {parentId: parent.id, side}));
+
+          if (getColor(parent) === 'RED') {
+            parent.color = 'BLACK';
+            steps.push(snap({[parent.id]: 'new'}, `parent(${parent.value}) RED -> BLACK 전환, 즉시 해결`,
+                'done'));
+            return;
+          } else {
+            const gp = parent.parent;
+            if (!gp) {
+              steps.push(snap({}, `parent(${parent.value})가 root -> 더 이상 전파할 곳 없음, 종료`, 'done'));
+              return;
+            }
+            const newSide = gp.left === parent ? 'LEFT' : 'RIGHT';
+            steps.push(
+                snap({[gp.id]: 'current'}, `parent BLACK -> 문제를 조부모(${gp.value})로 전파`, 'remove',
+                    {parentId: gp.id, side: newSide}));
+            parent = gp;
+            side = newSide;
+            continue;
+          }
+        } else if (nearColor === 'RED') {
+          if (side === 'LEFT') { rotateRight(holder, sibling); } else {
+            rotateLeft(holder, sibling);
+          }
+          sibling.color = 'RED';
+          near.color = 'BLACK';
+          steps.push(snap({[near.id]: 'new', [sibling.id]: 'new'},
+              `near(${near.value}) RED -> sibling 기준 회전으로 지그재그 정리, far-RED 모양으로 전환`, 'remove',
+              {parentId: parent.id, side}));
+          continue;
+        } else {
+          const parentColor = parent.color;
+          if (side === 'LEFT') { rotateLeft(holder, parent); } else { rotateRight(holder, parent); }
+          sibling.color = parentColor;
+          parent.color = 'BLACK';
+          far.color = 'BLACK';
+          steps.push(snap({[sibling.id]: 'new', [parent.id]: 'new', [far.id]: 'new'},
+              `far(${far.value}) RED -> parent 반대방향 회전 + 3색 변경, 색 구성이 삭제 전과 동일해져 완전 종료`, 'done'));
+          return;
+        }
+      }
+    }
+  }
+
+  // ── 렌더 ──
+  function layoutTree(rootNode) {
+    const nodes = [];
+    const counter = {x: 0};
+    let maxDepth = 0;
+
+    function walk(node, depth) {
+      if (!node) { return; }
+      walk(node.left, depth + 1);
+      const x = counter.x++;
+      nodes.push({id: node.id, value: node.value, color: node.color, x, y: depth});
+      maxDepth = Math.max(maxDepth, depth);
+      walk(node.right, depth + 1);
+    }
+
+    walk(rootNode, 0);
+    return {nodes, maxX: counter.x - 1, maxDepth};
+  }
+
+  function collectEdges(node) {
+    const edges = [];
+
+    function walk(n) {
+      if (!n) { return; }
+      if (n.left) {
+        edges.push({parent: n.id, child: n.left.id});
+        walk(n.left);
+      }
+      if (n.right) {
+        edges.push({parent: n.id, child: n.right.id});
+        walk(n.right);
+      }
+    }
+
+    walk(node);
+    return edges;
+  }
+
+  function renderTree(rootNode, highlight) {
+    const wrap = document.getElementById('treeCanvasWrap');
+    const canvas = document.getElementById('treeCanvas');
+    const svg = document.getElementById('treeEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    if (!rootNode) {
+      wrap.style.width = '100%';
+      wrap.style.height = '80px';
+      canvas.style.transform = 'none';
+      canvas.style.width = '100%';
+      canvas.style.height = '80px';
+      svg.style.display = 'none';
+      layer.innerHTML = '<div class="empty-msg">트리가 비어 있습니다 (root = null)</div>';
+      return;
+    }
+    svg.style.display = 'block';
+
+    const {nodes, maxX, maxDepth} = layoutTree(rootNode);
+    const edges = collectEdges(rootNode);
+    const spacingX = 62, spacingY = 76, padX = 32, padTop = 30, nodeSize = 44;
+    const width = Math.max((maxX + 1) * spacingX + padX * 2, 320);
+    const height = (maxDepth + 1) * spacingY + padTop + nodeSize;
+
+    const scrollEl = document.querySelector('.tree-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const posMap = {};
+    nodes.forEach(n => {
+      posMap[n.id] = {
+        cx: padX + n.x * spacingX + spacingX / 2,
+        cy: padTop + n.y * spacingY + nodeSize / 2
+      };
+    });
+
+    let edgeSvg = '';
+    edges.forEach(e => {
+      const p = posMap[e.parent], c = posMap[e.child];
+      edgeSvg += `<line x1="${p.cx}" y1="${p.cy}" x2="${c.cx}" y2="${c.cy}" class="tree-edge" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    nodes.forEach(n => {
+      const pos = posMap[n.id];
+      const hl = highlight[n.id];
+      let cls = 'rbnode ' + (n.color === 'RED' ? 'color-red' : 'color-black');
+      if (hl) { cls += ' state-' + hl; }
+      const isRoot = n.id === rootNode.id;
+      html += `<div class="rbnode-wrap" style="left:${pos.cx - nodeSize / 2}px; top:${pos.cy
+      - nodeSize / 2}px;">
+          ${isRoot ? '<div class="pos-tag root">ROOT</div>' : ''}
+          <div class="${cls}">${n.value}</div>
+        </div>`;
+    });
+    layer.innerHTML = html;
+  }
+
+  function renderStatus(step) {
+    const el = document.getElementById('statusStrip');
+    if (step.dbInfo) {
+      el.innerHTML = `<span class="status-chip">⚫⚫ Double Black 위치: parent(${findById(step.tree,
+          step.dbInfo.parentId) ? findById(step.tree, step.dbInfo.parentId).value
+          : '?'})의 ${step.dbInfo.side === 'LEFT' ? '왼쪽' : '오른쪽'} 자식 자리</span>`;
+    } else {
+      el.innerHTML = '';
+    }
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">삽입/재색칠</span>',
+    'remove': '<span class="phase-tag phase-remove">삭제/전파</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderTree(step.tree, step.highlight);
+    renderStatus(step);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoSize').textContent = treeSize(step.tree);
+    document.getElementById('infoRoot').textContent = step.tree ? step.tree.value : 'null';
+    document.getElementById('infoHeight').textContent = treeHeight(step.tree);
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const value = parseInt(document.getElementById('valInput').value);
+
+    steps = op === 'insert' ? planInsert(value) : planDelete(value);
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', markDirty);
+  document.getElementById('valInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewList').addEventListener('click', () => {
+    stopPlay();
+    idCounter = 1;
+    holder.root = randomTree(6);
+    steps = [snap({}, '새 트리를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', '')];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  holder.root = randomTree(6);
+  steps = [snap({}, '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', '')];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>

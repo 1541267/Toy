@@ -279,6 +279,7 @@ public class _5_3_AVL_Tree {
     }
 
     public void printTree() {
+      if(root == null) {System.out.println("트리가 비어있음");}
       printTree(root, "", "");
       System.out.println("==========================================================");
     }
