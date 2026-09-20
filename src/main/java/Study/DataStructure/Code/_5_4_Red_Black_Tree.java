@@ -263,7 +263,6 @@ public class _5_4_Red_Black_Tree {
           if (curNode.parent == null) {
             // 현재 노드가 root 및 유일한 노드
             removeNode(curNode);
-            return;
           } else {
             // Double Black, Fixup 필요
             Node<E> parent = curNode.parent;
@@ -345,11 +344,9 @@ public class _5_4_Red_Black_Tree {
           if (curNodeSide == Side.LEFT) {
             // 삭제 노드는 parent.left 이니 rotateLeft()
             rotateLeft(parent);
-            sibling = parent.right;
           } else {
             // 대칭
             rotateRight(parent);
-            sibling = parent.left;
           }
         } else {
            /*

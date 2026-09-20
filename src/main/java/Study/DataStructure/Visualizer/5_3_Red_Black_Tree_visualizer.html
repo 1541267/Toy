@@ -251,13 +251,6 @@
       display: none;
     }
   }
-
-  /* 공용 css의 반응형 규칙이 적용되지 않는 경우를 대비한 안전장치 */
-  @media (max-width: 820px) {
-    .code-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
 <body>
@@ -266,20 +259,20 @@
   <!-- Header -->
   <div class="header">
     <h1 onclick="location.href = '/Toy'">레드-블랙 트리 (Red-Black Tree)</h1>
-    <p>insert/insertFixup + delete/deleteFixup(sibling·near& far 케이스) 시각화</p>
+    <p>insert/insertFixup + delete/deleteFixup(sibling & near & far 케이스) 시각화</p>
   </div>
 
   <!-- Study Notes -->
-  <details class="notes-toggle">
+  <details class="notes-toggle" open>
     <summary>📖 RBT 학습 노트 (클릭해서 펼치기)</summary>
     <div class="notes-body">
       <div class="note-card">
         <h3>📜 5가지 규칙</h3>
-        <ul style="list-style: decimal;">
+        <ul style="list-style-type: decimal;">
           <li>모든 노드는 <strong>RED 또는 BLACK</strong></li>
           <li><strong>root는 항상 BLACK</strong></li>
           <li>모든 leaf(NIL/null)는 <strong>BLACK</strong>으로 간주</li>
-          <li><strong>RED 노드의 자식은 반드시 BLACK</strong> (연속된 RED 불가)</li>
+          <li><strong>RED 노드의 자식은 반드시 BLACK</strong> (연속된 RED 금지)</li>
           <li>임의의 노드에서 하위 leaf까지의 모든 경로에서 <strong>BLACK 개수(black-height, bh)가 동일</strong></li>
         </ul>
       </div>
@@ -289,10 +282,10 @@
         <ul>
           <li>규칙 ④: 어떤 경로든 RED가 연속 못 나오므로 경로 길이의 최소 절반은 BLACK</li>
           <li>규칙 ⑤: 모든 경로의 BLACK 개수(bh)는 동일</li>
-          <li>최단 경로(전부 BLACK) 길이 ≥ bh, 최장 경로(BLACK-RED 번갈아) 길이 <= 2×bh</li>
+          <li>최단 경로(전부 BLACK) 길이 ≥ bh, 최장 경로(BLACK-RED 번갈아) 길이 ≤ 2×bh</li>
           <li>최장 경로가 최단 경로의 2배를 넘지 않음
             <ul>
-              <li>"적당한 균형"이 수학적으로 보장되어 height = O(log n)</li>
+              <li>적당한 균형이 수학적으로 보장되어 height = O(log n)</li>
             </ul>
           </li>
         </ul>
@@ -301,13 +294,12 @@
       <div class="note-card" style="flex-basis: 100%;">
         <h3>⚖️ AVL 대비 트레이드오프</h3>
         <ul>
-          <li>AVL: 모든 노드에서 균형 조건이 엄격(|height 차이| <= 1) -> 탐색은 최적에 가깝지만 삽입/삭제 시 rotation이 잦음</li>
+          <li>AVL: 모든 노드에서 균형 조건이 엄격(|height 차이| ≤ 1) -> 탐색은 최적에 가깝지만 삽입/삭제 시 rotation이 잦음</li>
           <li>RBT: 균형 조건이 느슨함 -> 탐색은 AVL보다 살짝 느릴 수 있지만 삽입/삭제는 recoloring만으로 끝나는 경우가 많아 훨씬 빠름</li>
           <li>그래도 height는 여전히 <strong>O(log n)</strong> 보장 (AVL보다 상수배 정도 더 클 뿐)</li>
           <li>삽입/삭제가 잦은 실무 상황에 유리 -> Java TreeMap/TreeSet, C++ std::map, Linux CFS 스케줄러 등이 채택</li>
         </ul>
       </div>
-
       <div class="section-divider">➕ insert(e)</div>
 
       <div class="note-card" style="flex-basis: 100%;">
@@ -332,7 +324,7 @@
       </div>
 
       <div class="note-card">
-        <h3>⚫ 케이스 2& 3: 삼촌 BLACK</h3>
+        <h3>⚫ 케이스 2 & 3: 삼촌 BLACK</h3>
         <ul>
           <li>지그재그(LR/RL) 모양이면 먼저 rotation으로 일자로 편 뒤 이어서 처리</li>
           <li>일자(LL/RR) 모양이면 rotation 1회 + recoloring(grandParent RED, parent BLACK)으로 즉시 종료</li>
@@ -344,7 +336,7 @@
 
       <div class="note-card" style="flex-basis: 100%;">
         <h3>🗑 물리적으로 제거되는 노드(y) 색에 따른 4가지 분류</h3>
-        <ul>
+        <ul style="list-style-type: decimal">
           <li><strong>y = RED & leaf</strong>: 그냥 제거, 아무 규칙도 안 깨짐 -> fixup 불필요</li>
           <li><strong>y = RED & 자식1개</strong>: 구조적으로 불가능 (규칙⑤ 위반이 되므로 애초에 존재 불가)</li>
           <li><strong>y = BLACK & leaf</strong>: Double Black 발생(규칙⑤ 위반) -> deleteFixup 필요</li>
@@ -353,15 +345,16 @@
             불필요
           </li>
         </ul>
-        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">자식 2개인 경우 successor(오른쪽 서브트리
-          최솟값)를 찾아 값만 복사 후, successor 자체를 삭제 대상으로 삼음<br/> -> successor는 왼쪽 자식이 없으므로 항상 leaf 또는 자식1개(오른쪽만)
-          케이스로 자연 축소</p>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">자식이 2개인 경우 successor(오른쪽 서브트리
+          최솟값)를 찾아 값만 복사 후, successor 자체를 삭제 대상으로 삼음<br/>
+          -> successor는 왼쪽 자식이 없으므로 항상 leaf 또는 자식1개(오른쪽만) 케이스로 자연 축소
+        </p>
       </div>
 
       <div class="note-card" style="flex-basis: 100%;">
         <h3>🔧 deleteFixup: 판단 기준은 형제(sibling)</h3>
         <ul>
-          <li>insert는 "삼촌 색"으로 케이스를 나눴다면, delete는 <strong>형제(sibling) 색 + 형제의 자식(조카,
+          <li>insert는 삼촌 색으로 케이스를 나눴다면, delete는 <strong>형제(sibling) 색 + 형제의 자식(조카,
             near/far)</strong> 색으로 케이스를 나눔
           </li>
           <li>near child: deficient(부족한 자리)에 가까운 조카 / far child: 먼 조카</li>
@@ -379,7 +372,7 @@
       </div>
 
       <div class="note-card">
-        <h3>⚫ sibling BLACK, near/far 둘 다 BLACK</h3>
+        <h3>⚫ sibling BLACK & near/far 둘 다 BLACK</h3>
         <ul>
           <li>sibling을 RED로 재색칠 -> 양쪽이 동등하게 1씩 부족한 대칭 상태로 전환</li>
           <li>parent RED면 그 자리에서 BLACK으로 바꿔 즉시 해결</li>
@@ -388,7 +381,7 @@
       </div>
 
       <div class="note-card">
-        <h3>⚫ near RED, far BLACK</h3>
+        <h3>⚫ near RED & far BLACK</h3>
         <ul>
           <li>지그재그 모양, 바로 해결 불가 — far RED 모양으로 바꿔주는 전처리</li>
           <li>sibling 기준 near 방향으로 rotate + sibling RED & near BLACK 재색칠</li>
@@ -401,7 +394,7 @@
         <ul>
           <li>parent를 deficient 반대 방향으로 rotate</li>
           <li>sibling이 원래 parent의 색을 물려받고, parent와 far는 BLACK</li>
-          <li>deficient 경로 +1, far 경로도 RED->BLACK으로 +1 -> 색 구성이 삭제 전과 동일해져 완전 종료</li>
+          <li>deficient 경로 +1, far 경로도 RED→BLACK으로 +1 -> 색 구성이 삭제 전과 동일해져 완전 종료</li>
         </ul>
       </div>
 
@@ -506,72 +499,85 @@
         <div class="dot" style="background:#67e8f9"></div>
         공통 부분
       </div>
-      <pre><span class="kw">enum</span> <span class="ty">COLOR</span> {<span class="nm">RED</span>, <span
-          class="nm">BLACK</span>}
+      <pre><span class="kw">enum</span> <span class="ty">COLOR</span> {<span class="nm">RED</span>, <span class="nm">BLACK</span>}
 
-<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
-            class="ty">E</span>&gt; {
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; {
+
   <span class="ty">E</span> <span class="nm">data</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>, <span
-            class="nm">right</span>, <span class="nm">parent</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span>;
   <span class="ty">COLOR</span> <span class="nm">color</span>;
+
+  <span class="kw">public</span> <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>, <span class="ty">COLOR</span> <span class="nm">color</span>) {
+    <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
+    <span class="kw">this</span>.<span class="nm">color</span> = <span class="nm">color</span> == <span class="kw">null</span> ? <span class="ty">COLOR</span>.<span class="nm">BLACK</span> : <span class="nm">color</span>;
+  }
 }
 
-<span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">COLOR</span> <span
-            class="fn">getColor</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">node</span>) {
-  <span class="kw">return</span> <span class="nm">node</span> == <span
-            class="kw">null</span> ? <span class="ty">COLOR</span>.<span
-            class="nm">BLACK</span> : <span class="nm">node</span>.<span class="nm">color</span>;
+<span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">COLOR</span> <span class="fn">getColor</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="kw">return</span> <span class="nm">node</span> == <span class="kw">null</span> ? <span class="ty">COLOR</span>.<span class="nm">BLACK</span> : <span class="nm">node</span>.<span class="nm">color</span>;
 }
 
-<span class="ck">// 왼쪽 자식이 없을 때까지 계속 left로 이동 -> 서브트리의 최솟값</span>
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">curNode</span> = <span class="nm">node</span>;
-  <span class="kw">while</span> (<span class="nm">curNode</span>.<span
-            class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">curNode</span> = <span
-            class="nm">curNode</span>.<span class="nm">left</span>;}
+<span class="ck">// 왼쪽 자식이 없을 때까지 계속 left로 이동 -&gt; 서브트리의 최솟값</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">node</span>;
+
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) {
+    <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+  }
   <span class="kw">return</span> <span class="nm">curNode</span>;
 }
 
-<span class="ck">// rotate는 회전 후 새로운 서브트리 루트를 반환</span>
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span
-            class="nm">right</span>.<span class="nm">left</span>;
+<span class="ck">// rotate는 회전 후 새로운 서브트리 루트를 반환, parent 포인터까지 갱신</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span class="nm">right</span>.<span class="nm">left</span>;
 
   <span class="nm">node</span>.<span class="nm">right</span> = <span class="nm">rightLeft</span>;
-  <span class="kw">if</span> (<span class="nm">rightLeft</span> != <span
-            class="kw">null</span>) {<span class="nm">rightLeft</span>.<span
-            class="nm">parent</span> = <span class="nm">node</span>;}
+  <span class="kw">if</span> (<span class="nm">rightLeft</span> != <span class="kw">null</span>) {<span class="nm">rightLeft</span>.<span class="nm">parent</span> = <span class="nm">node</span>;}
 
   <span class="nm">right</span>.<span class="nm">left</span> = <span class="nm">node</span>;
   <span class="nm">node</span>.<span class="nm">parent</span> = <span class="nm">right</span>;
+
   <span class="nm">right</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
 
-  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {<span
-            class="nm">root</span> = <span class="nm">right</span>;}
-  <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">parent</span>.<span
-            class="nm">left</span> == <span class="nm">node</span>) {<span class="nm">parent</span>.<span
-            class="nm">left</span> = <span class="nm">right</span>;}
-  <span class="kw">else</span> {<span class="nm">parent</span>.<span class="nm">right</span> = <span
-            class="nm">right</span>;}
+  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {
+    <span class="nm">root</span> = <span class="nm">right</span>;
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">node</span>) {
+    <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">right</span>;
+  } <span class="kw">else</span> {
+    <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">right</span>;
+  }
 
   <span class="kw">return</span> <span class="nm">right</span>;
 }
 
-<span class="ck">// rotateRight는 rotateLeft의 완전 대칭 (left <-> right)</span>
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-            class="nm">node</span>) { <span class="ck">/* 대칭 구현 */</span> }
+<span class="ck">// rotateRight는 rotateLeft의 완전 대칭 (left &lt;-&gt; right)</span>
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span> = <span class="nm">node</span>.<span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">leftRight</span> = <span class="nm">left</span>.<span class="nm">right</span>;
+
+  <span class="nm">node</span>.<span class="nm">left</span> = <span class="nm">leftRight</span>;
+  <span class="kw">if</span> (<span class="nm">leftRight</span> != <span class="kw">null</span>) {<span class="nm">leftRight</span>.<span class="nm">parent</span> = <span class="nm">node</span>;}
+
+  <span class="nm">left</span>.<span class="nm">right</span> = <span class="nm">node</span>;
+  <span class="nm">node</span>.<span class="nm">parent</span> = <span class="nm">left</span>;
+
+  <span class="nm">left</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
+
+  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {
+    <span class="nm">root</span> = <span class="nm">left</span>;
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">node</span>) {
+    <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">left</span>;
+  } <span class="kw">else</span> {
+    <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">left</span>;
+  }
+
+  <span class="kw">return</span> <span class="nm">left</span>;
+}
 </pre>
     </div>
     <div class="code-grid">
@@ -580,211 +586,325 @@
           <div class="dot" style="background:#fcd34d"></div>
           insert(e) / insertFixup(node)
         </div>
-        <pre><span class="kw">public</span> <span class="kw">void</span> <span
-            class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">parent</span> = <span class="kw">null</span>, <span
-              class="nm">curNode</span> = <span class="nm">root</span>;
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">"삽입 시도 데이터가 null"</span>);}
+
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="kw">null</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
 
   <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
     <span class="nm">parent</span> = <span class="nm">curNode</span>;
-    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
-              class="fn">compareTo</span>(<span class="nm">curNode</span>.<span
-              class="nm">data</span>);
-    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {<span
-              class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
-              class="st">&quot;중복 요소&quot;</span>);}
-    <span class="nm">curNode</span> = <span class="nm">compare</span> &lt; <span class="nu">0</span> ? <span
-              class="nm">curNode</span>.<span class="nm">left</span> : <span
-              class="nm">curNode</span>.<span class="nm">right</span>;
+
+    <span class="kw">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">"중복된 요소 삽입 시도"</span>);
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
+    }
   }
 
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
-              class="nm">e</span>, <span class="ty">COLOR</span>.<span class="nm">RED</span>); <span
-              class="ck">// 삽입은 항상 RED</span>
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>, <span class="ty">COLOR</span>.<span class="nm">RED</span>); <span class="ck">// 삽입은 항상 RED</span>
   <span class="nm">newNode</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
 
-  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {<span
-              class="nm">root</span> = <span class="nm">newNode</span>;}
-  <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">e</span>.<span
-              class="fn">compareTo</span>(<span class="nm">parent</span>.<span
-              class="nm">data</span>) &lt; <span class="nu">0</span>) {<span
-              class="nm">parent</span>.<span class="nm">left</span> = <span
-              class="nm">newNode</span>;}
-  <span class="kw">else</span> {<span class="nm">parent</span>.<span class="nm">right</span> = <span
-              class="nm">newNode</span>;}
+  <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {
+    <span class="nm">root</span> = <span class="nm">newNode</span>;
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">parent</span>.<span class="nm">data</span>) &lt; <span class="nu">0</span>) {
+    <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">newNode</span>;
+  } <span class="kw">else</span> {
+    <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">newNode</span>;
+  }
 
   <span class="fn">insertFixup</span>(<span class="nm">newNode</span>);
 }
 
-<span class="kw">private</span> <span class="kw">void</span> <span
-              class="fn">insertFixup</span>(<span class="ty">Node</span>&lt;<span
-              class="ty">E</span>&gt; <span class="nm">node</span>) {
-  <span class="kw">while</span> (<span class="fn">getColor</span>(<span class="nm">node</span>.<span
-              class="nm">parent</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">grandParent</span> = <span class="nm">parent</span>.<span
-              class="nm">parent</span>;
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">uncle</span> = <span class="nm">grandParent</span>.<span
-              class="nm">left</span> == <span class="nm">parent</span> ? <span class="nm">grandParent</span>.<span
-              class="nm">right</span> : <span class="nm">grandParent</span>.<span
-              class="nm">left</span>;
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">insertFixup</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+  <span class="kw">while</span> (<span class="fn">getColor</span>(<span class="nm">node</span>.<span class="nm">parent</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="nm">node</span>.<span class="nm">parent</span>;
 
-    <span class="kw">if</span> (<span class="fn">getColor</span>(<span
-              class="nm">uncle</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
-      <span class="ck">// 케이스 1: 삼촌 RED -> recolor 후 조부모로 전파</span>
-      <span class="nm">parent</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
-      <span class="nm">uncle</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
-      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">grandParent</span> = <span class="nm">parent</span>.<span class="nm">parent</span>;
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">uncle</span> = <span class="nm">grandParent</span>.<span class="nm">left</span> == <span class="nm">parent</span> ? <span class="nm">grandParent</span>.<span class="nm">right</span> : <span class="nm">grandParent</span>.<span class="nm">left</span>;
+
+    <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">uncle</span>) == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// 1번 케이스(P = RED, UC = RED)</span>
+
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="nm">uncle</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+      <span class="ck">// 삽입된 노드는 RED로 유지, 부모와 삼촌은 BLACK &amp; 할아버지는 RED 로 변경해 할아버지 부터 색 재배치</span>
       <span class="nm">node</span> = <span class="nm">grandParent</span>;
+
     } <span class="kw">else</span> {
-      <span class="ck">// 케이스 2/3: 삼촌 BLACK -> 지그재그면 먼저 정리 후 회전 1회 + recolor</span>
-      <span class="kw">if</span> (<span class="nm">grandParent</span>.<span class="nm">left</span> == <span
-              class="nm">parent</span>) {
-        <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">right</span> == <span
-              class="nm">node</span>) {<span class="nm">parent</span> = <span
-              class="fn">rotateLeft</span>(<span class="nm">parent</span>);}
+      <span class="ck">// 2, 3번 케이스(P = RED, UC = BLACK/null)</span>
+
+      <span class="kw">if</span> (<span class="nm">grandParent</span>.<span class="nm">left</span> == <span class="nm">parent</span>) {
+        <span class="ck">// LL, gp rotateRight 1회</span>
+        <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">right</span> == <span class="nm">node</span>) {
+          <span class="ck">// LR, p Left 1회, gp right 1회</span>
+          <span class="nm">parent</span> = <span class="fn">rotateLeft</span>(<span class="nm">parent</span>);
+        }
         <span class="fn">rotateRight</span>(<span class="nm">grandParent</span>);
-      } <span class="kw">else</span> {
-        <span class="kw">if</span> (<span class="nm">parent</span>.<span
-              class="nm">left</span> == <span class="nm">node</span>) {<span
-              class="nm">parent</span> = <span class="fn">rotateRight</span>(<span
-              class="nm">parent</span>);}
+      } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">grandParent</span>.<span class="nm">right</span> == <span class="nm">parent</span>) {
+        <span class="ck">// RR, gp left 1회</span>
+        <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">node</span>) {
+          <span class="ck">// RL, p right 1회, gp left 1회</span>
+          <span class="nm">parent</span> = <span class="fn">rotateRight</span>(<span class="nm">parent</span>);
+        }
         <span class="fn">rotateLeft</span>(<span class="nm">grandParent</span>);
       }
-      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>;
-      <span class="nm">parent</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+      <span class="nm">grandParent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
       <span class="kw">break</span>;
     }
   }
-  <span class="nm">root</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
-              class="nm">BLACK</span>; <span class="ck">// 규칙2: root는 항상 BLACK</span>
+
+  <span class="nm">root</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>; <span class="ck">// 규칙2: root는 항상 BLACK</span>
 }
-        </pre>
+</pre>
       </div>
       <div class="code-panel">
         <div class="code-panel-header">
           <div class="dot" style="background:#67e8f9"></div>
           doDelete(e) / removeLeafOrSingleChild / deleteFixup
         </div>
-        <pre><span class="kw">public</span> <span class="kw">void</span> <span
-            class="fn">doDelete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="ck">// BST 탐색으로 대상 노드 curNode 발견</span>
-  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span
-              class="kw">null</span> && <span class="nm">curNode</span>.<span
-              class="nm">right</span> != <span class="kw">null</span>) {
-    <span class="ck">// 자식 둘: successor로 값 교체 후 successor를 삭제 대상으로</span>
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span
-              class="fn">findMin</span>(<span class="nm">curNode</span>.<span
-              class="nm">right</span>);
-    <span class="nm">curNode</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span
-              class="nm">data</span>;
-    <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">successor</span>);
-  } <span class="kw">else</span> {
-    <span class="ck">// 자식 0개 또는 1개: 바로 처리</span>
-    <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">curNode</span>);
-  }
-}
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">doDelete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">"삭제하려는 데이터가 null"</span>);}
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalStateException</span>(<span class="st">"비어있는 RB 트리 삭제 시도"</span>);}
 
-<span class="kw">private</span> <span class="kw">void</span> <span class="fn">removeLeafOrSingleChild</span>(<span
-              class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">curNode</span>) {
-  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> == <span
-              class="kw">null</span> && <span class="nm">curNode</span>.<span
-              class="nm">right</span> == <span class="kw">null</span>) {
-    <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">curNode</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>) {
-      <span class="fn">removeNode</span>(<span class="nm">curNode</span>); <span class="ck">// RED leaf -> fixup 불필요</span>
-    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">curNode</span>.<span
-              class="nm">parent</span> == <span class="kw">null</span>) {
-      <span class="nm">root</span> = <span class="kw">null</span>; <span
-              class="ck">// root이자 유일 노드</span>
-    } <span class="kw">else</span> {
-      <span class="ck">// BLACK leaf -> Double Black, fixup 필요</span>
-      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span
-              class="nm">curNode</span>.<span class="nm">parent</span>;
-      <span class="ty">Side</span> <span class="nm">side</span> = <span
-              class="nm">parent</span>.<span class="nm">left</span> == <span
-              class="nm">curNode</span> ? <span class="ty">Side</span>.<span class="nm">LEFT</span> : <span
-              class="ty">Side</span>.<span class="nm">RIGHT</span>;
-      <span class="ck">// parent.left/right = null (실제 삭제)</span>
-      <span class="fn">deleteFixup</span>(<span class="nm">parent</span>, <span
-              class="nm">side</span>);
-    }
-  } <span class="kw">else</span> {
-    <span class="ck">// 자식 1개: BLACK-삭제노드 + RED-자식만 가능 -> 재연결 후 BLACK 재색칠</span>
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">child</span> = <span class="nm">curNode</span>.<span class="nm">left</span> == <span
-              class="kw">null</span> ? <span class="nm">curNode</span>.<span class="nm">right</span> : <span
-              class="nm">curNode</span>.<span class="nm">left</span>;
-    <span class="ck">// parent와 child 재연결, child.color = BLACK</span>
-  }
-}
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
 
-<span class="kw">private</span> <span class="kw">void</span> <span
-              class="fn">deleteFixup</span>(<span class="ty">Node</span>&lt;<span
-              class="ty">E</span>&gt; <span class="nm">parent</span>, <span
-              class="ty">Side</span> <span class="nm">side</span>) {
-  <span class="kw">while</span> (<span class="nm">parent</span> != <span class="kw">null</span>) {
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">sibling</span> = <span
-              class="nm">side</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span> ? <span
-              class="nm">parent</span>.<span class="nm">right</span> : <span
-              class="nm">parent</span>.<span class="nm">left</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
+    <span class="kw">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
 
-    <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">sibling</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>) {
-      <span class="ck">// sibling RED -> 전처리: parent<->sibling 색 교환 + rotate, 루프 계속</span>
-      <span class="nm">parent</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>; <span
-              class="nm">sibling</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
-      <span class="ck">// side 방향 반대로 rotate(parent)</span>
-    } <span class="kw">else</span> {
-      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">near</span> = <span class="ck">/* deficient 쪽 조카 */</span>;
-      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
-              class="nm">far</span> = <span class="ck">/* 반대쪽 조카 */</span>;
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
+      <span class="ck">// 삭제, 자식 개수 체크</span>
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curLeft</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curRight</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
 
-      <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">near</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span> && <span
-              class="fn">getColor</span>(<span class="nm">far</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
-        <span class="nm">sibling</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>;
-        <span class="kw">if</span> (<span class="fn">getColor</span>(<span class="nm">parent</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>) {<span
-              class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
-              class="nm">BLACK</span>; <span class="kw">break</span>;}
-        <span class="ck">// 아니면 parent = grandParent, side 재계산 후 루프 계속(전파)</span>
-      } <span class="kw">else</span> <span class="kw">if</span> (<span
-              class="fn">getColor</span>(<span class="nm">near</span>) == <span
-              class="ty">COLOR</span>.<span class="nm">RED</span>) {
-        <span class="ck">// near RED, far BLACK -> sibling 기준 rotate로 far-RED 모양으로 전환, 루프 계속</span>
+      <span class="kw">if</span> (<span class="nm">curLeft</span> == <span class="kw">null</span> &amp;&amp; <span class="nm">curRight</span> == <span class="kw">null</span>) {
+        <span class="ck">// 자식이 없는 케이스, 삭제 노드 색상별 처리</span>
+        <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">curNode</span>);
+        <span class="kw">return</span>;
+      } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">curLeft</span> == <span class="kw">null</span> || <span class="nm">curRight</span> == <span class="kw">null</span>) {
+        <span class="ck">// 자식이 1개 케이스, 삭제 노드의 색상별 처리</span>
+        <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">curNode</span>);
+        <span class="kw">return</span>;
       } <span class="kw">else</span> {
-        <span class="ck">// far RED -> parent 반대방향 rotate + 3색 변경, 완전 종료</span>
-        <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span
-              class="nm">parent</span>.<span class="nm">color</span>;
-        <span class="nm">sibling</span>.<span class="nm">color</span> = <span
-              class="nm">parentColor</span>;
-        <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span
-              class="nm">BLACK</span>;
-        <span class="nm">far</span>.<span class="nm">color</span> = <span
-              class="ty">COLOR</span>.<span class="nm">BLACK</span>;
-        <span class="kw">break</span>;
+        <span class="ck">// 자식이 둘 다 있는 상태, successor 필요</span>
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span class="fn">findMin</span>(<span class="nm">curNode</span>.<span class="nm">right</span>);
+        <span class="nm">curNode</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span class="nm">data</span>;
+        <span class="ck">// 교체 후 똑같이 successor 노드를 삭제 하는데 색상 및 자식 검사 필요</span>
+        <span class="fn">removeLeafOrSingleChild</span>(<span class="nm">successor</span>);
+        <span class="kw">return</span>;
+      }
+
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
+    }
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">removeLeafOrSingleChild</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span>) {
+  <span class="ck">// 자식이 0개 또는 1개인 노드를 색상별로 물리적으로 제거</span>
+
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curLeft</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curRight</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
+  <span class="ty">COLOR</span> <span class="nm">curNodeColor</span> = <span class="fn">getColor</span>(<span class="nm">curNode</span>);
+
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">childNode</span> = <span class="nm">curLeft</span> == <span class="kw">null</span> ? <span class="nm">curRight</span> : <span class="nm">curLeft</span>;
+
+  <span class="kw">if</span> (<span class="nm">curLeft</span> == <span class="kw">null</span> &amp;&amp; <span class="nm">curRight</span> == <span class="kw">null</span>) {
+    <span class="kw">if</span> (<span class="nm">curNodeColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// 자식 없음 &amp; 삭제 노드가 RED = fixup 필요 없음, 삭제만 수행</span>
+      <span class="fn">removeNode</span>(<span class="nm">curNode</span>);
+    } <span class="kw">else</span> {
+      <span class="ck">// 자식 없음 &amp; 삭제 노드가 BLACK = 노드 삭제시 black 카운트(Black Height)가 줄어들어 fixup 필요</span>
+      <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">parent</span> == <span class="kw">null</span>) {
+        <span class="ck">// 현재 노드가 root 및 유일한 노드</span>
+        <span class="fn">removeNode</span>(<span class="nm">curNode</span>);
+        <span class="kw">return</span>;
+      } <span class="kw">else</span> {
+        <span class="ck">// Double Black, Fixup 필요</span>
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="nm">curNode</span>.<span class="nm">parent</span>;
+        <span class="ty">Side</span> <span class="nm">curNodeSide</span> = <span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">curNode</span> ? <span class="ty">Side</span>.<span class="nm">LEFT</span> : <span class="ty">Side</span>.<span class="nm">RIGHT</span>;
+        <span class="kw">if</span> (<span class="nm">curNodeSide</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span>) {
+          <span class="nm">parent</span>.<span class="nm">left</span> = <span class="kw">null</span>;
+        } <span class="kw">else</span> {
+          <span class="nm">parent</span>.<span class="nm">right</span> = <span class="kw">null</span>;
+        }
+        <span class="fn">deleteFixup</span>(<span class="nm">parent</span>, <span class="nm">curNodeSide</span>);
+      }
+    }
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">curNodeColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+    <span class="ck">// 구조적으로 불가능 한 상태, RED - 자식 1개 -&gt; Black Height 규칙 위반</span>
+    <span class="ck">// -&gt; RED 노드는 자식이 Leaf여야 함 (both NULL or BLACK)</span>
+    <span class="ck">// -&gt; 여기에 도달 한다는 건 삭제노드(RED) - 자식(RED) 라는 것</span>
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalStateException</span>(<span class="st">"삭제 중 규칙 5번 위반 발생"</span>);
+  } <span class="kw">else</span> {
+    <span class="kw">if</span> (<span class="nm">childNode</span>.<span class="nm">color</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// 삭제 노드가 BLACK &amp; 자식이 RED -&gt; 노드 삭제 후 자식을 BLACK 으로 변경</span>
+      <span class="ck">// 삭제 노드 BLACK 에서 삭제 가능한 유일한 상황, 삭제 노드 BLACK이니 부모 RED</span>
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="nm">curNode</span>.<span class="nm">parent</span>;
+
+      <span class="ck">// 부모가 없는 경우 현재 노드가 root 상태</span>
+      <span class="kw">if</span> (<span class="nm">parent</span> == <span class="kw">null</span>) {
+        <span class="nm">root</span> = <span class="nm">childNode</span>;
+        <span class="nm">root</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+        <span class="kw">return</span>;
+      }
+
+      <span class="ck">// 현재 노드 참조를 자식 노드로 변경 &amp; 색 변경</span>
+      <span class="kw">if</span> (<span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">curNode</span>) {
+        <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">childNode</span>;
+      } <span class="kw">else</span> {
+        <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">childNode</span>;
+      }
+      <span class="nm">childNode</span>.<span class="nm">parent</span> = <span class="nm">parent</span>;
+      <span class="nm">childNode</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+
+    } <span class="kw">else</span> {
+      <span class="ck">// 삭제 노드가 BLACK이고 자식이 하나라면 RB Tree의 black-height 규칙상</span>
+      <span class="ck">// 그 자식은 반드시 RED. BLACK -&gt; BLACK 구조가 되면 양쪽 경로에서</span>
+      <span class="ck">// BLACK 개수가 달라지므로 있을 수 없는 상태</span>
+      <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalStateException</span>(<span class="st">"RB Tree 규칙 위반, 삭제 중 삭제 노드가 BLACK &amp; 유일한 자식 색이 BLACK"</span>);
+    }
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">removeNode</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span>) {
+  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">parent</span> == <span class="kw">null</span>) {
+    <span class="nm">root</span> = <span class="kw">null</span>;
+    <span class="kw">return</span>;
+  }
+
+  <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">parent</span>.<span class="nm">left</span> == <span class="nm">curNode</span>) {
+    <span class="nm">curNode</span>.<span class="nm">parent</span>.<span class="nm">left</span> = <span class="kw">null</span>;
+  } <span class="kw">else</span> {
+    <span class="nm">curNode</span>.<span class="nm">parent</span>.<span class="nm">right</span> = <span class="kw">null</span>;
+  }
+  <span class="nm">curNode</span>.<span class="nm">parent</span> = <span class="kw">null</span>;
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">deleteFixup</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span>, <span class="ty">Side</span> <span class="nm">curNodeSide</span>) {
+  <span class="ck">// deficient(부족한 자리) = 삭제된 노드 자리</span>
+
+  <span class="kw">while</span> (<span class="nm">parent</span> != <span class="kw">null</span>) {
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">sibling</span> = <span class="nm">curNodeSide</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span> ? <span class="nm">parent</span>.<span class="nm">right</span> : <span class="nm">parent</span>.<span class="nm">left</span>;
+
+    <span class="ty">COLOR</span> <span class="nm">siblingColor</span> = <span class="fn">getColor</span>(<span class="nm">sibling</span>);
+
+    <span class="kw">if</span> (<span class="nm">siblingColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+      <span class="ck">// RED-Sibling, Parent = BLACK -&gt; 전처리 단계</span>
+
+      <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+      <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+
+      <span class="kw">if</span> (<span class="nm">curNodeSide</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span>) {
+        <span class="ck">// 삭제 노드는 parent.left 이니 rotateLeft()</span>
+        <span class="fn">rotateLeft</span>(<span class="nm">parent</span>);
+        <span class="nm">sibling</span> = <span class="nm">parent</span>.<span class="nm">right</span>;
+      } <span class="kw">else</span> {
+        <span class="ck">// 대칭</span>
+        <span class="fn">rotateRight</span>(<span class="nm">parent</span>);
+        <span class="nm">sibling</span> = <span class="nm">parent</span>.<span class="nm">left</span>;
+      }
+      <span class="ck">// break 없이 루프 계속, 다음 반복에서 새 BLACK sibling으로 재판단</span>
+    } <span class="kw">else</span> {
+      <span class="ck">// BLACK-Sibling, 가장 복잡, near/far 조카 색으로 3가지 케이스</span>
+      <span class="ck">// near child: deficient 쪽에 가까운 자식 / far child: deficient 쪽에서 먼 자식</span>
+      <span class="kw">if</span> (<span class="nm">curNodeSide</span> == <span class="ty">Side</span>.<span class="nm">LEFT</span>) {
+
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">nearChild</span> = <span class="nm">sibling</span>.<span class="nm">left</span>;
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">farChild</span> = <span class="nm">sibling</span>.<span class="nm">right</span>;
+
+        <span class="ty">COLOR</span> <span class="nm">nearChildColor</span> = <span class="fn">getColor</span>(<span class="nm">nearChild</span>);
+        <span class="ty">COLOR</span> <span class="nm">farChildColor</span> = <span class="fn">getColor</span>(<span class="nm">farChild</span>);
+
+        <span class="kw">if</span> (<span class="nm">nearChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span> &amp;&amp; <span class="nm">farChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
+          <span class="ck">// 1번 케이스: sibling의 두 자식 다 BLACK -&gt; sibling을 RED로 변경</span>
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+
+          <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span class="fn">getColor</span>(<span class="nm">parent</span>);
+
+          <span class="ck">// parent가 이미 RED 였다면 BLACK 으로 바꾸면 문제가 즉시 해결</span>
+          <span class="kw">if</span> (<span class="nm">parentColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+            <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+            <span class="kw">break</span>;
+          } <span class="kw">else</span> {
+            <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">grandParent</span> = <span class="nm">parent</span>.<span class="nm">parent</span>;
+
+            <span class="ck">// parent가 root였다면 여기서 종료</span>
+            <span class="kw">if</span> (<span class="nm">grandParent</span> == <span class="kw">null</span>) {<span class="kw">break</span>;}
+
+            <span class="ck">// 다음 반복에서 새 parent/curNodeSide 로 sibling 재계산 (전파)</span>
+            <span class="ty">Side</span> <span class="nm">newSide</span> = <span class="nm">grandParent</span>.<span class="nm">left</span> == <span class="nm">parent</span> ? <span class="ty">Side</span>.<span class="nm">LEFT</span> : <span class="ty">Side</span>.<span class="nm">RIGHT</span>;
+            <span class="nm">parent</span> = <span class="nm">grandParent</span>;
+            <span class="nm">curNodeSide</span> = <span class="nm">newSide</span>;
+          }
+        } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">nearChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span> &amp;&amp; <span class="nm">farChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
+          <span class="ck">// 2번 케이스: near RED, far BLACK -&gt; sibling 기준 near 방향으로 rotate</span>
+          <span class="ck">// 색 변경 후 sibling 갱신 &amp; break 없이 3번 케이스로 이어지도록 재시도</span>
+          <span class="fn">rotateRight</span>(<span class="nm">sibling</span>);
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+          <span class="nm">nearChild</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+        } <span class="kw">else</span> {
+          <span class="ck">// 3번 케이스: near는 무관, far가 RED -&gt; parent를 deficient 반대 방향으로 rotate</span>
+          <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span class="nm">parent</span>.<span class="nm">color</span>;
+          <span class="fn">rotateLeft</span>(<span class="nm">parent</span>);
+
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="nm">parentColor</span>;
+          <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+          <span class="nm">farChild</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+          <span class="kw">break</span>;
+        }
+      } <span class="kw">else</span> {
+        <span class="ck">// deficient = right, 위와 완전 대칭</span>
+
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">nearChild</span> = <span class="nm">sibling</span>.<span class="nm">right</span>;
+        <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">farChild</span> = <span class="nm">sibling</span>.<span class="nm">left</span>;
+
+        <span class="ty">COLOR</span> <span class="nm">nearChildColor</span> = <span class="fn">getColor</span>(<span class="nm">nearChild</span>);
+        <span class="ty">COLOR</span> <span class="nm">farChildColor</span> = <span class="fn">getColor</span>(<span class="nm">farChild</span>);
+
+        <span class="kw">if</span> (<span class="nm">nearChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span> &amp;&amp; <span class="nm">farChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+
+          <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span class="fn">getColor</span>(<span class="nm">parent</span>);
+
+          <span class="kw">if</span> (<span class="nm">parentColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span>) {
+            <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+            <span class="kw">break</span>;
+          } <span class="kw">else</span> {
+            <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">grandParent</span> = <span class="nm">parent</span>.<span class="nm">parent</span>;
+
+            <span class="kw">if</span> (<span class="nm">grandParent</span> == <span class="kw">null</span>) {<span class="kw">break</span>;}
+
+            <span class="ty">Side</span> <span class="nm">newSide</span> = <span class="nm">grandParent</span>.<span class="nm">left</span> == <span class="nm">parent</span> ? <span class="ty">Side</span>.<span class="nm">LEFT</span> : <span class="ty">Side</span>.<span class="nm">RIGHT</span>;
+            <span class="nm">parent</span> = <span class="nm">grandParent</span>;
+            <span class="nm">curNodeSide</span> = <span class="nm">newSide</span>;
+          }
+        } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">nearChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">RED</span> &amp;&amp; <span class="nm">farChildColor</span> == <span class="ty">COLOR</span>.<span class="nm">BLACK</span>) {
+          <span class="fn">rotateLeft</span>(<span class="nm">sibling</span>);
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">RED</span>;
+          <span class="nm">nearChild</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+        } <span class="kw">else</span> {
+          <span class="ty">COLOR</span> <span class="nm">parentColor</span> = <span class="nm">parent</span>.<span class="nm">color</span>;
+          <span class="fn">rotateRight</span>(<span class="nm">parent</span>);
+
+          <span class="nm">sibling</span>.<span class="nm">color</span> = <span class="nm">parentColor</span>;
+          <span class="nm">parent</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+          <span class="nm">farChild</span>.<span class="nm">color</span> = <span class="ty">COLOR</span>.<span class="nm">BLACK</span>;
+          <span class="kw">break</span>;
+        }
       }
     }
   }
 }
-        </pre>
+</pre>
       </div>
     </div>
   </div>
@@ -1094,11 +1214,12 @@
     // 이제 cur는 자식 0개 또는 1개
     if (!cur.left && !cur.right) {
       if (cur.color === 'RED') {
-        steps.push(snap({[cur.id]: 'removing'}, `RED leaf -> fixup 불필요, 그냥 제거`, 'done'));
+        steps.push(snap({[cur.id]: 'removing'}, `RED leaf -> fixup 불필요, 그냥 제거`, 'remove'));
         detach(cur);
+        steps.push(snap({}, `제거 완료`, 'done'));
       } else if (!cur.parent) {
-        steps.push(snap({}, `root이자 유일한 노드 -> 트리가 빔`, 'done'));
         holder.root = null;
+        steps.push(snap({}, `root이자 유일한 노드 -> 트리가 빔`, 'done'));
       } else {
         const parent = cur.parent;
         const side = parent.left === cur ? 'LEFT' : 'RIGHT';
