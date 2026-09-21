@@ -310,7 +310,9 @@
       <div class="note-card">
         <h3>🌀 동적 배열 원형 큐 (핵심)</h3>
         <ul>
-          <li>index를 <strong>(index % capacity)</strong>로 순환<strong>(rotate)</strong>시켜 배열의 물리적 끝과 논리적 끝을 분리</li>
+          <li>index를 <strong>(index % capacity)</strong>로 순환<strong>(rotate)</strong>시켜 배열의 물리적 끝과
+            논리적 끝을 분리
+          </li>
           <li>진짜 꽉 찼을 때만 index rotate 수행</li>
           <li>front/rear가 배열 끝에 도달해도 공간이 있으면 0번 인덱스부터 재사용 - relocation 자체가 불필요</li>
           <li>진짜 꽉 찼을 때만 resize(용량 2배) -> Dynamic Array와 동일한 Amortized O(1) 근거</li>

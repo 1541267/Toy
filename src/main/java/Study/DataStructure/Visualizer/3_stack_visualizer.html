@@ -216,7 +216,8 @@
         <ul>
           <li>top: head 역할, 새 노드는 항상 <code>top.next</code>에 삽입 (head 삽입)</li>
           <li>push(): <code>newNode.next = top; top = newNode;</code></li>
-          <li>pop(): <code>top.data</code> 저장 -> <code>top = top.next</code> -> data 반환 (head 제거)</li>
+          <li>pop(): <code>top.data</code> 저장 -> <code>top = top.next</code> -> data 반환 (head 제거)
+          </li>
           <li>스택은 한쪽 끝만 사용하므로 tail 포인터 & 이중 연결이 <strong>불필요</strong></li>
         </ul>
       </div>
@@ -331,7 +332,8 @@
           <div class="dot" style="background:#fcd34d"></div>
           ArrayBasedStack
         </div>
-        <pre><span class="kw">private</span> <span class="ty">Object</span>[] <span class="nm">stack</span>;
+        <pre><span class="kw">private</span> <span class="ty">Object</span>[] <span
+            class="nm">stack</span>;
 <span class="kw">private</span> <span class="ty">int</span> <span class="nm">capacity</span>, <span
               class="nm">top</span> = <span class="nu">0</span>;
 

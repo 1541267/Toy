@@ -281,9 +281,11 @@
         <h3>⚖️ 균형 조건</h3>
         <ul>
           <li>모든 노드의 <strong>balance factor</strong>(왼쪽 서브트리 높이 - 오른쪽 서브트리 높이)가
-            <strong>-1, 0, 1</strong> 중 하나</li>
+            <strong>-1, 0, 1</strong> 중 하나
+          </li>
           <li>조건을 벗어나면(-2 또는 +2) 즉시 rotation으로 고침</li>
-          <li>null의 height는 -1, leaf의 height는 0 -> updateHeight()의 "1 + max(left, right)" 공식이 leaf에서도
+          <li>null의 height는 -1, leaf의 height는 0 -> updateHeight()의 "1 + max(left, right)" 공식이
+            leaf에서도
             일관되게 성립
           </li>
           <li>null-safe height 조회는 인스턴스 메서드가 아닌 static 메서드로 분리 (null에는 메서드 호출 자체가 불가능하기 때문)</li>
@@ -324,7 +326,8 @@
     / \
    X   C</pre>
 
-        <p class="rotation-step"><strong>1단계</strong>: 먼저 A의 Right(B)를 기준으로 <strong>rotateRight</strong> 1회 진행</p>
+        <p class="rotation-step"><strong>1단계</strong>: 먼저 A의 Right(B)를 기준으로
+          <strong>rotateRight</strong> 1회 진행</p>
         <pre class="rotation-diagram">     A
       \
        Y
@@ -342,7 +345,8 @@
         /
        C</pre>
 
-        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 RR이 된 상태에서 A 기준 <strong>rotateLeft</strong> 1회 진행 →
+        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 RR이 된 상태에서 A 기준
+          <strong>rotateLeft</strong> 1회 진행 →
           Y가 새 루트가 되는 모양</p>
         <pre class="rotation-diagram">     Y
     / \
@@ -385,13 +389,15 @@
     \
      X</pre>
 
-        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 LL이 된 상태에서 A 기준 <strong>rotateRight</strong> 1회 수행</p>
+        <p class="rotation-step"><strong>2단계</strong>: A 기준으로 LL이 된 상태에서 A 기준
+          <strong>rotateRight</strong> 1회 수행</p>
         <pre class="rotation-diagram">       Y
       /\ \
      B  C A
       \
        X</pre>
-        <p class="rotation-step">B &lt; X &lt; Y &lt; C &lt; A 순서를 유지하려면 C는 Y보단 크고 A보단 작으므로, C가 A의 Left로
+        <p class="rotation-step">B &lt; X &lt; Y &lt; C &lt; A 순서를 유지하려면 C는 Y보단 크고 A보단 작으므로, C가 A의
+          Left로
           이동해야 함</p>
 
         <p class="rotation-step">최종 결과</p>
@@ -437,7 +443,8 @@
       <div class="note-card" style="flex-basis: 100%;">
         <h3>⚖️ Red-Black Tree와의 트레이드오프</h3>
         <ul>
-          <li>AVL: 균형 조건이 엄격(-1~1) -> 트리가 더 평평함 -> search가 빠름, 대신 insert/delete 시 rotation이 더 잦음</li>
+          <li>AVL: 균형 조건이 엄격(-1~1) -> 트리가 더 평평함 -> search가 빠름, 대신 insert/delete 시 rotation이 더 잦음
+          </li>
           <li>Red-Black: 균형 조건이 느슨함(빨강 노드 규칙 등 5가지 속성) -> AVL보다 트리가 조금 더 기울 수 있지만, 삽입/삭제 시
             recoloring 위주로 처리되어 rotation 빈도가 AVL보다 적음 -> 쓰기가 잦은 워크로드에 유리
           </li>
@@ -562,7 +569,8 @@
         전체 코드
       </div>
       <pre>
-<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; {
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+          class="ty">E</span>&gt; {
 
   <span class="ty">E</span> <span class="nm">data</span>;
   <span class="ty">int</span> <span class="nm">height</span>;
@@ -575,41 +583,65 @@
   }
 
   <span class="ck">// null-safe, 인스턴스(this) 동작이 아닌 어떤 노드든 적용 가능한 범용 유틸리티</span>
-  <span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">int</span> <span class="fn">getHeight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
-    <span class="kw">return</span> <span class="nm">node</span> == <span class="kw">null</span> ? -<span class="nu">1</span> : <span class="nm">node</span>.<span class="nm">height</span>;
+  <span class="kw">static</span> &lt;<span class="ty">E</span>&gt; <span class="ty">int</span> <span
+          class="fn">getHeight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="nm">node</span>) {
+    <span class="kw">return</span> <span class="nm">node</span> == <span
+          class="kw">null</span> ? -<span class="nu">1</span> : <span class="nm">node</span>.<span
+          class="nm">height</span>;
   }
 
-  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">getBalanceFactor</span>() {
-    <span class="kw">return</span> <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">left</span>) - <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>);
+  <span class="kw">public</span> <span class="ty">int</span> <span
+          class="fn">getBalanceFactor</span>() {
+    <span class="kw">return</span> <span class="fn">getHeight</span>(<span
+          class="kw">this</span>.<span class="nm">left</span>) - <span
+          class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>);
   }
 
   <span class="kw">private</span> <span class="kw">void</span> <span class="fn">updateHeight</span>() {
-    <span class="kw">this</span>.<span class="nm">height</span> = <span class="nu">1</span> + <span class="ty">Math</span>.<span class="fn">max</span>(<span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">left</span>), <span class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>));
+    <span class="kw">this</span>.<span class="nm">height</span> = <span class="nu">1</span> + <span
+          class="ty">Math</span>.<span class="fn">max</span>(<span class="fn">getHeight</span>(<span
+          class="kw">this</span>.<span class="nm">left</span>), <span
+          class="fn">getHeight</span>(<span class="kw">this</span>.<span class="nm">right</span>));
   }
 }
 
 <span class="ck">// insert(), doDelete()에서 공용으로 사용</span>
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rebalance</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="fn">rebalance</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="nm">node</span>) {
   <span class="nm">node</span>.<span class="fn">updateHeight</span>();
-  <span class="ty">int</span> <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="fn">getBalanceFactor</span>();
+  <span class="ty">int</span> <span class="nm">balanceFactor</span> = <span
+          class="nm">node</span>.<span class="fn">getBalanceFactor</span>();
 
   <span class="kw">if</span> (<span class="nm">balanceFactor</span> &gt; <span class="nu">1</span>) {
     <span class="ck">// LL(왼쪽 1회) or LR(왼쪽 1회 후 오른쪽 1회) 검사</span>
-    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="nm">left</span>.<span class="fn">getBalanceFactor</span>();
-    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; <span class="nu">0</span>) { <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">rotateLeft</span>(<span class="nm">node</span>.<span class="nm">left</span>); }
+    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span
+          class="nm">left</span>.<span class="fn">getBalanceFactor</span>();
+    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; <span class="nu">0</span>) { <span
+          class="nm">node</span>.<span class="nm">left</span> = <span
+          class="fn">rotateLeft</span>(<span class="nm">node</span>.<span class="nm">left</span>); }
     <span class="nm">node</span> = <span class="fn">rotateRight</span>(<span class="nm">node</span>);
-  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; -<span class="nu">1</span>) {
+  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">balanceFactor</span> &lt; -<span
+          class="nu">1</span>) {
     <span class="ck">// RR(오른쪽 1회) or RL(오른쪽 1회 후 왼쪽 1회) 검사</span>
-    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span class="nm">right</span>.<span class="fn">getBalanceFactor</span>();
-    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &gt; <span class="nu">0</span>) { <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">rotateRight</span>(<span class="nm">node</span>.<span class="nm">right</span>); }
+    <span class="nm">balanceFactor</span> = <span class="nm">node</span>.<span
+          class="nm">right</span>.<span class="fn">getBalanceFactor</span>();
+    <span class="kw">if</span> (<span class="nm">balanceFactor</span> &gt; <span class="nu">0</span>) { <span
+          class="nm">node</span>.<span class="nm">right</span> = <span class="fn">rotateRight</span>(<span
+          class="nm">node</span>.<span class="nm">right</span>); }
     <span class="nm">node</span> = <span class="fn">rotateLeft</span>(<span class="nm">node</span>);
   }
   <span class="kw">return</span> <span class="nm">node</span>;
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span class="nm">right</span>.<span class="nm">left</span>;
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="fn">rotateLeft</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="nm">right</span> = <span class="nm">node</span>.<span class="nm">right</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">rightLeft</span> = <span
+          class="nm">right</span>.<span class="nm">left</span>;
 
   <span class="nm">right</span>.<span class="nm">left</span> = <span class="nm">node</span>;
   <span class="nm">node</span>.<span class="nm">right</span> = <span class="nm">rightLeft</span>;
@@ -619,9 +651,13 @@
   <span class="kw">return</span> <span class="nm">right</span>;
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span> = <span class="nm">node</span>.<span class="nm">left</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">leftRight</span> = <span class="nm">left</span>.<span class="nm">right</span>;
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="fn">rotateRight</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+          class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span> = <span
+          class="nm">node</span>.<span class="nm">left</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">leftRight</span> = <span
+          class="nm">left</span>.<span class="nm">right</span>;
 
   <span class="nm">left</span>.<span class="nm">right</span> = <span class="nm">node</span>;
   <span class="nm">node</span>.<span class="nm">left</span> = <span class="nm">leftRight</span>;
@@ -638,24 +674,39 @@
           <div class="dot" style="background:#67e8f9"></div>
           삽입 (Insert)
         </div>
-        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span
+            class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
   <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {
-    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삽입 하려는 데이터가 null&quot;</span>);
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;삽입 하려는 데이터가 null&quot;</span>);
   }
-  <span class="nm">root</span> = <span class="fn">insert</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+  <span class="nm">root</span> = <span class="fn">insert</span>(<span class="nm">root</span>, <span
+              class="nm">e</span>);
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">insert</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span>, <span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="kw">if</span> (<span class="nm">curNode</span> == <span class="kw">null</span>) { <span class="kw">return</span> <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>); }
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">insert</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">curNode</span> == <span
+              class="kw">null</span>) { <span class="kw">return</span> <span
+              class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>); }
 
-  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">curNode</span>.<span
+              class="nm">data</span>);
 
   <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
-    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;중복 요소 삽입&quot;</span>);
-  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
-    <span class="nm">curNode</span>.<span class="nm">left</span> = <span class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">left</span>, <span class="nm">e</span>);
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;중복 요소 삽입&quot;</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span
+              class="nm">compare</span> &lt; <span class="nu">0</span>) {
+    <span class="nm">curNode</span>.<span class="nm">left</span> = <span
+              class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">left</span>, <span
+              class="nm">e</span>);
   } <span class="kw">else</span> {
-    <span class="nm">curNode</span>.<span class="nm">right</span> = <span class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+    <span class="nm">curNode</span>.<span class="nm">right</span> = <span
+              class="fn">insert</span>(<span class="nm">curNode</span>.<span class="nm">right</span>, <span
+              class="nm">e</span>);
   }
   <span class="kw">return</span> <span class="fn">rebalance</span>(<span class="nm">curNode</span>);
 }
@@ -666,42 +717,73 @@
           <div class="dot" style="background:#fcd34d"></div>
           삭제 (Delete)
         </div>
-        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">delete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span
+            class="fn">delete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
   <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {
-    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalStateException</span>(<span class="st">&quot;비어있는 AVL 트리 삭제 시도&quot;</span>);
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span
+              class="st">&quot;비어있는 AVL 트리 삭제 시도&quot;</span>);
   }
   <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {
-    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삭제 시도 하려는 데이터가 Null&quot;</span>);
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;삭제 시도 하려는 데이터가 Null&quot;</span>);
   }
-  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span
+              class="nm">root</span>, <span class="nm">e</span>);
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) { <span class="kw">return</span> <span class="kw">null</span>; }
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) { <span
+              class="kw">return</span> <span class="kw">null</span>; }
 
-  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
 
   <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
-    <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">e</span>);
-  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &gt; <span class="nu">0</span>) {
-    <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+    <span class="nm">node</span>.<span class="nm">left</span> = <span
+              class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span
+              class="nm">e</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span
+              class="nm">compare</span> &gt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">right</span> = <span
+              class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">e</span>);
   } <span class="kw">else</span> {
-    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> &amp;&amp; <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span
+              class="kw">null</span> &amp;&amp; <span class="nm">node</span>.<span
+              class="nm">right</span> == <span class="kw">null</span>) {
       <span class="kw">return</span> <span class="kw">null</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
-      <span class="nm">node</span> = <span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span
+              class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span
+              class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="nm">node</span> = <span class="nm">node</span>.<span
+              class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span
+              class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
     } <span class="kw">else</span> {
-      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span class="fn">findMin</span>(<span class="nm">node</span>.<span class="nm">right</span>);
-      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span class="nm">data</span>;
-      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">successor</span>.<span class="nm">data</span>);
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">successor</span> = <span class="fn">findMin</span>(<span
+              class="nm">node</span>.<span class="nm">right</span>);
+      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span
+              class="nm">data</span>;
+      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span
+              class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">successor</span>.<span class="nm">data</span>);
     }
   }
   <span class="kw">return</span> <span class="fn">rebalance</span>(<span class="nm">node</span>);
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">node</span>;
-  <span class="kw">while</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) { <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>; }
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span> = <span class="nm">node</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span
+              class="nm">left</span> != <span class="kw">null</span>) { <span
+              class="nm">curNode</span> = <span class="nm">curNode</span>.<span
+              class="nm">left</span>; }
   <span class="kw">return</span> <span class="nm">curNode</span>;
 }
         </pre>
@@ -716,6 +798,7 @@
     1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
     6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
   };
+
   function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
 
   // ── 트리 레이아웃 상수 ──
@@ -723,14 +806,26 @@
 
   // ── 데이터 모델 ──
   let idCounter = 0;
+
   function makeNode(value) { return {id: idCounter++, value, height: 0, left: null, right: null}; }
+
   function h(n) { return n ? n.height : -1; }
+
   function bf(n) { return n ? h(n.left) - h(n.right) : 0; }
+
   function updateHeight(n) { n.height = 1 + Math.max(h(n.left), h(n.right)); }
+
   function cloneTree(n) {
     if (!n) { return null; }
-    return {id: n.id, value: n.value, height: n.height, left: cloneTree(n.left), right: cloneTree(n.right)};
+    return {
+      id: n.id,
+      value: n.value,
+      height: n.height,
+      left: cloneTree(n.left),
+      right: cloneTree(n.right)
+    };
   }
+
   function countNodes(n) { return n ? 1 + countNodes(n.left) + countNodes(n.right) : 0; }
 
   function rotateLeft(node) {
@@ -742,6 +837,7 @@
     updateHeight(right);
     return right;
   }
+
   function rotateRight(node) {
     const left = node.left;
     const leftRight = left.right;
@@ -756,8 +852,9 @@
   function quietInsert(node, value) {
     if (!node) { return makeNode(value); }
     if (value === node.value) { return node; }
-    if (value < node.value) { node.left = quietInsert(node.left, value); }
-    else { node.right = quietInsert(node.right, value); }
+    if (value < node.value) {
+      node.left = quietInsert(node.left, value);
+    } else { node.right = quietInsert(node.right, value); }
     updateHeight(node);
     const b = bf(node);
     if (b > 1) {
@@ -824,22 +921,25 @@
                 `${node.value}: LR 불균형 -> 왼쪽 자식(${node.left.value}) 기준 rotateLeft 먼저 수행`, 'insert');
             node.left = rotateLeft(node.left);
           }
-          pushStep(treeRoot, {[node.id]: 'target'}, `${node.value}: ${caseLabel} 불균형 -> rotateRight 수행`, 'insert');
+          pushStep(treeRoot, {[node.id]: 'target'},
+              `${node.value}: ${caseLabel} 불균형 -> rotateRight 수행`, 'insert');
           newSub = rotateRight(node);
         } else {
           let caseLabel = 'RR';
           if (bf(node.right) > 0) {
             caseLabel = 'RL';
             pushStep(treeRoot, {[node.id]: 'target', [node.right.id]: 'target'},
-                `${node.value}: RL 불균형 -> 오른쪽 자식(${node.right.value}) 기준 rotateRight 먼저 수행`, 'insert');
+                `${node.value}: RL 불균형 -> 오른쪽 자식(${node.right.value}) 기준 rotateRight 먼저 수행`,
+                'insert');
             node.right = rotateRight(node.right);
           }
-          pushStep(treeRoot, {[node.id]: 'target'}, `${node.value}: ${caseLabel} 불균형 -> rotateLeft 수행`, 'insert');
+          pushStep(treeRoot, {[node.id]: 'target'},
+              `${node.value}: ${caseLabel} 불균형 -> rotateLeft 수행`, 'insert');
           newSub = rotateLeft(node);
         }
-        if (i === 0) { treeRoot = newSub; }
-        else { stack[i - 1].node[stack[i - 1].dir] = newSub; }
-        pushStep(treeRoot, {[newSub.id]: 'new'}, `회전 완료 -> 이 서브트리의 새 루트 = ${newSub.value}`, 'insert');
+        if (i === 0) { treeRoot = newSub; } else { stack[i - 1].node[stack[i - 1].dir] = newSub; }
+        pushStep(treeRoot, {[newSub.id]: 'new'}, `회전 완료 -> 이 서브트리의 새 루트 = ${newSub.value}`,
+            'insert');
       }
     }
   }
@@ -861,19 +961,27 @@
     const visited = [];
     while (true) {
       if (value === cur.value) {
-        pushStep(treeRoot, {[cur.id]: 'target'}, `중복 값(${value}) 존재 -> IllegalArgumentException`, 'error');
+        pushStep(treeRoot, {[cur.id]: 'target'}, `중복 값(${value}) 존재 -> IllegalArgumentException`,
+            'error');
         return {steps, error: true};
       }
       visited.push(cur.id);
       pushStep(treeRoot, buildVisitHighlight(visited, cur.id, false),
-          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동` : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
+          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동`
+              : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
           'traverse');
       if (value < cur.value) {
-        if (!cur.left) { ancestors.push({node: cur, dir: 'left'}); break; }
+        if (!cur.left) {
+          ancestors.push({node: cur, dir: 'left'});
+          break;
+        }
         ancestors.push({node: cur, dir: 'left'});
         cur = cur.left;
       } else {
-        if (!cur.right) { ancestors.push({node: cur, dir: 'right'}); break; }
+        if (!cur.right) {
+          ancestors.push({node: cur, dir: 'right'});
+          break;
+        }
         ancestors.push({node: cur, dir: 'right'});
         cur = cur.right;
       }
@@ -903,10 +1011,16 @@
     while (cur && cur.value !== value) {
       visited.push(cur.id);
       pushStep(treeRoot, buildVisitHighlight(visited, cur.id, false),
-          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동` : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
+          value < cur.value ? `${value} &lt; ${cur.value} -> 왼쪽으로 이동`
+              : `${value} &gt; ${cur.value} -> 오른쪽으로 이동`,
           'traverse');
-      if (value < cur.value) { ancestors.push({node: cur, dir: 'left'}); cur = cur.left; }
-      else { ancestors.push({node: cur, dir: 'right'}); cur = cur.right; }
+      if (value < cur.value) {
+        ancestors.push({node: cur, dir: 'left'});
+        cur = cur.left;
+      } else {
+        ancestors.push({node: cur, dir: 'right'});
+        cur = cur.right;
+      }
     }
 
     if (!cur) {
@@ -933,7 +1047,8 @@
 
       const oldVal = cur.value;
       cur.value = succ.value;
-      pushStep(treeRoot, {[cur.id]: 'new'}, `${oldVal} -> ${succ.value} 값 복사 (구조가 아닌 값만 교체)`, 'insert');
+      pushStep(treeRoot, {[cur.id]: 'new'}, `${oldVal} -> ${succ.value} 값 복사 (구조가 아닌 값만 교체)`,
+          'insert');
 
       const lastSucc = succAncestors[succAncestors.length - 1];
       lastSucc.node[lastSucc.dir] = succ.right || null;
@@ -942,13 +1057,17 @@
       rebalanceStack = ancestors.concat(succAncestors);
     } else if (cur.left || cur.right) {
       const child = cur.left || cur.right;
-      if (ancestors.length === 0) { treeRoot = child; }
-      else { const last = ancestors[ancestors.length - 1]; last.node[last.dir] = child; }
+      if (ancestors.length === 0) { treeRoot = child; } else {
+        const last = ancestors[ancestors.length - 1];
+        last.node[last.dir] = child;
+      }
       pushStep(treeRoot, {[child.id]: 'new'}, `자식 하나 -> 해당 자식(${child.value})으로 대체`, 'remove');
       rebalanceStack = ancestors;
     } else {
-      if (ancestors.length === 0) { treeRoot = null; }
-      else { const last = ancestors[ancestors.length - 1]; last.node[last.dir] = null; }
+      if (ancestors.length === 0) { treeRoot = null; } else {
+        const last = ancestors[ancestors.length - 1];
+        last.node[last.dir] = null;
+      }
       pushStep(treeRoot, {}, `리프 노드 -> 그대로 제거`, 'remove');
       rebalanceStack = ancestors;
     }
@@ -1080,7 +1199,10 @@
   }
 
   function tick() {
-    if (stepIdx >= steps.length - 1) { stopPlay(); return; }
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
     stepIdx++;
     showFrame(stepIdx);
     if (stepIdx >= steps.length - 1) {
@@ -1095,8 +1217,7 @@
     const value = parseInt(document.getElementById('valInput').value);
     const v = isNaN(value) ? 0 : value;
     let plan;
-    if (op === 'insertAVL') { plan = insertAnimate(v); }
-    else { plan = deleteAnimate(v); }
+    if (op === 'insertAVL') { plan = insertAnimate(v); } else { plan = deleteAnimate(v); }
 
     steps = plan.steps;
     stepIdx = -1;
@@ -1113,7 +1234,10 @@
   document.getElementById('valInput').addEventListener('input', markDirty);
 
   document.getElementById('btnPlay').addEventListener('click', () => {
-    if (playing) { stopPlay(); return; }
+    if (playing) {
+      stopPlay();
+      return;
+    }
     ensurePlanReady();
     if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
     playing = true;
@@ -1161,7 +1285,12 @@
 
   // 초기화
   buildRandomTree(7);
-  steps = [{tree: cloneTree(treeRoot), highlight: {}, msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''}];
+  steps = [{
+    tree: cloneTree(treeRoot),
+    highlight: {},
+    msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+    tag: ''
+  }];
   stepIdx = 0;
   needsNewRun = true;
   showFrame(0);

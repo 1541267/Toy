@@ -1134,7 +1134,8 @@
     }
     const removedVal = arr[i].value;
     const newArr = [...arr.slice(0, i), ...arr.slice(i + 1)];
-    rsteps.push({arr: newArr, highlight: {}, msg: `노드(${removedVal}) 삭제 완료 -> size--`, tag: 'done'});
+    rsteps.push(
+        {arr: newArr, highlight: {}, msg: `노드(${removedVal}) 삭제 완료 -> size--`, tag: 'done'});
     return {steps: rsteps, result: newArr};
   }
 

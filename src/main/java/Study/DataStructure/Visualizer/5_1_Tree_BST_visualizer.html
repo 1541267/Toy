@@ -323,7 +323,9 @@
         <ul>
           <li>배열/연결리스트 같은 <strong>선형 구조</strong>와 다른 <strong>비선형 구조</strong></li>
           <li>정렬 안 된 배열: 탐색 O(n) / 연결리스트: 탐색 O(n) / 정렬된 배열: 탐색 O(log n)이지만 삽입·삭제 O(n)</li>
-          <li>탐색 빠르면 삽입·삭제 느리고, 삽입·삭제 빠르면 탐색이 느린 트레이드오프를 완화하려는 구조 → 균형 트리(BST/AVL/Red-Black)는 셋 다 O(log n)을 노림</li>
+          <li>탐색 빠르면 삽입·삭제 느리고, 삽입·삭제 빠르면 탐색이 느린 트레이드오프를 완화하려는 구조 → 균형 트리(BST/AVL/Red-Black)는 셋 다
+            O(log n)을 노림
+          </li>
         </ul>
       </div>
 
@@ -341,9 +343,13 @@
         <h3>🧭 순회(Traversal) 4가지</h3>
         <ul>
           <li><strong>preOrder</strong>: 노드 진입하자마자(자식 보기 전) 저장 → root가 항상 맨 먼저</li>
-          <li><strong>inOrder</strong>: 왼쪽 서브트리 끝나고 돌아온 직후, 오른쪽 가기 직전 저장 → <strong>BST에서는 이 순서가 곧 정렬된 순서</strong></li>
-          <li><strong>postOrder</strong>: 왼쪽/오른쪽 다 처리하고 나서야 저장 → 자식 결과가 먼저 필요한 계산(디렉토리 용량 합산, 트리 삭제)에 사용</li>
-          <li><strong>levelOrder</strong>: Queue를 이용한 BFS → 같은 depth끼리 좌→우로 방문, poll 하면서 자식을 다시 add</li>
+          <li><strong>inOrder</strong>: 왼쪽 서브트리 끝나고 돌아온 직후, 오른쪽 가기 직전 저장 → <strong>BST에서는 이 순서가 곧
+            정렬된 순서</strong></li>
+          <li><strong>postOrder</strong>: 왼쪽/오른쪽 다 처리하고 나서야 저장 → 자식 결과가 먼저 필요한 계산(디렉토리 용량 합산, 트리
+            삭제)에 사용
+          </li>
+          <li><strong>levelOrder</strong>: Queue를 이용한 BFS → 같은 depth끼리 좌→우로 방문, poll 하면서 자식을 다시 add
+          </li>
           <li>pre/in/post는 <strong>동일한 재귀 뼈대</strong>에서 저장(add)하는 위치만 다름</li>
         </ul>
       </div>
@@ -367,7 +373,8 @@
             <td>O(w) - 큐에는 항상 같은 depth 노드들만 담김 (w=가장 넓은 레벨의 노드 수)</td>
           </tr>
         </table>
-        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">4가지 모두 노드를 정확히 한 번씩 방문하므로 시간복잡도는 O(n)으로 동일, 추가 공간복잡도(h vs w)만 다름</p>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">4가지 모두 노드를 정확히 한 번씩 방문하므로
+          시간복잡도는 O(n)으로 동일, 추가 공간복잡도(h vs w)만 다름</p>
       </div>
 
       <div class="section-divider">🔍 이진 탐색 트리 (Binary Search Tree)</div>
@@ -394,7 +401,8 @@
       <div class="note-card">
         <h3>✏️ insert(e) - 반복문 + parent 추적</h3>
         <ul>
-          <li>curNode를 root부터 시작해서 compareTo 결과에 따라 left/right로 내려가며, 동시에 parent도 한 칸씩 같이 따라 내려감</li>
+          <li>curNode를 root부터 시작해서 compareTo 결과에 따라 left/right로 내려가며, 동시에 parent도 한 칸씩 같이 따라 내려감
+          </li>
           <li>curNode가 null이 되는 시점(= 빈 자리를 찾은 시점)에 반복 종료</li>
           <li>마지막에 parent와 비교해서 그 자리(left/right)에 새 노드를 연결, 중복 값은 예외 처리</li>
         </ul>
@@ -411,8 +419,12 @@
       <div class="note-card" style="flex-basis: 100%;">
         <h3>🗑 delete(e) - 재귀 + "서브트리의 새 루트를 리턴" 패턴</h3>
         <ul>
-          <li>doDelete(node, e)가 이 서브트리의 (바뀌었을 수도 있는) 루트를 리턴하고, 호출부는 <strong>node.left = doDelete(...)</strong> 형태로 그 결과를 자기 자식 자리에 그대로 대입 → 이 패턴 하나로 모든 링크 갱신이 자동 처리됨</li>
-          <li>delete(e) 호출부에서도 <strong>root = doDelete(root, e)</strong>로 재대입 필요 (내부 변화는 지역 변수의 변화일 뿐, 명시적 대입이 있어야 실제 링크가 갱신됨)</li>
+          <li>doDelete(node, e)가 이 서브트리의 (바뀌었을 수도 있는) 루트를 리턴하고, 호출부는 <strong>node.left =
+            doDelete(...)</strong> 형태로 그 결과를 자기 자식 자리에 그대로 대입 → 이 패턴 하나로 모든 링크 갱신이 자동 처리됨
+          </li>
+          <li>delete(e) 호출부에서도 <strong>root = doDelete(root, e)</strong>로 재대입 필요 (내부 변화는 지역 변수의 변화일
+            뿐, 명시적 대입이 있어야 실제 링크가 갱신됨)
+          </li>
         </ul>
         <div class="cols">
           <ul>
@@ -420,8 +432,12 @@
             <li><strong>자식 하나</strong>: 있는 자식을 그대로 리턴 → 그 자식이 삭제된 노드의 자리를 대신 차지</li>
           </ul>
           <ul>
-            <li><strong>자식 둘 다 있음</strong>: successor(오른쪽 서브트리의 최솟값)를 찾아 값만 복사 후, 오른쪽 서브트리에서 진짜 successor 노드를 재귀로 삭제</li>
-            <li>successor는 정의상 왼쪽 자식을 가질 수 없으므로(있었다면 그게 더 작은 successor여야 함) 삭제는 항상 leaf/자식하나 케이스로 축소됨</li>
+            <li><strong>자식 둘 다 있음</strong>: successor(오른쪽 서브트리의 최솟값)를 찾아 값만 복사 후, 오른쪽 서브트리에서 진짜
+              successor 노드를 재귀로 삭제
+            </li>
+            <li>successor는 정의상 왼쪽 자식을 가질 수 없으므로(있었다면 그게 더 작은 successor여야 함) 삭제는 항상 leaf/자식하나 케이스로
+              축소됨
+            </li>
           </ul>
         </div>
       </div>
@@ -450,7 +466,8 @@
             <td class="warn">O(n)</td>
           </tr>
         </table>
-        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: TreeMap/TreeSet(균형 BST 기반), 파일시스템 디렉토리, DOM 트리, DB 인덱스(B-Tree 계열), 자동완성(Trie도 트리의 일종)</p>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: TreeMap/TreeSet(균형 BST
+          기반), 파일시스템 디렉토리, DOM 트리, DB 인덱스(B-Tree 계열), 자동완성(Trie도 트리의 일종)</p>
       </div>
 
     </div>
@@ -556,13 +573,17 @@
         공통 부분 - Node
       </div>
       <pre>
-<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; {
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Node</span>&lt;<span
+          class="ty">E</span>&gt; {
 
   <span class="kw">private</span> <span class="ty">E</span> <span class="nm">data</span>;
-  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">left</span>;
-  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">right</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+          class="ty">E</span>&gt; <span class="nm">left</span>;
+  <span class="kw">private</span> <span class="ty">Node</span>&lt;<span
+          class="ty">E</span>&gt; <span class="nm">right</span>;
 
-  <span class="kw">public</span> <span class="ty">Node</span>(<span class="ty">E</span> <span class="nm">data</span>) {
+  <span class="kw">public</span> <span class="ty">Node</span>(<span class="ty">E</span> <span
+          class="nm">data</span>) {
     <span class="kw">this</span>.<span class="nm">data</span> = <span class="nm">data</span>;
     <span class="kw">this</span>.<span class="nm">left</span> = <span class="kw">null</span>;
     <span class="kw">this</span>.<span class="nm">right</span> = <span class="kw">null</span>;
@@ -577,64 +598,108 @@
           이진 트리 - 순회(Traversal)
         </div>
         <pre><span class="ck">// root -> left -> right</span>
-<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">preOrder</span>() {
-  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
-  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">preOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span
+              class="ty">E</span>&gt; <span class="fn">preOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span
+              class="fn">preOrder</span>(<span class="nm">root</span>, <span
+              class="nm">result</span>);}
   <span class="kw">return</span> <span class="nm">result</span>;
 }
 
-<span class="kw">private</span> <span class="kw">void</span> <span class="fn">preOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
-  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">preOrder</span>(<span
+              class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span
+              class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span
+              class="kw">return</span>;}
 
-  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
-  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
-  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span
+              class="nm">data</span>);
+  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span
+              class="nm">result</span>);
+  <span class="fn">preOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">result</span>);
 }
 
 <span class="ck">// left -> root -> right</span>
-<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">inOrder</span>() {
-  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
-  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">inOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span
+              class="ty">E</span>&gt; <span class="fn">inOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span
+              class="fn">inOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
   <span class="kw">return</span> <span class="nm">result</span>;
 }
 
-<span class="kw">private</span> <span class="kw">void</span> <span class="fn">inOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
-  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">inOrder</span>(<span
+              class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span
+              class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span
+              class="kw">return</span>;}
 
-  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
-  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
-  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
+  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span
+              class="nm">result</span>);
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span
+              class="nm">data</span>);
+  <span class="fn">inOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">result</span>);
 }
 
 <span class="ck">// left -> right -> root</span>
-<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">postOrder</span>() {
-  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
-  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span class="fn">postOrder</span>(<span class="nm">root</span>, <span class="nm">result</span>);}
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span
+              class="ty">E</span>&gt; <span class="fn">postOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> != <span class="kw">null</span>) {<span
+              class="fn">postOrder</span>(<span class="nm">root</span>, <span
+              class="nm">result</span>);}
   <span class="kw">return</span> <span class="nm">result</span>;
 }
 
-<span class="kw">private</span> <span class="kw">void</span> <span class="fn">postOrder</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span>) {
-  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span>;}
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">postOrder</span>(<span
+              class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span
+              class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">result</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span
+              class="kw">return</span>;}
 
-  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">result</span>);
-  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">result</span>);
-  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span
+              class="nm">result</span>);
+  <span class="fn">postOrder</span>(<span class="nm">node</span>.<span
+              class="nm">right</span>, <span class="nm">result</span>);
+  <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">node</span>.<span
+              class="nm">data</span>);
 }
 
 <span class="ck">// BFS, Queue 사용</span>
-<span class="kw">private</span> <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="fn">levelOrder</span>() {
-  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
-  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span class="kw">return</span> <span class="nm">result</span>;}
+<span class="kw">private</span> <span class="ty">ArrayList</span>&lt;<span
+              class="ty">E</span>&gt; <span class="fn">levelOrder</span>() {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">E</span>&gt; <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span
+              class="kw">return</span> <span class="nm">result</span>;}
 
-  <span class="ty">Queue</span>&lt;<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt;&gt; <span class="nm">queue</span> = <span class="kw">new</span> <span class="ty">ArrayDeque</span>&lt;&gt;();
+  <span class="ty">Queue</span>&lt;<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt;&gt; <span
+              class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">ArrayDeque</span>&lt;&gt;();
   <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">root</span>);
 
   <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
-    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">queue</span>.<span class="fn">poll</span>();
-    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+    <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span
+              class="nm">queue</span>.<span class="fn">poll</span>();
+    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span
+              class="nm">data</span>);
 
-    <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">left</span>);}
-    <span class="kw">if</span> (<span class="nm">curNode</span>.<span class="nm">right</span> != <span class="kw">null</span>) {<span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">right</span>);}
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span
+              class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">queue</span>.<span
+              class="fn">add</span>(<span class="nm">curNode</span>.<span class="nm">left</span>);}
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span
+              class="nm">right</span> != <span class="kw">null</span>) {<span
+              class="nm">queue</span>.<span class="fn">add</span>(<span
+              class="nm">curNode</span>.<span class="nm">right</span>);}
   }
   <span class="kw">return</span> <span class="nm">result</span>;
 }
@@ -645,77 +710,127 @@
           <div class="dot" style="background:#67e8f9"></div>
           이진 탐색 트리 (BST) - insert / search / delete
         </div>
-        <pre><span class="kw">public</span> <span class="kw">void</span> <span class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;삽입하려는 요소가 null&quot;</span>);}
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span class="nm">e</span>);
+        <pre><span class="kw">public</span> <span class="kw">void</span> <span
+            class="fn">insert</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span> == <span class="kw">null</span>) {<span
+              class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;삽입하려는 요소가 null&quot;</span>);}
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">newNode</span> = <span class="kw">new</span> <span class="ty">Node</span>&lt;&gt;(<span
+              class="nm">e</span>);
 
-  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span class="nm">root</span> = <span class="nm">newNode</span>; <span class="kw">return</span>;}
+  <span class="kw">if</span> (<span class="nm">root</span> == <span class="kw">null</span>) {<span
+              class="nm">root</span> = <span class="nm">newNode</span>; <span
+              class="kw">return</span>;}
 
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">parent</span> = <span class="kw">null</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span> = <span class="nm">root</span>;
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">parent</span> = <span class="kw">null</span>;
 
   <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
     <span class="nm">parent</span> = <span class="nm">curNode</span>;
-    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">curNode</span>.<span
+              class="nm">data</span>);
 
     <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {
-      <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span class="st">&quot;중복된 요소 삽입 시도&quot;</span>);
-    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;중복된 요소 삽입 시도&quot;</span>);
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span
+              class="nu">0</span>) {
       <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;
     } <span class="kw">else</span> {
-      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">right</span>;
+      <span class="nm">curNode</span> = <span class="nm">curNode</span>.<span
+              class="nm">right</span>;
     }
   }
 
-  <span class="kw">if</span> (<span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">parent</span>.<span class="nm">data</span>) &lt; <span class="nu">0</span>) {
+  <span class="kw">if</span> (<span class="nm">e</span>.<span class="fn">compareTo</span>(<span
+              class="nm">parent</span>.<span class="nm">data</span>) &lt; <span class="nu">0</span>) {
     <span class="nm">parent</span>.<span class="nm">left</span> = <span class="nm">newNode</span>;
   } <span class="kw">else</span> {
     <span class="nm">parent</span>.<span class="nm">right</span> = <span class="nm">newNode</span>;
   }
 }
 
-<span class="kw">public</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">search</span>(<span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">root</span>;
+<span class="kw">public</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">search</span>(<span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span> = <span class="nm">root</span>;
 
   <span class="kw">while</span> (<span class="nm">curNode</span> != <span class="kw">null</span>) {
-    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">curNode</span>.<span class="nm">data</span>);
+    <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">curNode</span>.<span
+              class="nm">data</span>);
 
-    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {<span class="kw">return</span> <span class="nm">curNode</span>;}
-    <span class="nm">curNode</span> = <span class="nm">compare</span> &lt; <span class="nu">0</span> ? <span class="nm">curNode</span>.<span class="nm">left</span> : <span class="nm">curNode</span>.<span class="nm">right</span>;
+    <span class="kw">if</span> (<span class="nm">compare</span> == <span class="nu">0</span>) {<span
+              class="kw">return</span> <span class="nm">curNode</span>;}
+    <span class="nm">curNode</span> = <span class="nm">compare</span> &lt; <span class="nu">0</span> ? <span
+              class="nm">curNode</span>.<span class="nm">left</span> : <span
+              class="nm">curNode</span>.<span class="nm">right</span>;
   }
   <span class="kw">return</span> <span class="kw">null</span>;
 }
 
-<span class="kw">public</span> <span class="kw">void</span> <span class="fn">delete</span>(<span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span class="nm">root</span>, <span class="nm">e</span>);
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">delete</span>(<span
+              class="ty">E</span> <span class="nm">e</span>) {
+  <span class="nm">root</span> = <span class="fn">doDelete</span>(<span
+              class="nm">root</span>, <span class="nm">e</span>);
 }
 
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
-  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span class="kw">return</span> <span class="kw">null</span>;}
-  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">doDelete</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">node</span>, <span class="ty">E</span> <span class="nm">e</span>) {
+  <span class="kw">if</span> (<span class="nm">node</span> == <span class="kw">null</span>) {<span
+              class="kw">return</span> <span class="kw">null</span>;}
+  <span class="ty">int</span> <span class="nm">compare</span> = <span class="nm">e</span>.<span
+              class="fn">compareTo</span>(<span class="nm">node</span>.<span class="nm">data</span>);
 
   <span class="kw">if</span> (<span class="nm">compare</span> &lt; <span class="nu">0</span>) {
-    <span class="nm">node</span>.<span class="nm">left</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span class="nm">e</span>);
-  } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">compare</span> &gt; <span class="nu">0</span>) {
-    <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">e</span>);
+    <span class="nm">node</span>.<span class="nm">left</span> = <span
+              class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">left</span>, <span
+              class="nm">e</span>);
+  } <span class="kw">else</span> <span class="kw">if</span> (<span
+              class="nm">compare</span> &gt; <span class="nu">0</span>) {
+    <span class="nm">node</span>.<span class="nm">right</span> = <span
+              class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">e</span>);
   } <span class="kw">else</span> {
-    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> && <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
+    <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span
+              class="kw">null</span> && <span class="nm">node</span>.<span class="nm">right</span> == <span
+              class="kw">null</span>) {
       <span class="nm">node</span> = <span class="kw">null</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span class="nm">right</span> == <span class="kw">null</span>) {
-      <span class="nm">node</span> = <span class="nm">node</span>.<span class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> (<span class="nm">node</span>.<span
+              class="nm">left</span> == <span class="kw">null</span> || <span class="nm">node</span>.<span
+              class="nm">right</span> == <span class="kw">null</span>) {
+      <span class="nm">node</span> = <span class="nm">node</span>.<span
+              class="nm">left</span> == <span class="kw">null</span> ? <span class="nm">node</span>.<span
+              class="nm">right</span> : <span class="nm">node</span>.<span class="nm">left</span>;
     } <span class="kw">else</span> {
-      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">successor</span> = <span class="fn">findMin</span>(<span class="nm">node</span>.<span class="nm">right</span>);
-      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span class="nm">data</span>;
-      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span class="nm">node</span>.<span class="nm">right</span>, <span class="nm">successor</span>.<span class="nm">data</span>);
+      <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">successor</span> = <span class="fn">findMin</span>(<span
+              class="nm">node</span>.<span class="nm">right</span>);
+      <span class="nm">node</span>.<span class="nm">data</span> = <span class="nm">successor</span>.<span
+              class="nm">data</span>;
+      <span class="nm">node</span>.<span class="nm">right</span> = <span class="fn">doDelete</span>(<span
+              class="nm">node</span>.<span class="nm">right</span>, <span
+              class="nm">successor</span>.<span class="nm">data</span>);
     }
   }
   <span class="kw">return</span> <span class="nm">node</span>;
 }
 
 <span class="ck">// 왼쪽 자식이 없을 때까지 계속 left로 이동 -> 서브트리의 최솟값</span>
-<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">node</span>) {
-  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span class="nm">curNode</span> = <span class="nm">node</span>;
-  <span class="kw">while</span> (<span class="nm">curNode</span>.<span class="nm">left</span> != <span class="kw">null</span>) {<span class="nm">curNode</span> = <span class="nm">curNode</span>.<span class="nm">left</span>;}
+<span class="kw">private</span> <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="fn">findMin</span>(<span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">node</span>) {
+  <span class="ty">Node</span>&lt;<span class="ty">E</span>&gt; <span
+              class="nm">curNode</span> = <span class="nm">node</span>;
+  <span class="kw">while</span> (<span class="nm">curNode</span>.<span
+              class="nm">left</span> != <span class="kw">null</span>) {<span
+              class="nm">curNode</span> = <span class="nm">curNode</span>.<span
+              class="nm">left</span>;}
   <span class="kw">return</span> <span class="nm">curNode</span>;
 }
         </pre>
@@ -745,7 +860,12 @@
 
   function cloneTree(node) {
     if (!node) { return null; }
-    return {id: node.id, value: node.value, left: cloneTree(node.left), right: cloneTree(node.right)};
+    return {
+      id: node.id,
+      value: node.value,
+      left: cloneTree(node.left),
+      right: cloneTree(node.right)
+    };
   }
 
   function buildBalanced(sorted) {
@@ -765,7 +885,10 @@
   }
 
   function treeSize(node) { return node ? 1 + treeSize(node.left) + treeSize(node.right) : 0; }
-  function treeHeight(node) { return node ? 1 + Math.max(treeHeight(node.left), treeHeight(node.right)) : -1; }
+
+  function treeHeight(node) {
+    return node ? 1 + Math.max(treeHeight(node.left), treeHeight(node.right)) : -1;
+  }
 
   function buildVisitHighlight(visitedIds, currentId, currentState) {
     const h = {};
@@ -778,13 +901,31 @@
   function planInsert(rootNode, value) {
     const steps = [];
     if (isNaN(value)) {
-      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      steps.push({
+        tree: cloneTree(rootNode),
+        highlight: {},
+        msg: '값이 올바른 숫자가 아닙니다',
+        tag: 'error',
+        output: []
+      });
       return {steps, result: rootNode};
     }
     if (!rootNode) {
       const nn = newNode(value);
-      steps.push({tree: null, highlight: {}, msg: `root == null -> 새 노드(${value})가 root가 됩니다`, tag: 'insert', output: []});
-      steps.push({tree: cloneTree(nn), highlight: {[nn.id]: 'new'}, msg: `insert(${value}) 완료`, tag: 'done', output: []});
+      steps.push({
+        tree: null,
+        highlight: {},
+        msg: `root == null -> 새 노드(${value})가 root가 됩니다`,
+        tag: 'insert',
+        output: []
+      });
+      steps.push({
+        tree: cloneTree(nn),
+        highlight: {[nn.id]: 'new'},
+        msg: `insert(${value}) 완료`,
+        tag: 'done',
+        output: []
+      });
       return {steps, result: nn};
     }
     const workRoot = cloneTree(rootNode);
@@ -794,30 +935,57 @@
       const compare = value - cur.value;
       if (compare === 0) {
         visited.push(cur.id);
-        steps.push({tree: cloneTree(workRoot), highlight: buildVisitHighlight(visited, cur.id, 'target'), msg: `중복된 값(${value}) 발견 -> IllegalArgumentException`, tag: 'error', output: []});
+        steps.push({
+          tree: cloneTree(workRoot),
+          highlight: buildVisitHighlight(visited, cur.id, 'target'),
+          msg: `중복된 값(${value}) 발견 -> IllegalArgumentException`,
+          tag: 'error',
+          output: []
+        });
         return {steps, result: rootNode};
       }
       visited.push(cur.id);
-      steps.push({tree: cloneTree(workRoot), highlight: buildVisitHighlight(visited, cur.id, 'current'),
-        msg: `compareTo -> ${compare < 0 ? `${value} < ${cur.value}: 왼쪽으로 이동` : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []});
+      steps.push({
+        tree: cloneTree(workRoot), highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${compare < 0 ? `${value} < ${cur.value}: 왼쪽으로 이동`
+            : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []
+      });
       parent = cur;
-      if (compare < 0) { dir = 'left'; cur = cur.left; } else { dir = 'right'; cur = cur.right; }
+      if (compare < 0) {
+        dir = 'left';
+        cur = cur.left;
+      } else {
+        dir = 'right';
+        cur = cur.right;
+      }
     }
     const nn = newNode(value);
     if (dir === 'left') { parent.left = nn; } else { parent.right = nn; }
-    steps.push({tree: cloneTree(workRoot), highlight: {...buildVisitHighlight(visited, null, null), [nn.id]: 'new'},
-      msg: `parent(${parent.value}).${dir} = 새 노드(${value}) 연결 완료 -> size++`, tag: 'done', output: []});
+    steps.push({
+      tree: cloneTree(workRoot),
+      highlight: {...buildVisitHighlight(visited, null, null), [nn.id]: 'new'},
+      msg: `parent(${parent.value}).${dir} = 새 노드(${value}) 연결 완료 -> size++`,
+      tag: 'done',
+      output: []
+    });
     return {steps, result: workRoot};
   }
 
   function planSearch(rootNode, value) {
     const steps = [];
     if (isNaN(value)) {
-      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      steps.push({
+        tree: cloneTree(rootNode),
+        highlight: {},
+        msg: '값이 올바른 숫자가 아닙니다',
+        tag: 'error',
+        output: []
+      });
       return {steps, result: rootNode};
     }
     if (!rootNode) {
-      steps.push({tree: null, highlight: {}, msg: 'root == null -> 검색 결과 없음', tag: 'error', output: []});
+      steps.push(
+          {tree: null, highlight: {}, msg: 'root == null -> 검색 결과 없음', tag: 'error', output: []});
       return {steps, result: rootNode};
     }
     const base = cloneTree(rootNode);
@@ -825,33 +993,59 @@
     const visited = [];
     while (cur) {
       if (cur.value === value) {
-        steps.push({tree: cloneTree(base), highlight: buildVisitHighlight(visited, cur.id, 'target'), msg: `값(${value}) 발견 -> search(${value}) 성공`, tag: 'done', output: []});
+        steps.push({
+          tree: cloneTree(base),
+          highlight: buildVisitHighlight(visited, cur.id, 'target'),
+          msg: `값(${value}) 발견 -> search(${value}) 성공`,
+          tag: 'done',
+          output: []
+        });
         return {steps, result: rootNode};
       }
-      steps.push({tree: cloneTree(base), highlight: buildVisitHighlight(visited, cur.id, 'current'),
-        msg: `compareTo -> ${value < cur.value ? `${value} < ${cur.value}: 왼쪽으로 이동` : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []});
+      steps.push({
+        tree: cloneTree(base), highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${value < cur.value ? `${value} < ${cur.value}: 왼쪽으로 이동`
+            : `${value} > ${cur.value}: 오른쪽으로 이동`}`, tag: 'traverse', output: []
+      });
       visited.push(cur.id);
       cur = value < cur.value ? cur.left : cur.right;
     }
-    steps.push({tree: cloneTree(base), highlight: {}, msg: `값(${value})을 찾지 못함 -> curNode==null, null 반환`, tag: 'error', output: []});
+    steps.push({
+      tree: cloneTree(base),
+      highlight: {},
+      msg: `값(${value})을 찾지 못함 -> curNode==null, null 반환`,
+      tag: 'error',
+      output: []
+    });
     return {steps, result: rootNode};
   }
 
   function removeNodeInPlace(target, parent, side, holder) {
     const child = target.left || target.right || null;
-    if (parent === null) { holder.root = child; }
-    else if (side === 'left') { parent.left = child; }
-    else { parent.right = child; }
+    if (parent === null) { holder.root = child; } else if (side
+        === 'left') { parent.left = child; } else { parent.right = child; }
   }
 
   function planDelete(rootNode, value) {
     const steps = [];
     if (isNaN(value)) {
-      steps.push({tree: cloneTree(rootNode), highlight: {}, msg: '값이 올바른 숫자가 아닙니다', tag: 'error', output: []});
+      steps.push({
+        tree: cloneTree(rootNode),
+        highlight: {},
+        msg: '값이 올바른 숫자가 아닙니다',
+        tag: 'error',
+        output: []
+      });
       return {steps, result: rootNode};
     }
     if (!rootNode) {
-      steps.push({tree: null, highlight: {}, msg: '트리가 비어있는 상태 -> IllegalStateException', tag: 'error', output: []});
+      steps.push({
+        tree: null,
+        highlight: {},
+        msg: '트리가 비어있는 상태 -> IllegalStateException',
+        tag: 'error',
+        output: []
+      });
       return {steps, result: rootNode};
     }
     const workRoot = cloneTree(rootNode);
@@ -859,41 +1053,100 @@
     let cur = workRoot, parent = null, side = null;
     const visited = [];
     while (cur && cur.value !== value) {
-      steps.push({tree: cloneTree(holder.root), highlight: buildVisitHighlight(visited, cur.id, 'current'),
-        msg: `compareTo -> ${value < cur.value ? '왼쪽' : '오른쪽'}으로 이동 (현재 ${cur.value})`, tag: 'traverse', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: buildVisitHighlight(visited, cur.id, 'current'),
+        msg: `compareTo -> ${value < cur.value ? '왼쪽' : '오른쪽'}으로 이동 (현재 ${cur.value})`,
+        tag: 'traverse',
+        output: []
+      });
       visited.push(cur.id);
       parent = cur;
-      if (value < cur.value) { side = 'left'; cur = cur.left; } else { side = 'right'; cur = cur.right; }
+      if (value < cur.value) {
+        side = 'left';
+        cur = cur.left;
+      } else {
+        side = 'right';
+        cur = cur.right;
+      }
     }
     if (!cur) {
-      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: `값(${value})을 찾지 못함 -> 삭제할 노드 없음`, tag: 'error', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {},
+        msg: `값(${value})을 찾지 못함 -> 삭제할 노드 없음`,
+        tag: 'error',
+        output: []
+      });
       return {steps, result: rootNode};
     }
-    steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'target'}, msg: `삭제 대상 노드(${value}) 발견`, tag: 'remove', output: []});
+    steps.push({
+      tree: cloneTree(holder.root),
+      highlight: {[cur.id]: 'target'},
+      msg: `삭제 대상 노드(${value}) 발견`,
+      tag: 'remove',
+      output: []
+    });
 
     if (!cur.left && !cur.right) {
       removeNodeInPlace(cur, parent, side, holder);
-      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: '자식 없음(leaf) -> node=null 리턴, 부모 링크 제거', tag: 'done', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {},
+        msg: '자식 없음(leaf) -> node=null 리턴, 부모 링크 제거',
+        tag: 'done',
+        output: []
+      });
     } else if (!cur.left || !cur.right) {
       const childVal = (cur.left || cur.right).value;
       removeNodeInPlace(cur, parent, side, holder);
-      steps.push({tree: cloneTree(holder.root), highlight: {}, msg: `자식이 하나 -> 자식(${childVal})이 그대로 그 자리를 대신함`, tag: 'done', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {},
+        msg: `자식이 하나 -> 자식(${childVal})이 그대로 그 자리를 대신함`,
+        tag: 'done',
+        output: []
+      });
     } else {
       let succParent = cur, succSide = 'right', succ = cur.right;
       const succVisited = [];
       while (succ.left) {
-        steps.push({tree: cloneTree(holder.root), highlight: {...buildVisitHighlight(succVisited, succ.id, 'current'), [cur.id]: 'target'},
-          msg: `findMin: 오른쪽 서브트리에서 왼쪽 끝까지 이동 (현재 ${succ.value})`, tag: 'traverse', output: []});
+        steps.push({
+          tree: cloneTree(holder.root),
+          highlight: {...buildVisitHighlight(succVisited, succ.id, 'current'), [cur.id]: 'target'},
+          msg: `findMin: 오른쪽 서브트리에서 왼쪽 끝까지 이동 (현재 ${succ.value})`,
+          tag: 'traverse',
+          output: []
+        });
         succVisited.push(succ.id);
-        succParent = succ; succSide = 'left'; succ = succ.left;
+        succParent = succ;
+        succSide = 'left';
+        succ = succ.left;
       }
-      steps.push({tree: cloneTree(holder.root), highlight: {[succ.id]: 'successor', [cur.id]: 'target'}, msg: `successor 발견: ${succ.value} (오른쪽 서브트리 최솟값)`, tag: 'remove', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {[succ.id]: 'successor', [cur.id]: 'target'},
+        msg: `successor 발견: ${succ.value} (오른쪽 서브트리 최솟값)`,
+        tag: 'remove',
+        output: []
+      });
       const oldVal = cur.value;
       cur.value = succ.value;
-      steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'new', [succ.id]: 'removing'},
-        msg: `node.data = successor.data (${oldVal} -> ${cur.value}) -> 값만 교체, 이 순간 트리에 값이 중복된 과도 상태`, tag: 'insert', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {[cur.id]: 'new', [succ.id]: 'removing'},
+        msg: `node.data = successor.data (${oldVal} -> ${cur.value}) -> 값만 교체, 이 순간 트리에 값이 중복된 과도 상태`,
+        tag: 'insert',
+        output: []
+      });
       removeNodeInPlace(succ, succParent, succSide, holder);
-      steps.push({tree: cloneTree(holder.root), highlight: {[cur.id]: 'new'}, msg: '오른쪽 서브트리에서 진짜 successor 노드 제거 완료 -> size--', tag: 'done', output: []});
+      steps.push({
+        tree: cloneTree(holder.root),
+        highlight: {[cur.id]: 'new'},
+        msg: '오른쪽 서브트리에서 진짜 successor 노드 제거 완료 -> size--',
+        tag: 'done',
+        output: []
+      });
     }
     return {steps, result: holder.root};
   }
@@ -901,6 +1154,7 @@
   // ── 순회 planner ──
   function genOrderEvents(node, order) {
     const events = [];
+
     function visit(n) {
       if (!n) { return; }
       events.push({type: 'enter', id: n.id, value: n.value});
@@ -910,6 +1164,7 @@
       visit(n.right);
       if (order === 'post') { events.push({type: 'add', id: n.id, value: n.value}); }
     }
+
     visit(node);
     return events;
   }
@@ -918,7 +1173,13 @@
     const steps = [];
     const label = order === 'pre' ? 'preOrder' : order === 'in' ? 'inOrder' : 'postOrder';
     if (!rootNode) {
-      steps.push({tree: null, highlight: {}, msg: 'root == null -> 결과 없음 (빈 리스트)', tag: 'done', output: []});
+      steps.push({
+        tree: null,
+        highlight: {},
+        msg: 'root == null -> 결과 없음 (빈 리스트)',
+        tag: 'done',
+        output: []
+      });
       return {steps, result: rootNode};
     }
     const events = genOrderEvents(rootNode, order);
@@ -926,47 +1187,107 @@
     const output = [];
     events.forEach(ev => {
       if (ev.type === 'enter') {
-        const hl = {}; done.forEach(id => { hl[id] = 'visited'; });
+        const hl = {};
+        done.forEach(id => { hl[id] = 'visited'; });
         hl[ev.id] = 'current';
-        steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `${label}(${ev.value}) 진입 -> 자식 노드로 재귀 호출 진행`, tag: 'traverse', output: [...output]});
+        steps.push({
+          tree: cloneTree(rootNode),
+          highlight: hl,
+          msg: `${label}(${ev.value}) 진입 -> 자식 노드로 재귀 호출 진행`,
+          tag: 'traverse',
+          output: [...output]
+        });
       } else {
         done.add(ev.id);
         output.push(ev.value);
-        const hl = {}; done.forEach(id => { hl[id] = 'visited'; });
+        const hl = {};
+        done.forEach(id => { hl[id] = 'visited'; });
         hl[ev.id] = 'new';
-        steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `result.add(${ev.value}) -> 저장 순서에 포함 (현재 결과: [${output.join(', ')}])`, tag: 'insert', output: [...output]});
+        steps.push({
+          tree: cloneTree(rootNode),
+          highlight: hl,
+          msg: `result.add(${ev.value}) -> 저장 순서에 포함 (현재 결과: [${output.join(', ')}])`,
+          tag: 'insert',
+          output: [...output]
+        });
       }
     });
-    const hlFinal = {}; done.forEach(id => { hlFinal[id] = 'visited'; });
-    steps.push({tree: cloneTree(rootNode), highlight: hlFinal, msg: `${label} 순회 완료 -> [${output.join(', ')}]`, tag: 'done', output: [...output]});
+    const hlFinal = {};
+    done.forEach(id => { hlFinal[id] = 'visited'; });
+    steps.push({
+      tree: cloneTree(rootNode),
+      highlight: hlFinal,
+      msg: `${label} 순회 완료 -> [${output.join(', ')}]`,
+      tag: 'done',
+      output: [...output]
+    });
     return {steps, result: rootNode};
   }
 
   function planLevelOrder(rootNode) {
     const steps = [];
     if (!rootNode) {
-      steps.push({tree: null, highlight: {}, msg: 'root == null -> 결과 없음', tag: 'done', output: [], queue: []});
+      steps.push({
+        tree: null,
+        highlight: {},
+        msg: 'root == null -> 결과 없음',
+        tag: 'done',
+        output: [],
+        queue: []
+      });
       return {steps, result: rootNode};
     }
     const queue = [rootNode];
     const output = [];
     const doneIds = new Set();
-    steps.push({tree: cloneTree(rootNode), highlight: {}, msg: `queue.add(root) -> 초기 큐: [${queue.map(n => n.value).join(', ')}]`, tag: 'traverse', output: [...output], queue: queue.map(n => n.value)});
+    steps.push({
+      tree: cloneTree(rootNode),
+      highlight: {},
+      msg: `queue.add(root) -> 초기 큐: [${queue.map(n => n.value).join(', ')}]`,
+      tag: 'traverse',
+      output: [...output],
+      queue: queue.map(n => n.value)
+    });
     while (queue.length) {
       const cur = queue.shift();
       doneIds.add(cur.id);
       output.push(cur.value);
-      const hl = {}; doneIds.forEach(id => { if (id !== cur.id) { hl[id] = 'visited'; } }); hl[cur.id] = 'current';
-      steps.push({tree: cloneTree(rootNode), highlight: hl, msg: `poll() -> ${cur.value} 방문, result에 추가`, tag: 'insert', output: [...output], queue: queue.map(n => n.value)});
+      const hl = {};
+      doneIds.forEach(id => { if (id !== cur.id) { hl[id] = 'visited'; } });
+      hl[cur.id] = 'current';
+      steps.push({
+        tree: cloneTree(rootNode),
+        highlight: hl,
+        msg: `poll() -> ${cur.value} 방문, result에 추가`,
+        tag: 'insert',
+        output: [...output],
+        queue: queue.map(n => n.value)
+      });
       if (cur.left) { queue.push(cur.left); }
       if (cur.right) { queue.push(cur.right); }
       if (cur.left || cur.right) {
-        const hl2 = {}; doneIds.forEach(id => { hl2[id] = 'visited'; });
-        steps.push({tree: cloneTree(rootNode), highlight: hl2, msg: `자식 큐에 추가 -> 현재 큐: [${queue.map(n => n.value).join(', ')}]`, tag: 'traverse', output: [...output], queue: queue.map(n => n.value)});
+        const hl2 = {};
+        doneIds.forEach(id => { hl2[id] = 'visited'; });
+        steps.push({
+          tree: cloneTree(rootNode),
+          highlight: hl2,
+          msg: `자식 큐에 추가 -> 현재 큐: [${queue.map(n => n.value).join(', ')}]`,
+          tag: 'traverse',
+          output: [...output],
+          queue: queue.map(n => n.value)
+        });
       }
     }
-    const hlFinal = {}; doneIds.forEach(id => { hlFinal[id] = 'visited'; });
-    steps.push({tree: cloneTree(rootNode), highlight: hlFinal, msg: `levelOrder 완료 -> [${output.join(', ')}]`, tag: 'done', output: [...output], queue: []});
+    const hlFinal = {};
+    doneIds.forEach(id => { hlFinal[id] = 'visited'; });
+    steps.push({
+      tree: cloneTree(rootNode),
+      highlight: hlFinal,
+      msg: `levelOrder 완료 -> [${output.join(', ')}]`,
+      tag: 'done',
+      output: [...output],
+      queue: []
+    });
     return {steps, result: rootNode};
   }
 
@@ -975,6 +1296,7 @@
     const nodes = [];
     const counter = {x: 0};
     let maxDepth = 0;
+
     function walk(node, depth) {
       if (!node) { return; }
       walk(node.left, depth + 1);
@@ -983,17 +1305,26 @@
       maxDepth = Math.max(maxDepth, depth);
       walk(node.right, depth + 1);
     }
+
     walk(rootNode, 0);
     return {nodes, maxX: counter.x - 1, maxDepth};
   }
 
   function collectEdges(node) {
     const edges = [];
+
     function walk(n) {
       if (!n) { return; }
-      if (n.left) { edges.push({parent: n.id, child: n.left.id}); walk(n.left); }
-      if (n.right) { edges.push({parent: n.id, child: n.right.id}); walk(n.right); }
+      if (n.left) {
+        edges.push({parent: n.id, child: n.left.id});
+        walk(n.left);
+      }
+      if (n.right) {
+        edges.push({parent: n.id, child: n.right.id});
+        walk(n.right);
+      }
     }
+
     walk(node);
     return edges;
   }
@@ -1039,7 +1370,10 @@
 
     const posMap = {};
     nodes.forEach(n => {
-      posMap[n.id] = {cx: padX + n.x * spacingX + spacingX / 2, cy: padTop + n.y * spacingY + nodeSize / 2};
+      posMap[n.id] = {
+        cx: padX + n.x * spacingX + spacingX / 2,
+        cy: padTop + n.y * spacingY + nodeSize / 2
+      };
     });
 
     let edgeSvg = '';
@@ -1056,7 +1390,8 @@
       let cls = 'tnode';
       if (hl) { cls += ' state-' + hl; }
       const isRoot = n.id === rootNode.id;
-      html += `<div class="tnode-wrap" style="left:${pos.cx - nodeSize / 2}px; top:${pos.cy - nodeSize / 2}px;">
+      html += `<div class="tnode-wrap" style="left:${pos.cx - nodeSize / 2}px; top:${pos.cy
+      - nodeSize / 2}px;">
           ${isRoot ? '<div class="pos-tag root">ROOT</div>' : ''}
           <div class="${cls}">${n.value}</div>
         </div>`;
@@ -1110,10 +1445,16 @@
   }
 
   function tick() {
-    if (stepIdx >= steps.length - 1) { stopPlay(); return; }
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
     stepIdx++;
     showFrame(stepIdx);
-    if (stepIdx >= steps.length - 1) { stopPlay(); needsNewRun = true; }
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
   }
 
   function ensurePlanReady() {
@@ -1121,13 +1462,13 @@
     const op = document.getElementById('opSelect').value;
     const value = parseInt(document.getElementById('valInput').value);
     let plan;
-    if (op === 'insert') { plan = planInsert(root, value); }
-    else if (op === 'search') { plan = planSearch(root, value); }
-    else if (op === 'delete') { plan = planDelete(root, value); }
-    else if (op === 'preOrder') { plan = planTraversal(root, 'pre'); }
-    else if (op === 'inOrder') { plan = planTraversal(root, 'in'); }
-    else if (op === 'postOrder') { plan = planTraversal(root, 'post'); }
-    else if (op === 'levelOrder') { plan = planLevelOrder(root); }
+    if (op === 'insert') { plan = planInsert(root, value); } else if (op
+        === 'search') { plan = planSearch(root, value); } else if (op
+        === 'delete') { plan = planDelete(root, value); } else if (op
+        === 'preOrder') { plan = planTraversal(root, 'pre'); } else if (op
+        === 'inOrder') { plan = planTraversal(root, 'in'); } else if (op
+        === 'postOrder') { plan = planTraversal(root, 'post'); } else if (op
+        === 'levelOrder') { plan = planLevelOrder(root); }
 
     steps = plan.steps;
     root = plan.result;
@@ -1141,13 +1482,22 @@
     document.getElementById('valGroup').style.display = needsVal ? 'flex' : 'none';
   }
 
-  function markDirty() { stopPlay(); needsNewRun = true; }
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
 
-  document.getElementById('opSelect').addEventListener('change', () => { updateOpUI(); markDirty(); });
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
   document.getElementById('valInput').addEventListener('input', markDirty);
 
   document.getElementById('btnPlay').addEventListener('click', () => {
-    if (playing) { stopPlay(); return; }
+    if (playing) {
+      stopPlay();
+      return;
+    }
     ensurePlanReady();
     if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
     playing = true;
@@ -1165,7 +1515,13 @@
   document.getElementById('btnNewList').addEventListener('click', () => {
     stopPlay();
     root = randomTree(6);
-    steps = [{tree: cloneTree(root), highlight: {}, msg: '새 트리를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: '', output: []}];
+    steps = [{
+      tree: cloneTree(root),
+      highlight: {},
+      msg: '새 트리를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: '',
+      output: []
+    }];
     stepIdx = 0;
     needsNewRun = true;
     showFrame(0);
@@ -1189,7 +1545,13 @@
 
   updateOpUI();
   root = randomTree(6);
-  steps = [{tree: cloneTree(root), highlight: {}, msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: '', output: []}];
+  steps = [{
+    tree: cloneTree(root),
+    highlight: {},
+    msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+    tag: '',
+    output: []
+  }];
   stepIdx = 0;
   needsNewRun = true;
   showFrame(0);
