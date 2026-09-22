@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>해시테이블 - 체이닝(Chaining) 기반 HashMap 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & input[type=number],
+    & input[type=text] {
+      width: 84px;
+      padding: 5px 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number],
+    .ctrl-group input[type=text] {
+      width: 66px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
+  .phase-hash {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  .phase-resize {
+    background: var(--tag-purple-bg);
+    color: var(--tag-purple-text);
+  }
+
+  /* ── 버킷 배열 시각화 ── */
+  .bucket-scroll {
+    padding: 0.25rem 0.1rem 0.5rem;
+    max-height: 480px;
+    overflow-y: auto;
+  }
+
+  .bucket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .bucket-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface-bg);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: border-color 0.2s, background 0.2s;
+
+    &.active {
+      border-color: var(--accent);
+      background: #202847;
+    }
+  }
+
+  .bucket-idx {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--panel-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--accent-soft);
+  }
+
+  .bucket-chain {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 30px;
+  }
+
+  .chain-empty {
+    color: var(--text-dim);
+    font-size: 0.74rem;
+    font-style: italic;
+  }
+
+  .chain-arrow {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    padding: 0 1px;
+  }
+
+  .chain-entry {
+    background: var(--card-bg);
+    border: 1.5px solid var(--surface-border);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    font-family: "Consolas", monospace;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s, opacity 0.2s;
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.08);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.08);
+    }
+
+    &.state-new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.state-removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      text-decoration: line-through;
+      opacity: 0.6;
+      transform: scale(0.92);
+    }
+  }
+
+  @media (max-width: 620px) {
+    .bucket-idx {
+      width: 28px;
+      height: 28px;
+      font-size: 0.68rem;
+    }
+
+    .chain-entry {
+      font-size: 0.7rem;
+      padding: 3px 7px;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">해시테이블 - 체이닝(Separate Chaining) HashMap</h1>
+    <p>버킷 배열 + 연결리스트 체인 기반 put/get/remove/containsKey 및 resize(재해싱) 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle" open>
+    <summary>📖 해시테이블(체이닝) 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="section-divider">🗂️ 해시테이블(Hash Table) 개요</div>
+
+      <div class="note-card">
+        <h3>🗂️ 핵심 아이디어</h3>
+        <ul>
+          <li>BST가 <strong>비교하며 찾아가는</strong> 방식(O(log n))이라면, 해시테이블은 <strong>계산해서 바로 도착</strong>하는
+            방식(평균 O(1))
+          </li>
+          <li>key를 인덱스로 직접 변환(계산)하여 배열에 바로 접근 -> 비교 자체가 필요 없음</li>
+          <li>Queue로도 구현 가능하나, queue의 enqueue()/dequeue()는 특정 key를 사용한 put()/remove()와 맞지 않음</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚙️ 연산 개요</h3>
+        <ul>
+          <li>put(k,v) / get(k) / remove(k) / containsKey(k)</li>
+          <li>평균 <strong>O(1)</strong>, 최악 <strong>O(n)</strong> (모든 키가 한 버킷에 몰릴 때)</li>
+        </ul>
+        <div class="complexity-row">
+          <span class="badge good">평균 O(1)</span>
+          <span class="badge warn">최악 O(n)</span>
+        </div>
+      </div>
+
+      <div class="section-divider">🔑 해시 함수(Hash Function)</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🔑 해시 함수 & 음수 처리</h3>
+        <ul>
+          <li>index = hash(key) % capacity 형태로 key를 버킷 인덱스로 변환</li>
+          <li>좋은 해시 함수 조건: <strong>결정적</strong>(같은 key -> 같은 해시값), <strong>균등 분포</strong>(충돌 최소화),
+            O(1) 계산
+          </li>
+          <li>key가 null이면 hashCode() 호출 자체가 NPE</li>
+          <li>key.hashCode()는 음수가 나올 수 있음 -> 일반 % 연산자는 음수를 그대로 반환하므로 배열 인덱스로 사용 불가</li>
+          <li><strong>Math.floorMod(key.hashCode(), capacity)</strong> 사용: 두 번째 인자가 양수면 결과가 항상 0 ~
+            capacity 범위 보장
+          </li>
+        </ul>
+      </div>
+
+      <div class="section-divider">💥 충돌(Collision) & 체이닝(Chaining)</div>
+
+      <div class="note-card">
+        <h3>💥 충돌이란</h3>
+        <ul>
+          <li>비둘기집 원리에 의해 서로 다른 key가 같은 인덱스로 매핑되는 상황은 필연적으로 발생</li>
+          <li>충돌 해결 전략이 해시테이블 구현의 핵심 설계 포인트</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔗 체이닝(Separate Chaining) 구조</h3>
+        <ul>
+          <li>각 버킷에 연결리스트(Entry 체인)를 두고, 충돌한 원소들을 그 체인에 이어붙임</li>
+          <li>버킷 배열은 동적 배열처럼 resize 대상, 버킷 내부는 단일 연결리스트(Entry.next)</li>
+          <li>장점: 구현이 직관적, load factor가 높아져도 성능 저하가 완만함</li>
+          <li>단점: 포인터(next) 오버헤드, 체인이 길어지면 캐시 비친화적</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>✏️ put / get / remove 로직</h3>
+        <ul>
+          <li><strong>put()</strong>: 버킷이 비어있으면 새 Entry 삽입 / 아니면 체인 순회하며 동일 key 존재 확인 -> 있으면 value만
+            교체(덮어쓰기), 없으면 체인 끝에 새 Entry 연결
+          </li>
+          <li>key 비교는 <strong>==</strong>이 아닌 <strong>.equals()</strong> 사용 (참조 동일성이 아닌 논리적 동일성이 목적)
+          </li>
+          <li><strong>get()/containsKey()</strong>: 버킷 접근 후 체인을 순회하며 key.equals() 비교</li>
+          <li><strong>remove()</strong>: 체인에서 대상 Entry를 찾아 이전 노드(prevEntry)의 next를 대상의 next로 연결(링크
+            스킵) -> 대상이 체인의 첫 노드면 bucket[idx] 자체를 갱신(연결리스트 head 삭제와 동일 로직)
+          </li>
+        </ul>
+      </div>
+
+      <div class="section-divider">📈 Load Factor & Resize</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>📈 Load Factor & 재해싱</h3>
+        <ul>
+          <li>load factor = size / capacity, 임계치(0.75) 이상이면 resize 수행</li>
+          <li>capacity가 바뀌면 hash(key) % capacity 결과 자체가 달라지므로, 기존 모든 Entry를 새 배열에 재삽입(재해싱) 필요</li>
+          <li>put()으로 size가 늘어날 때만 체크</li>
+          <li>비용: resize 발생 시 O(n), 발생 빈도가 점점 줄어들어 <strong>amortized O(1)</strong> (동적 배열 resize와
+            동일한 근거)
+          </li>
+          <li>load factor를 너무 높게 두면 충돌 증가로 성능 저하, 너무 낮게 두면 메모리 낭비 -> 트레이드오프</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">🥇 Head vs Tail 삽입</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🥇 체이닝 삽입 위치: Head vs Tail(구현된 코드)</h3>
+        <div class="cols">
+          <ul>
+            <li><strong>Head 삽입</strong>: newEntry.next = bucket[idx]; bucket[idx] = newEntry; -> 삽입
+              자체는 O(1)이지만 이미 있는 key인지 확인은 여전히 체인 길이만큼 순회 필요, 체인 순서가 삽입 역순
+            </li>
+            <li><strong>Tail 삽입(현재 구현)</strong>: 체인 끝(next==null)까지 순회 후 연결 -> O(체인 길이), 삽입 순서 그대로
+              유지
+            </li>
+          </ul>
+          <ul>
+            <li>Java 7까지는 head 삽입 -> Java 8부터 tail 삽입으로 변경</li>
+            <li>이유: head 삽입은 멀티스레드 환경에서 resize 도중 동시 접근 시 체인에 순환 참조(cycle)가 생겨 무한루프에 빠지는 유명한 버그가 있었음
+              -> tail 삽입은 이를 원천 차단
+            </li>
+            <li>Java 8의 실질적 성능 개선은 head/tail이 아니라 <strong>트리화(Treeify)</strong>에서 옴: 체인 길이 8개 이상 ->
+              레드-블랙 트리 변환(O(n)->O(log n)), 6개 이하로 줄면 다시 연결리스트로(untreeify)
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>💼 실무 연결</h3>
+        <ul>
+          <li>Java HashMap: 체이닝 기반, load factor 기본값 0.75</li>
+          <li>JDK 8+: 한 버킷의 체인이 임계 길이(8개) 이상으로 길어지면 연결리스트 -> 레드-블랙 트리 변환 (해시 공격/hash flooding 대비)
+          </li>
+          <li>HashSet은 내부적으로 HashMap&lt;E, Object&gt;를 감싸 구현(value 자리를 더미 값으로 고정)</li>
+        </ul>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="put">put(k, v) - 삽입/갱신</option>
+        <option value="get">get(k) - 조회</option>
+        <option value="remove">remove(k) - 삭제</option>
+        <option value="containsKey">containsKey(k) - 존재 확인</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="keyGroup">
+      <label>key</label>
+      <input type="number" id="keyInput" value="21">
+    </div>
+    <div class="ctrl-group" id="valGroup">
+      <label>value</label>
+      <input type="text" id="valInput" value="X" maxlength="6">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewMap">🔄 새 해시맵</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">size = <strong id="infoSize">0</strong></div>
+    <div class="info-chip">capacity = <strong id="infoCapacity">8</strong></div>
+    <div class="info-chip">load factor = <strong id="infoLoadFactor">0.00</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Chaining Based HashMap - buckets</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="bucket-scroll">
+      <div class="bucket-list" id="bucketList"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#141824;border:1px solid #252d45;"></div>
+        기본 Entry
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        체인 순회 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        조회/삭제 대상 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        새로 삽입 / 값 갱신
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        삭제 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#202847;border:1px solid #6366f1;"></div>
+        현재 접근 중인 bucket
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        필드 & Entry & 생성자 & put()
+      </div>
+      <pre><span class="kw">private</span> <span class="ty">Entry</span>&lt;<span
+          class="ty">K</span>, <span class="ty">V</span>&gt;[] <span class="nm">bucket</span>;
+<span class="kw">private</span> <span class="kw">int</span> <span class="nm">size</span>;
+<span class="kw">private</span> <span class="kw">int</span> <span class="nm">capacity</span>;
+<span class="kw">private</span> <span class="kw">static</span> <span class="kw">final</span> <span
+            class="kw">double</span> <span class="ty">LOAD_FACTOR</span> = <span
+            class="nu">0.75</span>;
+
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Entry</span>&lt;<span
+            class="ty">K</span>, <span class="ty">V</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">K</span> <span class="nm">key</span>;
+  <span class="kw">private</span> <span class="ty">V</span> <span class="nm">value</span>;
+  <span class="kw">private</span> <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+            class="ty">V</span>&gt; <span class="nm">next</span>;
+
+  <span class="kw">public</span> <span class="fn">Entry</span>(<span class="ty">K</span> <span
+            class="nm">key</span>, <span class="ty">V</span> <span class="nm">value</span>) {
+    <span class="kw">this</span>.<span class="nm">key</span> = <span class="nm">key</span>;
+    <span class="kw">this</span>.<span class="nm">value</span> = <span class="nm">value</span>;
+    <span class="kw">this</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+  }
+}
+
+@<span class="fn">SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+<span class="kw">public</span> <span class="fn">ChainingBasedHashMap</span>() {
+  <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nu">16</span>;
+  <span class="kw">this</span>.<span class="nm">size</span> = <span class="nu">0</span>;
+
+  <span class="ck">// 동일, 스타일, 가독/명시성 차이</span>
+  <span class="ck">// this.bucket = new Entry[capacity];</span>
+  <span class="kw">this</span>.<span class="nm">bucket</span> = (<span
+            class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+            class="ty">V</span>&gt;[]) <span class="kw">new</span> <span
+            class="ty">Entry</span>[<span class="nm">capacity</span>];
+}
+
+@<span class="fn">SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+<span class="kw">public</span> <span class="fn">ChainingBasedHashMap</span>(<span
+            class="kw">int</span> <span class="nm">capacity</span>) {
+  <span class="kw">if</span> (<span class="nm">capacity</span> &lt;= <span
+            class="nu">0</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span
+            class="fn">IllegalArgumentException</span>(<span class="st">"생성자 Capacity가 0 이하"</span>);}
+  <span class="kw">this</span>.<span class="nm">capacity</span> = <span class="nm">capacity</span>;
+  <span class="kw">this</span>.<span class="nm">size</span> = <span class="nu">0</span>;
+  <span class="kw">this</span>.<span class="nm">bucket</span> = (<span
+            class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+            class="ty">V</span>&gt;[]) <span class="kw">new</span> <span
+            class="ty">Entry</span>[<span class="nm">capacity</span>];
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">put</span>(<span
+            class="ty">K</span> <span class="nm">incomingKey</span>, <span class="ty">V</span> <span
+            class="nm">inComingValue</span>) {
+
+  <span class="kw">int</span> <span class="nm">hashedIdx</span> = <span class="fn">hash</span>(<span
+            class="nm">incomingKey</span>);
+
+  <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+            class="nm">entry</span> = <span class="nm">bucket</span>[<span
+            class="nm">hashedIdx</span>];
+
+  <span class="ck">// 추가가 되었을 때만 resize() 할 플래그</span>
+  <span class="kw">boolean</span> <span class="nm">isAdded</span> = <span class="kw">false</span>;
+
+  <span class="kw">if</span> (<span class="nm">entry</span> == <span class="kw">null</span>) {
+    <span class="nm">bucket</span>[<span class="nm">hashedIdx</span>] = <span class="kw">new</span> <span
+            class="ty">Entry</span>&lt;&gt;(<span class="nm">incomingKey</span>, <span class="nm">inComingValue</span>);
+    <span class="nm">isAdded</span> = <span class="kw">true</span>;
+  } <span class="kw">else</span> {
+
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      <span class="kw">if</span> (<span class="nm">entry</span>.<span class="nm">key</span>.<span
+            class="fn">equals</span>(<span class="nm">incomingKey</span>)) {
+        <span class="nm">entry</span>.<span class="nm">value</span> = <span
+            class="nm">inComingValue</span>;
+        <span class="kw">break</span>;
+      }
+
+      <span class="kw">if</span> (<span class="nm">entry</span>.<span
+            class="nm">next</span> == <span class="kw">null</span>) {
+        <span class="nm">entry</span>.<span class="nm">next</span> = <span
+            class="kw">new</span> <span class="ty">Entry</span>&lt;&gt;(<span
+            class="nm">incomingKey</span>, <span class="nm">inComingValue</span>);
+        <span class="nm">isAdded</span> = <span class="kw">true</span>;
+        <span class="kw">break</span>;
+      }
+      <span class="nm">entry</span> = <span class="nm">entry</span>.<span class="nm">next</span>;
+    }
+  }
+  <span class="kw">if</span> (<span class="nm">isAdded</span>) {
+    <span class="nm">size</span>++;
+    <span class="fn">resize</span>();
+  }
+}
+</pre>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          get() / remove() / containsKey() / hash()
+        </div>
+        <pre><span class="kw">public</span> <span class="ty">V</span> <span
+            class="fn">get</span>(<span class="ty">K</span> <span class="nm">incomingKey</span>) {
+
+  <span class="kw">int</span> <span class="nm">hashedIdx</span> = <span class="fn">hash</span>(<span
+              class="nm">incomingKey</span>);
+
+  <span class="kw">if</span> (<span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>] == <span class="kw">null</span>) {
+    <span class="kw">return</span> <span class="kw">null</span>;
+  }
+
+  <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+              class="nm">entry</span> = <span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>];
+
+  <span class="kw">while</span> (<span class="nm">entry</span> != <span class="kw">null</span>) {
+    <span class="kw">if</span> (<span class="nm">entry</span>.<span class="nm">key</span>.<span
+              class="fn">equals</span>(<span class="nm">incomingKey</span>)) {
+      <span class="kw">return</span> <span class="nm">entry</span>.<span class="nm">value</span>;
+    }
+    <span class="nm">entry</span> = <span class="nm">entry</span>.<span class="nm">next</span>;
+  }
+
+  <span class="kw">return</span> <span class="kw">null</span>;
+}
+
+<span class="kw">public</span> <span class="ty">V</span> <span class="fn">remove</span>(<span
+              class="ty">K</span> <span class="nm">incomingKey</span>) {
+  <span class="kw">int</span> <span class="nm">hashedIdx</span> = <span class="fn">hash</span>(<span
+              class="nm">incomingKey</span>);
+
+  <span class="kw">if</span> (<span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>] == <span class="kw">null</span>) {
+    <span class="kw">return</span> <span class="kw">null</span>;
+  }
+
+  <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+              class="nm">prevEntry</span> = <span class="kw">null</span>;
+  <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+              class="nm">entry</span> = <span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>];
+
+  <span class="kw">while</span> (<span class="kw">true</span>) {
+    <span class="kw">if</span> (<span class="nm">entry</span>.<span class="nm">key</span>.<span
+              class="fn">equals</span>(<span class="nm">incomingKey</span>)) {
+      <span class="ty">V</span> <span class="nm">value</span> = <span class="nm">entry</span>.<span
+              class="nm">value</span>;
+
+      <span class="ck">// 시작 지점이 아닐 때</span>
+      <span class="kw">if</span> (<span class="nm">prevEntry</span> != <span class="kw">null</span>) {
+        <span class="nm">prevEntry</span>.<span class="nm">next</span> = <span
+              class="nm">entry</span>.<span class="nm">next</span>;
+      } <span class="kw">else</span> {
+
+        <span class="ck">// 시작 지점</span>
+        <span class="nm">bucket</span>[<span class="nm">hashedIdx</span>] = <span
+              class="nm">entry</span>.<span class="nm">next</span>;
+      }
+      <span class="nm">size</span>--;
+      <span class="kw">return</span> <span class="nm">value</span>;
+    }
+
+    <span class="nm">prevEntry</span> = <span class="nm">entry</span>;
+    <span class="nm">entry</span> = <span class="nm">entry</span>.<span class="nm">next</span>;
+    <span class="kw">if</span> (<span class="nm">entry</span> == <span
+              class="kw">null</span>) {<span class="kw">return</span> <span class="kw">null</span>;}
+  }
+}
+
+<span class="kw">public</span> <span class="kw">boolean</span> <span
+              class="fn">containsKey</span>(<span class="ty">K</span> <span
+              class="nm">incomingKey</span>) {
+  <span class="kw">int</span> <span class="nm">hashedIdx</span> = <span class="fn">hash</span>(<span
+              class="nm">incomingKey</span>);
+
+  <span class="kw">if</span> (<span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>] != <span class="kw">null</span>) {
+    <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+              class="nm">entry</span> = <span class="nm">bucket</span>[<span
+              class="nm">hashedIdx</span>];
+
+    <span class="kw">while</span> (<span class="kw">true</span>) {
+      <span class="kw">if</span> (<span class="nm">entry</span>.<span class="nm">key</span>.<span
+              class="fn">equals</span>(<span class="nm">incomingKey</span>)) {
+        <span class="kw">return</span> <span class="kw">true</span>;
+      } <span class="kw">else</span> {
+
+        <span class="kw">if</span> (<span class="nm">entry</span>.<span
+              class="nm">next</span> == <span class="kw">null</span>) {
+          <span class="kw">break</span>;
+        }
+        <span class="nm">entry</span> = <span class="nm">entry</span>.<span class="nm">next</span>;
+      }
+    }
+  }
+  <span class="kw">return</span> <span class="kw">false</span>;
+}
+
+<span class="kw">public</span> <span class="kw">int</span> <span class="fn">size</span>() {<span
+              class="kw">return</span> <span class="nm">size</span>;}
+
+<span class="ck">// key -&gt; 버킷 인덱스로 변환</span>
+<span class="kw">private</span> <span class="kw">int</span> <span class="fn">hash</span>(<span
+              class="ty">K</span> <span class="nm">incomingKey</span>) {
+  <span class="kw">if</span> (<span class="nm">incomingKey</span> == <span class="kw">null</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="fn">NullPointerException</span>(<span class="st">"해싱 할 key가 null"</span>);
+  }
+
+  <span class="ck">// 나눗셈의 나머지를 반환하는 floorMod</span>
+  <span class="ck">// hashCode()가 음수를 반환하는 경우가 있어 일반 % 연산자 사용 시 사용불가</span>
+  <span class="ck">// Math.floorMod() 의 두 번쨰 인자가 양수면 결과는 항상 0 ~ capacity</span>
+  <span class="kw">return</span> <span class="ty">Math</span>.<span class="fn">floorMod</span>(<span
+              class="nm">incomingKey</span>.<span class="fn">hashCode</span>(), <span class="nm">capacity</span>);
+}
+</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#c4b5fd"></div>
+          resize() - load factor 초과 시 재해싱
+        </div>
+        <pre><span class="ck">// load factor 이상 용량 확장 &amp; 재해싱</span>
+@<span class="fn">SuppressWarnings</span>(<span class="st">"unchecked"</span>)
+<span class="kw">private</span> <span class="kw">void</span> <span class="fn">resize</span>() {
+
+  <span class="kw">if</span> (<span class="ty">Double</span>.<span class="fn">compare</span>((<span
+              class="kw">double</span>) <span class="nm">size</span> / <span
+              class="nm">capacity</span>, <span class="ty">LOAD_FACTOR</span>) &gt;= <span
+              class="nu">0</span>) {
+    <span class="nm">capacity</span> *= <span class="nu">2</span>;
+
+    <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+              class="ty">V</span>&gt;[] <span class="nm">newBucket</span> = (<span
+              class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt;[]) <span
+              class="kw">new</span> <span class="ty">Entry</span>[<span class="nm">capacity</span>];
+
+    <span class="kw">for</span> (<span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+              class="ty">V</span>&gt; <span class="nm">curEntry</span> : <span
+              class="nm">bucket</span>) {
+
+      <span class="kw">if</span> (<span class="nm">curEntry</span> == <span class="kw">null</span>) {<span
+              class="kw">continue</span>;}
+
+      <span class="kw">while</span> (<span class="nm">curEntry</span> != <span
+              class="kw">null</span>) {
+        <span class="ty">K</span> <span class="nm">curKey</span> = <span class="nm">curEntry</span>.<span
+              class="nm">key</span>;
+
+        <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span
+              class="ty">V</span>&gt; <span class="nm">nextEntry</span> = <span
+              class="nm">curEntry</span>.<span class="nm">next</span>;
+        <span class="nm">curEntry</span>.<span class="nm">next</span> = <span class="kw">null</span>;
+
+        <span class="kw">int</span> <span class="nm">newHashedIdx</span> = <span
+              class="fn">hash</span>(<span class="nm">curKey</span>);
+
+        <span class="kw">if</span> (<span class="nm">newBucket</span>[<span
+              class="nm">newHashedIdx</span>] == <span class="kw">null</span>) {
+          <span class="nm">newBucket</span>[<span class="nm">newHashedIdx</span>] = <span
+              class="nm">curEntry</span>;
+        } <span class="kw">else</span> {
+          <span class="ty">Entry</span>&lt;<span class="ty">K</span>, <span class="ty">V</span>&gt; <span
+              class="nm">newBucketEntry</span> = <span class="nm">newBucket</span>[<span class="nm">newHashedIdx</span>];
+          <span class="kw">while</span> (<span class="kw">true</span>) {
+            <span class="kw">if</span> (<span class="nm">newBucketEntry</span>.<span
+              class="nm">next</span> == <span class="kw">null</span>) {
+              <span class="nm">newBucketEntry</span>.<span class="nm">next</span> = <span
+              class="nm">curEntry</span>;
+              <span class="kw">break</span>;
+            } <span class="kw">else</span> {
+              <span class="nm">newBucketEntry</span> = <span class="nm">newBucketEntry</span>.<span
+              class="nm">next</span>;
+            }
+          }
+        }
+        <span class="nm">curEntry</span> = <span class="nm">nextEntry</span>;
+      }
+    }
+    <span class="kw">this</span>.<span class="nm">bucket</span> = <span class="nm">newBucket</span>;
+  }
+}
+</pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  const LOAD_FACTOR = 0.75;
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  let idCounter = 1;
+  let buckets = [];
+  let capacity = 8;
+  let size = 0;
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function hashIdx(key, cap) { return ((key % cap) + cap) % cap; }
+
+  function cloneBuckets(bk) {
+    return bk.map(chain => chain.map(e => ({id: e.id, key: e.key, value: e.value})));
+  }
+
+  function randomHashMap(n, cap) {
+    const bk = Array.from({length: cap}, () => []);
+    const usedKeys = new Set();
+    let s = 0;
+    while (usedKeys.size < n) {
+      const k = Math.floor(Math.random() * 30);
+      if (usedKeys.has(k)) { continue; }
+      usedKeys.add(k);
+      const v = String.fromCharCode(65 + usedKeys.size - 1);
+      const idx = hashIdx(k, cap);
+      bk[idx].push({id: idCounter++, key: k, value: v});
+      s++;
+    }
+    return {buckets: bk, size: s};
+  }
+
+  // ── planner ──
+  function planPut(bk, cap, sz, key, valueStr) {
+    const steps = [];
+    if (isNaN(key) || valueStr === '') {
+      steps.push({
+        buckets: cloneBuckets(bk),
+        capacity: cap,
+        size: sz,
+        highlight: {},
+        activeBucket: null,
+        msg: 'key 또는 value가 올바르지 않습니다',
+        tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    const work = cloneBuckets(bk);
+    const idx = hashIdx(key, cap);
+    steps.push({
+      buckets: cloneBuckets(work), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+      msg: `hash(${key}) = Math.floorMod(${key}, ${cap}) = ${idx} -> bucket[${idx}] 확인`, tag: 'hash'
+    });
+
+    const chain = work[idx];
+    let isAdded = false;
+
+    if (chain.length === 0) {
+      const entry = {id: idCounter++, key, value: valueStr};
+      chain.push(entry);
+      isAdded = true;
+      steps.push({
+        buckets: cloneBuckets(work),
+        capacity: cap,
+        size: sz,
+        highlight: {[entry.id]: 'new'},
+        activeBucket: idx,
+        msg: `bucket[${idx}]이 비어있음(entry==null) -> 새 Entry(${key}, ${valueStr}) 삽입`,
+        tag: 'insert'
+      });
+    } else {
+      let matched = false;
+      for (let i = 0; i < chain.length; i++) {
+        const e = chain[i];
+        steps.push({
+          buckets: cloneBuckets(work),
+          capacity: cap,
+          size: sz,
+          highlight: {[e.id]: 'current'},
+          activeBucket: idx,
+          msg: `체인 순회 중 -> entry.key(${e.key}).equals(${key}) 비교`,
+          tag: 'traverse'
+        });
+        if (e.key === key) {
+          e.value = valueStr;
+          matched = true;
+          steps.push({
+            buckets: cloneBuckets(work),
+            capacity: cap,
+            size: sz,
+            highlight: {[e.id]: 'new'},
+            activeBucket: idx,
+            msg: `동일 key(${key}) 발견 -> value만 교체(${valueStr}), size 변화 없음(덮어쓰기)`,
+            tag: 'done'
+          });
+          break;
+        }
+      }
+      if (!matched) {
+        const entry = {id: idCounter++, key, value: valueStr};
+        chain.push(entry);
+        isAdded = true;
+        steps.push({
+          buckets: cloneBuckets(work),
+          capacity: cap,
+          size: sz,
+          highlight: {[entry.id]: 'new'},
+          activeBucket: idx,
+          msg: `체인 끝(entry.next==null)까지 도달 -> 새 Entry(${key}, ${valueStr}) 연결 (tail 삽입)`,
+          tag: 'insert'
+        });
+      }
+    }
+
+    let newSize = sz, newCapacity = cap;
+    if (isAdded) {
+      newSize = sz + 1;
+      const lf = newSize / newCapacity;
+      steps.push({
+        buckets: cloneBuckets(work),
+        capacity: newCapacity,
+        size: newSize,
+        highlight: {},
+        activeBucket: null,
+        msg: `size++ -> size=${newSize}, load factor=${lf.toFixed(2)} (임계치 ${LOAD_FACTOR})`,
+        tag: 'done'
+      });
+
+      if (lf >= LOAD_FACTOR) {
+        const oldCapacity = newCapacity;
+        newCapacity = newCapacity * 2;
+        steps.push({
+          buckets: cloneBuckets(work),
+          capacity: oldCapacity,
+          size: newSize,
+          highlight: {},
+          activeBucket: null,
+          msg: `load factor(${lf.toFixed(
+              2)}) >= ${LOAD_FACTOR} -> resize 시작 (capacity ${oldCapacity} -> ${newCapacity})`,
+          tag: 'resize'
+        });
+
+        const newBuckets = Array.from({length: newCapacity}, () => []);
+        work.forEach(chainArr => {
+          chainArr.forEach(e => {
+            const ni = hashIdx(e.key, newCapacity);
+            newBuckets[ni].push({id: e.id, key: e.key, value: e.value});
+          });
+        });
+        steps.push({
+          buckets: cloneBuckets(newBuckets),
+          capacity: newCapacity,
+          size: newSize,
+          highlight: {},
+          activeBucket: null,
+          msg: `재해싱 완료 -> 모든 Entry를 새 buckets(capacity=${newCapacity})에 재배치`,
+          tag: 'done'
+        });
+        return {steps, buckets: newBuckets, capacity: newCapacity, size: newSize};
+      }
+    }
+    return {steps, buckets: work, capacity: newCapacity, size: newSize};
+  }
+
+  function planGet(bk, cap, sz, key) {
+    const steps = [];
+    if (isNaN(key)) {
+      steps.push({
+        buckets: cloneBuckets(bk),
+        capacity: cap,
+        size: sz,
+        highlight: {},
+        activeBucket: null,
+        msg: 'key가 올바르지 않습니다',
+        tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    const idx = hashIdx(key, cap);
+    steps.push({
+      buckets: cloneBuckets(bk), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+      msg: `hash(${key}) = ${idx} -> bucket[${idx}] 확인`, tag: 'hash'
+    });
+    const chain = bk[idx];
+    if (chain.length === 0) {
+      steps.push({
+        buckets: cloneBuckets(bk), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+        msg: `bucket[${idx}] == null -> get(${key})은 null 반환`, tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    let found = false;
+    for (const e of chain) {
+      steps.push({
+        buckets: cloneBuckets(bk),
+        capacity: cap,
+        size: sz,
+        highlight: {[e.id]: 'current'},
+        activeBucket: idx,
+        msg: `체인 순회 -> entry.key(${e.key}).equals(${key}) 비교`,
+        tag: 'traverse'
+      });
+      if (e.key === key) {
+        found = true;
+        steps.push({
+          buckets: cloneBuckets(bk),
+          capacity: cap,
+          size: sz,
+          highlight: {[e.id]: 'target'},
+          activeBucket: idx,
+          msg: `값(${key}) 발견 -> get(${key}) = "${e.value}" 반환`,
+          tag: 'done'
+        });
+        break;
+      }
+    }
+    if (!found) {
+      steps.push({
+        buckets: cloneBuckets(bk), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+        msg: `체인을 끝까지 순회했지만 key(${key})를 찾지 못함 -> null 반환`, tag: 'error'
+      });
+    }
+    return {steps, buckets: bk, capacity: cap, size: sz};
+  }
+
+  function planContainsKey(bk, cap, sz, key) {
+    const steps = [];
+    if (isNaN(key)) {
+      steps.push({
+        buckets: cloneBuckets(bk),
+        capacity: cap,
+        size: sz,
+        highlight: {},
+        activeBucket: null,
+        msg: 'key가 올바르지 않습니다',
+        tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    const idx = hashIdx(key, cap);
+    steps.push({
+      buckets: cloneBuckets(bk), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+      msg: `hash(${key}) = ${idx} -> bucket[${idx}] 확인`, tag: 'hash'
+    });
+    const chain = bk[idx];
+    let found = false;
+    if (chain.length > 0) {
+      for (const e of chain) {
+        steps.push({
+          buckets: cloneBuckets(bk),
+          capacity: cap,
+          size: sz,
+          highlight: {[e.id]: 'current'},
+          activeBucket: idx,
+          msg: `entry.key(${e.key}).equals(${key}) 비교`,
+          tag: 'traverse'
+        });
+        if (e.key === key) {
+          found = true;
+          steps.push({
+            buckets: cloneBuckets(bk),
+            capacity: cap,
+            size: sz,
+            highlight: {[e.id]: 'target'},
+            activeBucket: idx,
+            msg: `key(${key}) 발견 -> containsKey(${key}) = true`,
+            tag: 'done'
+          });
+          break;
+        }
+      }
+    }
+    if (!found) {
+      steps.push({
+        buckets: cloneBuckets(bk), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+        msg: `key(${key})를 찾지 못함 -> containsKey(${key}) = false`, tag: 'error'
+      });
+    }
+    return {steps, buckets: bk, capacity: cap, size: sz};
+  }
+
+  function planRemove(bk, cap, sz, key) {
+    const steps = [];
+    if (isNaN(key)) {
+      steps.push({
+        buckets: cloneBuckets(bk),
+        capacity: cap,
+        size: sz,
+        highlight: {},
+        activeBucket: null,
+        msg: 'key가 올바르지 않습니다',
+        tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    const work = cloneBuckets(bk);
+    const idx = hashIdx(key, cap);
+    steps.push({
+      buckets: cloneBuckets(work), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+      msg: `hash(${key}) = ${idx} -> bucket[${idx}] 확인`, tag: 'hash'
+    });
+    const chain = work[idx];
+    if (chain.length === 0) {
+      steps.push({
+        buckets: cloneBuckets(work), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+        msg: `bucket[${idx}] == null -> 삭제할 원소 없음, null 반환`, tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    let foundIdx = -1;
+    for (let i = 0; i < chain.length; i++) {
+      const e = chain[i];
+      steps.push({
+        buckets: cloneBuckets(work),
+        capacity: cap,
+        size: sz,
+        highlight: {[e.id]: 'current'},
+        activeBucket: idx,
+        msg: `체인 순회 -> entry.key(${e.key}).equals(${key}) 비교`,
+        tag: 'traverse'
+      });
+      if (e.key === key) {
+        foundIdx = i;
+        steps.push({
+          buckets: cloneBuckets(work),
+          capacity: cap,
+          size: sz,
+          highlight: {[e.id]: 'removing'},
+          activeBucket: idx,
+          msg: `삭제 대상 Entry(${key}) 발견`,
+          tag: 'remove'
+        });
+        break;
+      }
+    }
+    if (foundIdx === -1) {
+      steps.push({
+        buckets: cloneBuckets(work), capacity: cap, size: sz, highlight: {}, activeBucket: idx,
+        msg: `key(${key})를 찾지 못함 -> 삭제할 원소 없음, null 반환`, tag: 'error'
+      });
+      return {steps, buckets: bk, capacity: cap, size: sz};
+    }
+    const linkMsg = foundIdx === 0
+        ? `대상이 체인의 첫 노드(prevEntry==null) -> bucket[${idx}] = entry.next로 갱신`
+        : `prevEntry.next = entry.next 로 링크 스킵 (연결리스트 중간/끝 삭제와 동일)`;
+    chain.splice(foundIdx, 1);
+    const newSize = sz - 1;
+    steps.push({
+      buckets: cloneBuckets(work), capacity: cap, size: newSize, highlight: {}, activeBucket: idx,
+      msg: `${linkMsg} -> size-- (size=${newSize})`, tag: 'done'
+    });
+    return {steps, buckets: work, capacity: cap, size: newSize};
+  }
+
+  // ── 렌더 ──
+  function renderBuckets(bk, highlight, activeBucket) {
+    const el = document.getElementById('bucketList');
+    let html = '';
+    bk.forEach((chain, i) => {
+      const rowCls = 'bucket-row' + (i === activeBucket ? ' active' : '');
+      html += `<div class="${rowCls}"><div class="bucket-idx">${i}</div><div class="bucket-chain">`;
+      if (chain.length === 0) {
+        html += '<span class="chain-empty">비어있음 (null)</span>';
+      } else {
+        chain.forEach((e, j) => {
+          let cls = 'chain-entry';
+          if (highlight[e.id]) { cls += ' state-' + highlight[e.id]; }
+          html += `<div class="${cls}">${e.key}:${e.value}</div>`;
+          if (j < chain.length - 1) { html += '<span class="chain-arrow">-></span>'; }
+        });
+      }
+      html += '</div></div>';
+    });
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'hash': '<span class="phase-tag phase-hash">해시 계산</span>',
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">삽입</span>',
+    'remove': '<span class="phase-tag phase-remove">삭제</span>',
+    'resize': '<span class="phase-tag phase-resize">RESIZE</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderBuckets(step.buckets, step.highlight, step.activeBucket);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoSize').textContent = step.size;
+    document.getElementById('infoCapacity').textContent = step.capacity;
+    document.getElementById('infoLoadFactor').textContent = (step.size / step.capacity).toFixed(2);
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const key = parseInt(document.getElementById('keyInput').value);
+    const valueStr = document.getElementById('valInput').value.trim();
+    let plan;
+    if (op === 'put') { plan = planPut(buckets, capacity, size, key, valueStr); } else if (op
+        === 'get') { plan = planGet(buckets, capacity, size, key); } else if (op
+        === 'remove') { plan = planRemove(buckets, capacity, size, key); } else if (op
+        === 'containsKey') { plan = planContainsKey(buckets, capacity, size, key); }
+
+    steps = plan.steps;
+    buckets = plan.buckets;
+    capacity = plan.capacity;
+    size = plan.size;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('valGroup').style.display = op === 'put' ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('keyInput').addEventListener('input', markDirty);
+  document.getElementById('valInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewMap').addEventListener('click', () => {
+    stopPlay();
+    capacity = 8;
+    const gen = randomHashMap(6, capacity);
+    buckets = gen.buckets;
+    size = gen.size;
+    steps = [{
+      buckets: cloneBuckets(buckets), capacity, size, highlight: {}, activeBucket: null,
+      msg: '새 해시맵을 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''
+    }];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  updateOpUI();
+  capacity = 8;
+  const initGen = randomHashMap(6, capacity);
+  buckets = initGen.buckets;
+  size = initGen.size;
+  steps = [{
+    buckets: cloneBuckets(buckets), capacity, size, highlight: {}, activeBucket: null,
+    msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', tag: ''
+  }];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>

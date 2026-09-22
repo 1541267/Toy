@@ -2,7 +2,7 @@ package Study.DataStructure.Code;
 
 /*
 - 해시테이블 (Hash Table): key를 인덱스로 직접 변환(계산)하여 O(1) 평균 접근을 달성하는 구조, 연결리스트 사용
-  - 핵심 아이디어: BST가 "비교하며 찾아가는" 방식(O(log n))이라면, 해시테이블은 "계산해서 바로 도착"하는 방식(O(1) 평균)
+  - 핵심 아이디어: BST가 비교하며 찾아가는 방식(O(log n))이라면, 해시테이블은 계산해서 바로 도착하는 방식(O(1) 평균)
   - 연산: put(k,v) & get(k) & remove(k) & containsKey(k) -> 평균 O(1), 최악 O(n) (모든 키가 한 버킷에 몰릴 때)
   - Queue로도 구현이 가능 하나 queue는 enqueue(), dequeue() 사용해 HashMap의 특정 key를 사용한 put(), remove()와 맞지 않음
 
