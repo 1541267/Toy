@@ -1,0 +1,1078 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>그래프 탐색 - DFS(깊이 우선 탐색) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select {
+      width: auto;
+      padding: 5px 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th, & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  .phase-visit {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  .phase-found {
+    background: var(--tag-green2-bg);
+    color: var(--tag-green2-text);
+  }
+
+  .phase-backtrack {
+    background: var(--tag-red-bg);
+    color: var(--tag-red-text);
+  }
+
+  .phase-component {
+    background: var(--tag-purple-bg);
+    color: var(--tag-purple-text);
+  }
+
+  .phase-skip {
+    background: #1e293b;
+    color: var(--text-dim);
+  }
+
+  /* ── 그래프 시각화 ── */
+  .graph-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+    overflow-x: auto;
+  }
+
+  .graph-canvas-wrap {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+    max-width: 100%;
+  }
+
+  .graph-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  .graph-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .graph-edges line.graph-edge {
+    stroke: #334155;
+    stroke-width: 2;
+  }
+
+  .nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .gnode-wrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    &.isolated {
+      background: var(--tag-red-bg);
+      color: var(--tag-red-text);
+      border: 1px solid var(--bad-border);
+    }
+  }
+
+  .gnode {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+
+    &.state-visited {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.15);
+    }
+
+    &.state-check {
+      background: var(--state-info);
+      border-color: #67e8f9;
+      color: #ecfeff;
+      transform: scale(1.08);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.15);
+      animation: pop 0.35s ease;
+    }
+
+    &.state-stacked {
+      background: var(--surface-bg);
+      border-color: var(--tag-amber-text);
+      border-style: dashed;
+      color: var(--tag-amber-text);
+    }
+
+    &.state-removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      text-decoration: line-through;
+      opacity: 0.55;
+      transform: scale(0.9);
+    }
+  }
+
+  .output-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .output-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 2px;
+  }
+
+  .output-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    font-family: "Consolas", monospace;
+
+    &.active {
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+  }
+
+  .stack-chip {
+    background: var(--tag-amber-bg);
+    border: 1px solid var(--tag-amber-text);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--tag-amber-text);
+    font-family: "Consolas", monospace;
+  }
+
+  .empty-msg {
+    color: var(--text-dim);
+    font-size: 0.82rem;
+    padding: 1.5rem 0;
+    text-align: center;
+    width: 100%;
+  }
+
+  @media (max-width: 620px) {
+    .divider-v {
+      display: none;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .code-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">그래프 탐색 - DFS (깊이 우선 탐색)</h1>
+    <p>재귀 DFS / 스택 DFS / 전체 그래프 탐색(fullDFS) / Backtracking 최단 경로 탐색 시각화</p>
+  </div>
+
+  <details class="notes-toggle">
+    <summary>📖 DFS 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🔀 트리 순회와 다른 점</h3>
+        <ul>
+          <li>트리는 root에서 부모 -> 자식으로만 내려가 같은 노드를 두 번 방문할 일이 없음</li>
+          <li>그래프는 사이클이 존재할 수 있고, root 개념이 없어 시작점을 직접 지정해야 하며, 모든 정점이 연결되어 있다는 보장도
+            없음(disconnected)
+          </li>
+          <li>그래서 반드시 visited 배열(또는 Set)을 들고 다니며 이미 방문한 정점은 다시 방문하지 않아야 함</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧱 구현 방식 두 가지</h3>
+        <ul>
+          <li>재귀: 함수 호출 스택을 그대로 이용, 스택 프레임 자체가 backtrack 역할</li>
+          <li>명시적 Stack(ArrayDeque): push/pop 또는 addFirst로 직접 LIFO 구현, 로직은 재귀와 본질적으로 동일</li>
+          <li>Queue(FIFO)로 구현하면 사실상 BFS가 되어버리므로 반드시 LIFO를 유지해야 함</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🕒 visited 처리 시점</h3>
+        <ul>
+          <li>DFS는 정점에 진입하는 시점(재귀 호출 시작 시점)에 visited = true 처리</li>
+          <li>인접 정점 순회 전에 visited를 확인해 불필요한 재귀 호출/스택 push을 줄일 수 있음</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧩 dfs(start) vs 전체 탐색</h3>
+        <ul>
+          <li>dfs(start): start와 연결된 하나의 connected component만 탐색</li>
+          <li>전체 탐색: 모든 정점을 순회하면서 아직 방문하지 않은 정점에서 dfs를 다시 시작 -> disconnected graph의 모든 component
+            탐색
+          </li>
+        </ul>
+      </div>
+
+      <div class="section-divider">↩️ DFS + Backtracking</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>↩️ Backtracking이 필요한 이유</h3>
+        <ul>
+          <li>모든 가능한 경로를 탐색해야 하는 문제(예: 시작점 ~ 목적지까지의 최소 깊이 탐색)에서 필요</li>
+          <li>일반 DFS와 달리, 한 정점에서 뻗어나가는 모든 경로 탐색이 끝나면(재귀 호출이 전부 반환되면) 다시 visited = false로 되돌려야 다른 시작
+            경로가 같은 정점을 다시 거쳐갈 수 있음
+          </li>
+          <li>인접 정점이 목적지와 같을 때 깊이는 curDepth가 아니라 curDepth + 1 (한 칸 더 간 것이므로)</li>
+          <li>for문 안에서 조건 맞다고 바로 return하면 첫 경로만 확인하고 끝나버림 -> 모든 이웃을 순회한 뒤 결과들 중 최솟값을 취해야 함</li>
+          <li>못 찾은 경우(-1)는 값이 없는 상태로 별도 처리해야 함, 그냥 Math.min에 넣으면 음수라 항상 이겨버림</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">⚖️ DFS vs BFS</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⚖️ 비교</h3>
+        <div class="cols">
+          <ul>
+            <li>DFS: 깊이 우선, Stack/재귀, 경로 탐색·연결 요소·영역 탐색·백트래킹 등에 활용</li>
+          </ul>
+          <ul>
+            <li>BFS: 너비 우선, Queue, 비가중치 그래프의 최단 거리 탐색에 주로 활용 (같은 거리 정점을 모두 방문한 뒤 다음 거리로 확장하므로 최단 경로가
+              자동 보장됨)
+            </li>
+          </ul>
+        </div>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">DFS로 최단 경로를 구하려면 모든 경로를 다
+          타보고 최솟값을 골라야 해서 backtracking이 필수가 되고 코드도 복잡해짐 -> BFS가 구조적으로 더 적합한 이유</p>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 시간복잡도 (인접리스트 vs 인접행렬)</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>표현 방식</th>
+            <th>DFS/BFS 시간복잡도</th>
+            <th>이유</th>
+          </tr>
+          <tr>
+            <td>인접리스트</td>
+            <td class="good">O(V + E)</td>
+            <td>각 정점 한 번씩 방문(V) + 실제 연결된 간선만 순회(총 E)</td>
+          </tr>
+          <tr>
+            <td>인접행렬</td>
+            <td class="warn">O(V²)</td>
+            <td>각 정점에서 인접 여부 확인을 위해 행 전체(V개)를 스캔, 실제 간선 수와 무관</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">희소 그래프(sparse graph)일수록
+          인접리스트가 유리 -> 순회 계열 알고리즘(DFS/BFS/다익스트라 등)에서 실무 표준으로 쓰이는 이유</p>
+      </div>
+
+    </div>
+  </details>
+
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="recursion">recursionDFS(start) - 재귀</option>
+        <option value="stack">stackDFS(start) - 명시적 스택</option>
+        <option value="full">fullDFS() - 전체 그래프 탐색</option>
+        <option value="backtrack">findMinDepth...(start, dest) - Backtracking</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="startGroup">
+      <label>시작 정점</label>
+      <select id="startSelect"></select>
+    </div>
+    <div class="ctrl-group" id="destGroup">
+      <label>목적지 정점</label>
+      <select id="destSelect"></select>
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">🔄 초기화</button>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <div class="info-chip">방문 정점 수 = <strong id="infoVisited">0</strong> / 10</div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+    <div class="info-chip">결과 = <strong id="infoResult">-</strong></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Graph (인접리스트 기반, 무방향)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="graph-scroll">
+      <div class="graph-canvas-wrap" id="graphCanvasWrap">
+        <div class="graph-canvas" id="graphCanvas">
+          <svg class="graph-edges" id="graphEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-strip" id="outputStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        미방문
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 방문 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0e7490;"></div>
+        인접 정점 확인 중 (check)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        방문 완료 (visited)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1a1f2e;border:1px dashed #fcd34d;"></div>
+        스택 대기 중
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        목적지 발견 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        backtracking (visited 해제)
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산과 시작 정점을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          재귀 DFS + 전체 그래프 탐색(fullDFS)
+        </div>
+        <pre><span class="kw">private</span> <span class="kw">static</span> <span
+            class="kw">void</span> <span class="fn">recursionDFS</span>(<span class="ty">int</span> <span
+            class="nm">start</span>) {
+  <span class="kw">if</span> (!<span class="nm">graph</span>.<span class="fn">hasVertex</span>(<span
+              class="nm">start</span>) || <span class="nm">visited</span>[<span
+              class="nm">start</span>]) {
+    <span class="kw">return</span>;
+  }
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+  <span class="ty">System</span>.<span class="nm">out</span>.<span class="fn">println</span>(<span
+              class="st">&quot;방문 Node idx : &quot;</span> + <span class="nm">start</span>);
+
+  <span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">vertexList</span> = <span class="nm">graph</span>.<span class="fn">getAdjacentVertices</span>(<span
+              class="nm">start</span>);
+
+  <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">nextVertex</span> : <span
+              class="nm">vertexList</span>) {
+    <span class="kw">if</span> (!<span class="nm">visited</span>[<span class="nm">nextVertex</span>]) {
+      <span class="fn">recursionDFS</span>(<span class="nm">nextVertex</span>);
+    }
+  }
+}
+
+<span class="ck">// disconnected graph 대응: 모든 정점을 순회하며</span>
+<span class="ck">// 아직 방문하지 않은 정점에서 다시 DFS를 시작하면 모든 component 탐색 가능</span>
+<span class="kw">for</span> (<span class="ty">int</span> <span class="nm">vertex</span> = <span
+              class="nu">0</span>; <span class="nm">vertex</span> &lt; <span class="nm">graph</span>.<span
+              class="nm">adjacencyMap</span>.<span class="fn">size</span>(); <span
+              class="nm">vertex</span>++) {
+  <span class="kw">if</span> (<span class="nm">visited</span>[<span
+              class="nm">vertex</span>]) {<span class="kw">continue</span>;}
+
+  <span class="ty">System</span>.<span class="nm">out</span>.<span class="fn">println</span>(<span
+              class="st">&quot;새로운 component 시작: &quot;</span> + <span class="nm">vertex</span>);
+  <span class="fn">recursionDFS</span>(<span class="nm">vertex</span>);
+}
+</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          스택 DFS + Backtracking 최단 경로 탐색
+        </div>
+        <pre><span class="ck">// DFS 는 LIFO가 필요 (최근에 발견한 정점을 먼저 탐색), stack 을 사용</span>
+<span class="kw">private</span> <span class="kw">static</span> <span class="kw">void</span> <span
+              class="fn">stackDFS</span>(<span class="ty">int</span> <span class="nm">start</span>) {
+  <span class="kw">if</span> (!<span class="nm">graph</span>.<span class="fn">hasVertex</span>(<span
+              class="nm">start</span>) || <span class="nm">visited</span>[<span
+              class="nm">start</span>]) {
+    <span class="kw">return</span>;
+  }
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+
+  <span class="ty">ArrayDeque</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">stack</span> = <span class="kw">new</span> <span
+              class="ty">ArrayDeque</span>&lt;&gt;();
+  <span class="kw">for</span> (<span class="ty">Integer</span> <span
+              class="nm">adjacentVertex</span> : <span class="nm">graph</span>.<span class="fn">getAdjacentVertices</span>(<span
+              class="nm">start</span>)) {
+    <span class="nm">stack</span>.<span class="fn">push</span>(<span
+              class="nm">adjacentVertex</span>);
+  }
+
+  <span class="kw">while</span> (!<span class="nm">stack</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">int</span> <span class="nm">curAdcacencyNode</span> = <span
+              class="nm">stack</span>.<span class="fn">pop</span>();
+
+    <span class="kw">if</span> (<span class="nm">visited</span>[<span
+              class="nm">curAdcacencyNode</span>]) {<span class="kw">continue</span>;}
+    <span class="nm">visited</span>[<span class="nm">curAdcacencyNode</span>] = <span class="kw">true</span>;
+
+    <span class="kw">for</span> (<span class="ty">Integer</span> <span
+              class="nm">adjacentVertex</span> : <span class="nm">graph</span>.<span class="fn">getAdjacentVertices</span>(<span
+              class="nm">curAdcacencyNode</span>)) {
+      <span class="nm">stack</span>.<span class="fn">addFirst</span>(<span
+              class="nm">adjacentVertex</span>);
+    }
+  }
+}
+
+<span class="ck">// DFS + backtracking</span>
+<span class="kw">private</span> <span class="kw">static</span> <span class="ty">int</span> <span
+              class="fn">findMinDepthDestinationRecursionDFS</span>(
+    <span class="ty">int</span> <span class="nm">start</span>, <span class="ty">int</span> <span
+              class="nm">destination</span>, <span class="ty">int</span> <span
+              class="nm">curDepth</span>) {
+  <span class="kw">if</span> (!<span class="nm">graph</span>.<span class="fn">hasVertex</span>(<span
+              class="nm">start</span>) || <span class="nm">visited</span>[<span
+              class="nm">start</span>]) {
+    <span class="kw">return</span> -<span class="nu">1</span>;
+  }
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+  <span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">vertexList</span> = <span class="nm">graph</span>.<span class="fn">getAdjacentVertices</span>(<span
+              class="nm">start</span>);
+  <span class="ty">int</span> <span class="nm">minDepth</span> = -<span class="nu">1</span>;
+
+  <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">nextVertex</span> : <span
+              class="nm">vertexList</span>) {
+    <span class="kw">if</span> (<span class="nm">destination</span> == <span
+              class="nm">nextVertex</span>) {
+      <span class="nm">minDepth</span> = <span class="fn">updateMin</span>(<span
+              class="nm">minDepth</span>, <span class="nm">curDepth</span> + <span
+              class="nu">1</span>);
+      <span class="kw">continue</span>;
+    }
+
+    <span class="kw">if</span> (!<span class="nm">visited</span>[<span class="nm">nextVertex</span>]) {
+      <span class="ty">int</span> <span class="nm">result</span> = <span class="fn">findMinDepthDestinationRecursionDFS</span>(
+          <span class="nm">nextVertex</span>, <span class="nm">destination</span>, <span class="nm">curDepth</span> + <span
+              class="nu">1</span>);
+
+      <span class="kw">if</span> (<span class="nm">result</span> != -<span class="nu">1</span>) {
+        <span class="nm">minDepth</span> = <span class="fn">updateMin</span>(<span class="nm">minDepth</span>, <span
+              class="nm">result</span>);
+      }
+    }
+  }
+  <span class="ck">// backtracking, 현재 경로의 탐색이 끝났으므로 다른 경로에서 방문 가능하도록 방문 해제</span>
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">false</span>;
+  <span class="kw">return</span> <span class="nm">minDepth</span>;
+}
+
+<span class="kw">private</span> <span class="kw">static</span> <span class="ty">int</span> <span
+              class="fn">updateMin</span>(<span class="ty">int</span> <span
+              class="nm">cur</span>, <span class="ty">int</span> <span class="nm">candidate</span>) {
+  <span class="kw">if</span> (<span class="nm">cur</span> == -<span class="nu">1</span>) {<span
+              class="kw">return</span> <span class="nm">candidate</span>;}
+  <span class="kw">return</span> <span class="ty">Math</span>.<span class="fn">min</span>(<span
+              class="nm">cur</span>, <span class="nm">candidate</span>);
+}
+</pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ── 그래프 정의 (addEdge 호출 순서 그대로 반영한 인접리스트) ──
+  const VERTICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const adjList = {
+    0: [1, 2], 1: [0, 2, 3, 4], 2: [0, 1, 4, 6], 3: [1, 5], 4: [1, 2, 7],
+    5: [3, 9], 6: [2, 7], 7: [4, 6, 9], 8: [], 9: [5, 7]
+  };
+  const drawEdges = [[0, 1], [0, 2], [1, 2], [1, 3], [1, 4], [2, 4], [2, 6], [3, 5], [4, 7], [5, 9],
+    [6, 7], [7, 9]];
+  const positions = {
+    0: [0, 0], 1: [1, 0], 3: [2, 0],
+    2: [0, 1], 4: [1, 1], 5: [2, 1],
+    6: [0, 2], 7: [1, 2], 9: [2, 2],
+    8: [3.0, 1]
+  };
+
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── planner: 재귀 DFS ──
+  function planRecursionDFS(start) {
+    const steps = [];
+    const visited = new Set();
+    const order = [];
+
+    function snap(extra, msg, tag) {
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      Object.assign(hl, extra);
+      steps.push({highlight: hl, msg, tag, order: [...order], stack: null});
+    }
+
+    function dfs(v) {
+      visited.add(v);
+      order.push(v);
+      snap({[v]: 'current'}, `방문 Node idx: ${v} -> visited[${v}]=true`, 'visit');
+      const neighbors = adjList[v];
+      snap({[v]: 'current'}, `getAdjacentVertices(${v}) = [${neighbors.join(', ')}]`, 'visit');
+      for (const next of neighbors) {
+        if (!visited.has(next)) {
+          snap({[v]: 'current', [next]: 'check'},
+              `인접 정점 ${next} 미방문 -> recursionDFS(${next}) 재귀 호출`, 'visit');
+          dfs(next);
+          snap({[v]: 'current'}, `recursionDFS(${next}) 반환 -> ${v}의 다음 인접 정점 확인`, 'visit');
+        } else {
+          snap({[v]: 'current'}, `인접 정점 ${next} 이미 방문 -> 건너뜀`, 'skip');
+        }
+      }
+    }
+
+    dfs(start);
+    snap({}, `recursionDFS(${start}) 완료 -> 방문 순서: [${order.join(', ')}]`, 'done');
+    return steps;
+  }
+
+  // ── planner: 스택 DFS ──
+  function planStackDFS(start) {
+    const steps = [];
+    const visited = new Set();
+
+    function snap(extra, msg, tag, stack) {
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      (stack || []).forEach(id => { if (hl[id] === undefined) { hl[id] = 'stacked'; } });
+      Object.assign(hl, extra);
+      steps.push({highlight: hl, msg, tag, order: [...visited], stack: stack ? [...stack] : []});
+    }
+
+    visited.add(start);
+    snap({[start]: 'current'}, `시작 정점 ${start} 방문 처리 -> visited[${start}]=true`, 'visit', []);
+
+    const stack = [];
+    const initNeighbors = adjList[start];
+    snap({[start]: 'current'},
+        `getAdjacentVertices(${start}) = [${initNeighbors.join(', ')}] -> 순서대로 push()`, 'visit',
+        stack);
+    for (const n of initNeighbors) {
+      stack.unshift(n);
+      snap({[start]: 'visited'}, `push(${n}) -> stack top: [${stack.join(', ')}]`, 'visit', stack);
+    }
+
+    while (stack.length) {
+      const cur = stack.shift();
+      if (visited.has(cur)) {
+        snap({}, `pop() -> ${cur} (이미 방문) -> continue`, 'skip', stack);
+        continue;
+      }
+      visited.add(cur);
+      snap({[cur]: 'current'}, `pop() -> ${cur} 방문 처리 -> visited[${cur}]=true`, 'visit', stack);
+      const neighbors = adjList[cur];
+      snap({[cur]: 'current'},
+          `getAdjacentVertices(${cur}) = [${neighbors.join(', ')}] -> addFirst 로 스택에 추가`, 'visit',
+          stack);
+      for (const n of neighbors) {
+        stack.unshift(n);
+        snap({[cur]: 'visited'}, `addFirst(${n}) -> stack top: [${stack.join(', ')}]`, 'visit',
+            stack);
+      }
+    }
+    snap({}, `stackDFS(${start}) 완료 -> stack 비어있음, visited: [${[...visited].join(', ')}]`, 'done',
+        []);
+    return steps;
+  }
+
+  // ── planner: 전체 그래프 탐색(fullDFS) ──
+  function planFullDFS() {
+    const steps = [];
+    const visited = new Set();
+    const order = [];
+
+    function snap(extra, msg, tag) {
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      Object.assign(hl, extra);
+      steps.push({highlight: hl, msg, tag, order: [...order], stack: null});
+    }
+
+    function dfs(v) {
+      visited.add(v);
+      order.push(v);
+      snap({[v]: 'current'}, `방문 Node idx: ${v}`, 'visit');
+      for (const next of adjList[v]) {
+        if (!visited.has(next)) {
+          snap({[v]: 'current', [next]: 'check'}, `인접 정점 ${next} 미방문 -> 재귀 호출`, 'visit');
+          dfs(next);
+        }
+      }
+    }
+
+    for (const v of VERTICES) {
+      if (!visited.has(v)) {
+        snap({[v]: 'target'}, `새로운 component 시작: ${v}`, 'component');
+        dfs(v);
+      }
+    }
+    snap({}, `fullDFS 완료 -> 전체 방문 순서: [${order.join(', ')}]`, 'done');
+    return steps;
+  }
+
+  // ── planner: Backtracking 최단 경로 탐색 ──
+  function planBacktrack(start, destination) {
+    const steps = [];
+    const visited = new Set();
+
+    function snap(extra, msg, tag) {
+      const hl = {};
+      visited.forEach(id => { hl[id] = 'visited'; });
+      Object.assign(hl, extra);
+      steps.push({highlight: hl, msg, tag, order: [...visited], stack: null});
+    }
+
+    function dfs(v, depth) {
+      visited.add(v);
+      snap({[v]: 'current'}, `방문 Node idx: ${v} (depth=${depth}) -> visited[${v}]=true`, 'visit');
+      const neighbors = adjList[v];
+      snap({[v]: 'current'}, `getAdjacentVertices(${v}) = [${neighbors.join(', ')}]`, 'visit');
+      let minDepth = -1;
+      for (const next of neighbors) {
+        if (next === destination) {
+          const cand = depth + 1;
+          minDepth = minDepth === -1 ? cand : Math.min(minDepth, cand);
+          snap({[v]: 'current', [next]: 'target'}, `목적지(${destination}) 발견 -> depth ${cand} 후보로 기록`,
+              'found');
+          continue;
+        }
+        if (!visited.has(next)) {
+          snap({[v]: 'current', [next]: 'check'}, `인접 정점 ${next} 미방문 -> 재귀 탐색 진행`, 'visit');
+          const result = dfs(next, depth + 1);
+          if (result !== -1) { minDepth = minDepth === -1 ? result : Math.min(minDepth, result); }
+          snap({[v]: 'current'}, `dfs(${next}) 반환(${result}) -> 현재까지 최소값: ${minDepth}`, 'visit');
+        }
+      }
+      visited.delete(v);
+      snap({[v]: 'removing'}, `backtracking -> visited[${v}]=false 로 되돌림`, 'backtrack');
+      return minDepth;
+    }
+
+    const result = dfs(start, 0);
+    steps.push({
+      highlight: {},
+      msg: `findMinDepthDestinationRecursionDFS(${start}, ${destination}) 최종 결과: ${result}`,
+      tag: 'done',
+      order: [],
+      stack: null
+    });
+    return steps;
+  }
+
+  // ── 렌더 ──
+  function renderGraph(highlight) {
+    const wrap = document.getElementById('graphCanvasWrap');
+    const canvas = document.getElementById('graphCanvas');
+    const svg = document.getElementById('graphEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    const spacingX = 110, spacingY = 100, padX = 40, padTop = 40, nodeSize = 44;
+    let maxGx = 0, maxGy = 0;
+    VERTICES.forEach(v => {
+      maxGx = Math.max(maxGx, positions[v][0]);
+      maxGy = Math.max(maxGy, positions[v][1]);
+    });
+    const width = padX * 2 + maxGx * spacingX + nodeSize;
+    const height = padTop * 2 + maxGy * spacingY + nodeSize;
+
+    const scrollEl = document.querySelector('.graph-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const posPx = {};
+    VERTICES.forEach(v => {
+      const [gx, gy] = positions[v];
+      posPx[v] = {
+        cx: padX + gx * spacingX + nodeSize / 2,
+        cy: padTop + gy * spacingY + nodeSize / 2
+      };
+    });
+
+    let edgeSvg = '';
+    drawEdges.forEach(([a, b]) => {
+      const p = posPx[a], c = posPx[b];
+      edgeSvg += `<line x1="${p.cx}" y1="${p.cy}" x2="${c.cx}" y2="${c.cy}" class="graph-edge" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    VERTICES.forEach(v => {
+      const pos = posPx[v];
+      const hl = highlight[v];
+      let cls = 'gnode';
+      if (hl) { cls += ' state-' + hl; }
+      const isolated = adjList[v].length === 0;
+      html += `<div class="gnode-wrap" style="left:${pos.cx - nodeSize / 2}px; top:${pos.cy
+      - nodeSize / 2}px;">
+          ${isolated ? '<div class="pos-tag isolated">고립</div>' : ''}
+          <div class="${cls}">${v}</div>
+        </div>`;
+    });
+    layer.innerHTML = html;
+  }
+
+  function renderOutput(order, stack) {
+    const el = document.getElementById('outputStrip');
+    let html = '<span class="output-label">방문 순서</span>';
+    if (!order || order.length === 0) {
+      html += '<span class="output-chip">-</span>';
+    } else {
+      order.forEach(v => { html += `<span class="output-chip active">${v}</span>`; });
+    }
+    if (stack && stack.length) {
+      html += '<span class="output-label" style="margin-left:14px;">스택(top -> bottom)</span>';
+      stack.forEach(v => { html += `<span class="stack-chip">${v}</span>`; });
+    }
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'visit': '<span class="phase-tag phase-visit">방문</span>',
+    'skip': '<span class="phase-tag phase-skip">건너뜀</span>',
+    'found': '<span class="phase-tag phase-found">발견 ✓</span>',
+    'backtrack': '<span class="phase-tag phase-backtrack">backtrack</span>',
+    'component': '<span class="phase-tag phase-component">새 component</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+  };
+
+  function renderStep(step) {
+    renderGraph(step.highlight);
+    renderOutput(step.order, step.stack);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoVisited').textContent = (step.order || []).length;
+    if (step.tag === 'done' && step.msg.includes('최종 결과')) {
+      document.getElementById('infoResult').textContent = step.msg.split('최종 결과: ')[1] || '-';
+    }
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const start = parseInt(document.getElementById('startSelect').value);
+    const dest = parseInt(document.getElementById('destSelect').value);
+
+    document.getElementById('infoResult').textContent = '-';
+
+    if (op === 'recursion') { steps = planRecursionDFS(start); } else if (op
+        === 'stack') { steps = planStackDFS(start); } else if (op
+        === 'full') { steps = planFullDFS(); } else if (op === 'backtrack') {
+      steps = planBacktrack(start, dest);
+    }
+
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('startGroup').style.display = op === 'full' ? 'none' : 'flex';
+    document.getElementById('destGroup').style.display = op === 'backtrack' ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  function populateSelect(id, defaultVal) {
+    const sel = document.getElementById(id);
+    sel.innerHTML = VERTICES.map(v => `<option value="${v}">${v}</option>`).join('');
+    sel.value = defaultVal;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('startSelect').addEventListener('change', markDirty);
+  document.getElementById('destSelect').addEventListener('change', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    stopPlay();
+    needsNewRun = true;
+    ensurePlanReady();
+    stepIdx = 0;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  function reRenderCurrent() {
+    if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); } else { renderGraph({}); }
+  }
+
+  populateSelect('startSelect', 0);
+  populateSelect('destSelect', 9);
+  updateOpUI();
+  renderGraph({});
+  renderOutput([], []);
+
+  // 컨테이너 레이아웃이 완전히 자리잡기 전에 clientWidth를 읽어 스케일이 잘못 계산되는 경우를 대비한 안전장치
+  window.addEventListener('load', reRenderCurrent);
+  setTimeout(reRenderCurrent, 150);
+</script>
+</html>

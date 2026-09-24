@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>그래프 & BFS(너비 우선 탐색) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 72px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 60px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 복잡도 표 ── */
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th,
+    & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
+  .phase-traverse {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  /* ── 그래프 시각화 ── */
+  .graph-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .graph-canvas-wrap {
+    position: relative;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  .graph-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+  }
+
+  .graph-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .graph-edges line.graph-edge {
+    stroke: #334155;
+    stroke-width: 2;
+  }
+
+  .graph-edges line.path-edge {
+    stroke: var(--good-border);
+    stroke-width: 4;
+  }
+
+  .nodes-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .gnode-wrap {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+
+    &.start {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+  }
+
+  .gnode {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
+
+    &.state-queued {
+      background: var(--tag-blue-bg);
+      border-color: var(--state-mark);
+      color: var(--tag-blue-text);
+      transform: scale(1.05);
+    }
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.15);
+    }
+
+    &.state-visited {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.15);
+    }
+
+    &.state-path {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+  }
+
+  /* ── 결과/큐 스트립 ── */
+  .output-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    margin: 0.75rem 0 0.6rem;
+  }
+
+  .output-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 2px;
+  }
+
+  .output-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    font-family: "Consolas", monospace;
+
+    &.active {
+      border-color: var(--good-border);
+      color: var(--good-text);
+    }
+  }
+
+  .queue-chip {
+    background: var(--tag-blue-bg);
+    border: 1px solid var(--tag-blue-text);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--tag-blue-text);
+    font-family: "Consolas", monospace;
+  }
+
+  /* ── 구분선(세로) 반응형 ── */
+  @media (max-width: 620px) {
+    .divider-v {
+      display: none;
+    }
+  }
+
+  /* 공용 css의 반응형 규칙이 적용되지 않는 경우를 대비한 안전장치 */
+  @media (max-width: 820px) {
+    .code-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">너비 우선 탐색(Breadth-First Search, BFS)</h1>
+    <p>인접 리스트 기반 그래프 + BFS 순회 / 최단 경로(dist·parent) / 연결 요소 개수 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle" open>
+    <summary>📖 BFS 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="note-card">
+        <h3>🌊 BFS란</h3>
+        <ul>
+          <li>시작 정점에서 가까운(레벨이 낮은) 정점부터 순서대로 방문하는 탐색 방식</li>
+          <li>같은 레벨의 정점을 모두 방문한 뒤에야 다음 레벨로 넘어감 (레벨 단위로 넓게 퍼짐)</li>
+          <li>Queue의 FIFO 특성이 이 순서를 그대로 보장 -> 먼저 발견한 정점을 먼저 확장</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚔️ DFS와의 차이</h3>
+        <ul>
+          <li>DFS: 한 방향으로 갈 수 있는 데까지 깊이 파고든 후 되돌아옴 -> Stack(혹은 재귀 호출 스택)의 LIFO 특성과 자연스럽게 맞음</li>
+          <li>BFS: Queue의 FIFO 특성으로 레벨 순서가 그대로 유지됨</li>
+          <li>골격은 거의 동일(방문 안 한 인접 정점을 자료구조에 넣고, 꺼내서 처리를 반복), 그 자료구조가 Stack이냐 Queue냐만 다름</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🐛 방문 처리 시점(흔한 버그 포인트)</h3>
+        <ul>
+          <li>반드시 <strong>큐에 넣는 시점</strong>에 visited 체크 & 표시를 해야 함</li>
+          <li>poll할 때 체크하면 같은 정점이 여러 경로를 통해 큐에 중복으로 여러 번 들어감(아직 poll 전이라 visited로 안 걸림) -> 불필요한 중복
+            방문, 큐 크기 낭비
+          </li>
+          <li>DFS(재귀)는 노드 진입 시점에 visited 처리해도 크게 문제 없는 경우가 많은 것과 대비됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>📏 최단 경로 보장의 원리</h3>
+        <ul>
+          <li>BFS는 레벨 단위로 퍼져나가기 때문에, 어떤 정점에 처음 도달한 순간이 곧 시작점으로부터의 최단 거리</li>
+          <li>큐에서 꺼내지는 순서가 곧 거리(레벨) 순서이기 때문에 성립</li>
+          <li>가중치 없는 그래프에서만 성립함(가중치 있는 그래프의 최단 경로는 Dijkstra로 확장)</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🧭 dist[] + parent[] 경로 복원 패턴</h3>
+        <ul>
+          <li><strong>dist[]</strong>: 정점별 시작점으로부터의 거리를 기록, 전부 -1로 초기화 후 실제 방문된 정점만 갱신 -> 끝난 뒤
+            dist[dest]==-1이면 도달 불가능으로 판정
+          </li>
+          <li><strong>parent[]</strong>: 정점별로 자신을 발견(큐에 넣은) 이전 정점을 기록, 인접 정점을 큐에 넣는 순간
+            parent[nextVertex]=curVertex로 기록
+          </li>
+          <li>BFS 종료 후 dest에서 parent를 따라 거슬러 올라가며 경로를 역추적, 뒤집으면 start -> dest 경로</li>
+          <li>경로 전체를 매번 복사해서 큐에 들고 다니는 방식(O(V²)에 가까워짐)보다 parent[] 역추적 방식(O(V+E) + O(경로 길이))이 표준적이고
+            효율적
+          </li>
+          <li>parent[start] = -1로 남아있는 것을 역추적 종료 조건으로 활용(자기 자신은 누구에게도 발견된 적 없음)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧩 연결 요소(Connected Component) 세기</h3>
+        <ul>
+          <li>전체 정점을 순회하면서 아직 방문 안 한 정점을 만날 때마다 그 지점에서 새로 BFS 시작 -> count++</li>
+          <li>한 번의 BFS가 끝나면 그 컴포넌트에 속한 모든 정점이 visited 처리되므로, 바깥 루프에서 다시 마주쳐도 스킵됨 -> 결과적으로 컴포넌트 개수만큼만
+            BFS가 실행됨
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 시간/공간 복잡도 & 활용처</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>구분</th>
+            <th>복잡도</th>
+            <th>설명</th>
+          </tr>
+          <tr>
+            <td>시간</td>
+            <td class="good">O(V + E)</td>
+            <td>모든 정점과 간선을 정확히 한 번씩(무방향은 상수배) 확인</td>
+          </tr>
+          <tr>
+            <td>공간</td>
+            <td class="good">O(V)</td>
+            <td>큐 + visited 배열</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: 가중치 없는 그래프의 최단 경로,
+          레벨(깊이)별 그룹핑, 연결 요소 개수 세기, 이분 그래프 판별 / DFS는 반대로 경로 존재 여부·백트래킹·위상정렬·사이클 탐지에 강점</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="bfs">BFS 순회 - 방문 순서</option>
+        <option value="shortestPath">최단 경로 - dist·parent 복원</option>
+        <option value="connectedComponents">연결 요소 개수 세기</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="startGroup">
+      <label>시작 정점</label>
+      <input type="number" id="startInput" value="0" min="0" max="11">
+    </div>
+    <div class="ctrl-group" id="destGroup" style="display:none;">
+      <label>목적 정점</label>
+      <input type="number" id="destInput" value="6" min="0" max="11">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">🔄 초기화</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">정점(V) = <strong id="infoV">12</strong></div>
+    <div class="info-chip">간선(E) = <strong id="infoE">11</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Graph (Adjacency List)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="graph-scroll">
+      <div class="graph-canvas-wrap" id="graphCanvasWrap">
+        <div class="graph-canvas" id="graphCanvas">
+          <svg class="graph-edges" id="graphEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-strip" id="outputStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        미방문
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2d5e;"></div>
+        발견됨 (큐 대기중)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 처리 중 (poll)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        처리 완료
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        목적 정점 발견
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        최단 경로
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-grid">
+      <div class="code-panel" style="margin-bottom: 1rem;">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          공통 부분 - 그래프 초기화 (인접 리스트)
+        </div>
+        <pre>
+<span class="kw">public</span> <span class="kw">static</span> <span class="ty">List</span>&lt;<span
+            class="ty">List</span>&lt;<span class="ty">Integer</span>&gt;&gt; <span class="fn">initGraph</span>(<span
+            class="ty">int</span>[][] <span class="nm">edges</span>, <span
+            class="ty">int</span> <span
+            class="nm">V</span>) {
+  <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt;&gt; <span
+            class="nm">graph</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">V</span>; <span
+            class="nm">i</span>++) {<span class="nm">graph</span>.<span class="fn">add</span>(<span
+            class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;());}
+
+  <span class="kw">for</span> (<span class="ty">int</span>[] <span class="nm">e</span> : <span
+            class="nm">edges</span>) {
+    <span class="nm">graph</span>.<span class="fn">get</span>(<span class="nm">e</span>[<span
+            class="nu">0</span>]).<span class="fn">add</span>(<span class="nm">e</span>[<span
+            class="nu">1</span>]);
+    <span class="nm">graph</span>.<span class="fn">get</span>(<span class="nm">e</span>[<span
+            class="nu">1</span>]).<span class="fn">add</span>(<span class="nm">e</span>[<span
+            class="nu">0</span>]); <span class="ck">// 무방향이므로 양방향 추가</span>
+  }
+  <span class="kw">return</span> <span class="nm">graph</span>;
+}
+</pre>
+      </div>
+      <div class="code-panel" style="margin-bottom: 1rem;">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#c4b5fd"></div>
+          연결 요소 개수 세기 - countConnectedComponent
+        </div>
+        <pre>
+<span class="kw">private</span> <span class="kw">static</span> <span class="ty">int</span> <span
+            class="fn">countConnectedComponent</span>(<span class="ty">List</span>&lt;<span
+            class="ty">List</span>&lt;<span class="ty">Integer</span>&gt;&gt; <span
+            class="nm">graph</span>) {
+  <span class="ty">int</span> <span class="nm">componentCount</span> = <span class="nu">0</span>;
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">vertex</span> = <span
+            class="nu">0</span>; <span class="nm">vertex</span> &lt; <span
+            class="nm">graph</span>.<span class="fn">size</span>(); <span class="nm">vertex</span>++) {
+    <span class="kw">if</span> (!<span class="nm">visited</span>[<span class="nm">vertex</span>]) {
+      <span class="fn">BasicBFS</span>(<span class="nm">vertex</span>, <span class="nm">graph</span>);
+      <span class="nm">componentCount</span>++;
+    }
+  }
+  <span class="kw">return</span> <span class="nm">componentCount</span>;
+}
+</pre>
+      </div>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          BFS 순회 - BasicBFS
+        </div>
+        <pre><span class="kw">static</span> <span class="ty">boolean</span>[] <span class="nm">visited</span>;
+
+<span class="kw">public</span> <span class="kw">static</span> <span class="ty">List</span>&lt;<span
+              class="ty">Integer</span>&gt; <span class="fn">BasicBFS</span>(<span
+              class="ty">int</span> <span class="nm">start</span>, <span
+              class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span
+              class="ty">Integer</span>&gt;&gt; <span class="nm">graph</span>) {
+  <span class="kw">if</span> (<span class="nm">graph</span>.<span
+              class="fn">isEmpty</span>() || <span class="nm">visited</span>[<span
+              class="nm">start</span>]) {<span class="kw">return</span> <span class="kw">null</span>;}
+  <span class="ty">List</span>&lt;<span class="ty">Integer</span>&gt; <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="ty">ArrayDeque</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">ArrayDeque</span>&lt;&gt;();
+
+  <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">start</span>);
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">int</span> <span class="nm">curVertex</span> = <span
+              class="nm">queue</span>.<span class="fn">poll</span>();
+
+    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curVertex</span>);
+
+    <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">nextVertex</span> : <span
+              class="nm">graph</span>.<span class="fn">get</span>(<span class="nm">curVertex</span>)) {
+      <span class="kw">if</span> (!<span class="nm">visited</span>[<span
+              class="nm">nextVertex</span>]) {
+        <span class="nm">visited</span>[<span class="nm">nextVertex</span>] = <span
+              class="kw">true</span>;
+        <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">nextVertex</span>);
+      }
+    }
+  }
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+        </pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          최단 경로 - dist[] + parent[] 경로 복원
+        </div>
+        <pre><span class="kw">private</span> <span class="kw">static</span> <span
+            class="ty">Object</span>[] <span class="fn">pathRecordWithFindMinPathBFS</span>(<span
+            class="ty">int</span> <span class="nm">start</span>, <span class="ty">int</span> <span
+            class="nm">dest</span>, <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span
+            class="ty">Integer</span>&gt;&gt; <span class="nm">graph</span>) {
+  <span class="ck">// 0 = start, 1 = dest, 2 = depth, 3 = path(arrayList)</span>
+  <span class="ty">Object</span>[] <span class="nm">result</span> = <span
+              class="kw">new</span> <span class="ty">Object</span>[<span class="nu">4</span>];
+  <span class="nm">result</span>[<span class="nu">0</span>] = <span class="nm">start</span>;
+  <span class="nm">result</span>[<span class="nu">1</span>] = <span class="nm">dest</span>;
+
+  <span class="ty">int</span>[] <span class="nm">parent</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">graph</span>.<span class="fn">size</span>()];
+  <span class="ty">int</span>[] <span class="nm">dist</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">graph</span>.<span class="fn">size</span>()];
+
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span class="nm">parent</span>, -<span
+              class="nu">1</span>);
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span class="nm">dist</span>, -<span
+              class="nu">1</span>);
+
+  <span class="kw">if</span> (<span class="nm">start</span> == <span class="nm">dest</span>) {
+    <span class="nm">result</span>[<span class="nu">2</span>] = <span class="nu">0</span>;
+    <span class="nm">result</span>[<span class="nu">3</span>] = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;(<span class="ty">List</span>.<span
+              class="fn">of</span>(<span class="nm">start</span>));
+    <span class="kw">return</span> <span class="nm">result</span>;
+  }
+
+  <span class="ty">ArrayDeque</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">ArrayDeque</span>&lt;&gt;();
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+  <span class="nm">dist</span>[<span class="nm">start</span>] = <span class="nu">0</span>;
+  <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">start</span>);
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">int</span> <span class="nm">curVertex</span> = <span
+              class="nm">queue</span>.<span class="fn">poll</span>();
+
+    <span class="kw">if</span> (<span class="nm">curVertex</span> == <span class="nm">dest</span>) {<span
+              class="kw">break</span>;}
+
+    <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">nextVertex</span> : <span
+              class="nm">graph</span>.<span class="fn">get</span>(<span class="nm">curVertex</span>)) {
+      <span class="kw">if</span> (!<span class="nm">visited</span>[<span
+              class="nm">nextVertex</span>]) {
+        <span class="nm">visited</span>[<span class="nm">nextVertex</span>] = <span
+              class="kw">true</span>;
+        <span class="nm">dist</span>[<span class="nm">nextVertex</span>] = <span
+              class="nm">dist</span>[<span class="nm">curVertex</span>] + <span class="nu">1</span>;
+        <span class="nm">parent</span>[<span class="nm">nextVertex</span>] = <span class="nm">curVertex</span>;
+        <span class="nm">queue</span>.<span class="fn">add</span>(<span class="nm">nextVertex</span>);
+      }
+    }
+  }
+
+  <span class="ck">// 도달 불가능 -> dist가 갱신된 적 없으면 -1</span>
+  <span class="kw">if</span> (<span class="nm">dist</span>[<span class="nm">dest</span>] == -<span
+              class="nu">1</span>) {
+    <span class="nm">result</span>[<span class="nu">2</span>] = -<span class="nu">1</span>;
+    <span class="nm">result</span>[<span class="nu">3</span>] = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+    <span class="kw">return</span> <span class="nm">result</span>;
+  }
+
+  <span class="ck">// parent 를 거슬러 올라가며 경로 역추적</span>
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">path</span> = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+  <span class="ty">int</span> <span class="nm">cur</span> = <span class="nm">dest</span>;
+
+  <span class="kw">while</span> (<span class="nm">cur</span> != -<span class="nu">1</span>) {
+    <span class="nm">path</span>.<span class="fn">add</span>(<span class="nm">cur</span>);
+    <span class="nm">cur</span> = <span class="nm">parent</span>[<span class="nm">cur</span>];
+  }
+
+  <span class="ty">Collections</span>.<span class="fn">reverse</span>(<span class="nm">path</span>);
+
+  <span class="nm">result</span>[<span class="nu">2</span>] = <span class="nm">dist</span>[<span
+              class="nm">dest</span>];
+  <span class="nm">result</span>[<span class="nu">3</span>] = <span class="nm">path</span>;
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ── 고정 그래프 (V=12, E=11, 3개의 연결 요소) ──
+  const V = 12;
+  const nodePositions = {
+    0: [140, 40], 1: [70, 110], 2: [140, 110], 3: [210, 110],
+    4: [70, 180], 5: [210, 180], 6: [140, 250],
+    7: [340, 60], 8: [300, 140], 9: [380, 140],
+    10: [340, 220], 11: [340, 290]
+  };
+  const edgesData = [[0, 1], [0, 2], [0, 3], [1, 4], [3, 5], [4, 6], [5, 6], [7, 8], [7, 9], [8, 9],
+    [10, 11]];
+  const CANVAS_W = 440, CANVAS_H = 330;
+
+  function buildGraph(v, edges) {
+    const graph = [];
+    for (let i = 0; i < v; i++) { graph.push([]); }
+    edges.forEach(([a, b]) => {
+      graph[a].push(b);
+      graph[b].push(a);
+    });
+    return graph;
+  }
+
+  const graph = buildGraph(V, edgesData);
+
+  function edgeKey(a, b) { return Math.min(a, b) + '-' + Math.max(a, b); }
+
+  function clampV(v) { return isNaN(v) ? 0 : Math.max(0, Math.min(V - 1, v)); }
+
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+  let currentStartId = null;
+
+  function snapshotHighlight(processedSet, queueArr, currentId, extra) {
+    const h = {};
+    processedSet.forEach(id => { h[id] = 'visited'; });
+    queueArr.forEach(id => { if (id !== currentId) { h[id] = 'queued'; } });
+    if (currentId !== null && currentId !== undefined) { h[currentId] = 'current'; }
+    if (extra) { Object.keys(extra).forEach(k => { h[k] = extra[k]; }); }
+    return h;
+  }
+
+  // ── BFS 순회 planner ──
+  function planBasicBFS(startId) {
+    const steps = [];
+    const visited = new Set();
+    const processed = new Set();
+    const queue = [];
+    const output = [];
+
+    queue.push(startId);
+    visited.add(startId);
+    steps.push({
+      highlight: snapshotHighlight(processed, queue, null, {[startId]: 'queued'}),
+      msg: `queue.add(${startId}), visited[${startId}] = true -> 시작 정점을 큐에 추가`,
+      tag: 'traverse', output: [...output], queue: [...queue]
+    });
+
+    while (queue.length) {
+      const cur = queue.shift();
+      processed.add(cur);
+      output.push(cur);
+      steps.push({
+        highlight: snapshotHighlight(processed, queue, cur),
+        msg: `poll() -> ${cur} 방문, result.add(${cur})`,
+        tag: 'insert', output: [...output], queue: [...queue]
+      });
+
+      const discovered = [];
+      for (const next of graph[cur]) {
+        if (!visited.has(next)) {
+          visited.add(next);
+          queue.push(next);
+          discovered.push(next);
+        }
+      }
+      if (discovered.length) {
+        steps.push({
+          highlight: snapshotHighlight(processed, queue, cur),
+          msg: `${cur}의 인접 정점 중 미방문 [${discovered.join(', ')}] -> visited 처리 후 큐에 추가`,
+          tag: 'traverse', output: [...output], queue: [...queue]
+        });
+      }
+    }
+    steps.push({
+      highlight: snapshotHighlight(processed, [], null),
+      msg: `BFS 완료 -> 방문 순서: [${output.join(', ')}]`,
+      tag: 'done', output: [...output], queue: []
+    });
+    return steps;
+  }
+
+  // ── 최단 경로(dist + parent) planner ──
+  function planShortestPath(startId, destId) {
+    const steps = [];
+    if (startId === destId) {
+      steps.push({
+        highlight: {[startId]: 'path'}, highlightEdges: new Set(),
+        msg: `start == dest(${startId}) -> 거리 0, 바로 반환`, tag: 'done',
+        output: [], queue: []
+      });
+      return steps;
+    }
+
+    const visited = new Set();
+    const processed = new Set();
+    const dist = {};
+    const parent = {};
+    const queue = [];
+    let destFound = false;
+
+    visited.add(startId);
+    dist[startId] = 0;
+    parent[startId] = -1;
+    queue.push(startId);
+    steps.push({
+      highlight: snapshotHighlight(processed, queue, null),
+      msg: `dist[${startId}] = 0, parent[${startId}] = -1, queue.add(${startId})`,
+      tag: 'traverse', output: [], queue: [...queue]
+    });
+
+    while (queue.length) {
+      const cur = queue.shift();
+      if (cur === destId) {
+        destFound = true;
+        steps.push({
+          highlight: snapshotHighlight(processed, queue, cur, {[destId]: 'target'}),
+          msg: `poll() -> 목적 정점(${destId}) 발견, 반복 종료`,
+          tag: 'done', output: [], queue: [...queue]
+        });
+        break;
+      }
+      processed.add(cur);
+      steps.push({
+        highlight: snapshotHighlight(processed, queue, cur),
+        msg: `poll() -> ${cur} 처리 중 (dist = ${dist[cur]})`,
+        tag: 'traverse', output: [], queue: [...queue]
+      });
+
+      const discovered = [];
+      for (const next of graph[cur]) {
+        if (!visited.has(next)) {
+          visited.add(next);
+          dist[next] = dist[cur] + 1;
+          parent[next] = cur;
+          queue.push(next);
+          discovered.push(next);
+        }
+      }
+      if (discovered.length) {
+        steps.push({
+          highlight: snapshotHighlight(processed, queue, cur),
+          msg: `${cur}의 인접 미방문 [${discovered.join(', ')}] -> dist/parent 기록 후 enqueue`,
+          tag: 'insert', output: [], queue: [...queue]
+        });
+      }
+    }
+
+    if (!destFound) {
+      steps.push({
+        highlight: snapshotHighlight(processed, [], null),
+        msg: `dist[${destId}] == -1 -> 도달 불가능(같은 연결 요소가 아님)`,
+        tag: 'error', output: [], queue: []
+      });
+      return steps;
+    }
+
+    const path = [];
+    let cur = destId;
+    while (cur !== -1) {
+      path.push(cur);
+      cur = parent[cur];
+    }
+    path.reverse();
+
+    const pathEdges = new Set();
+    for (let i = 0; i < path.length - 1; i++) { pathEdges.add(edgeKey(path[i], path[i + 1])); }
+
+    const finalHighlight = {};
+    path.forEach(id => { finalHighlight[id] = 'path'; });
+    steps.push({
+      highlight: finalHighlight, highlightEdges: pathEdges,
+      msg: `parent[] 역추적 -> 경로: [${path.join(' -> ')}], 최단 거리 = ${dist[destId]}`,
+      tag: 'done', output: [], queue: []
+    });
+    return steps;
+  }
+
+  // ── 연결 요소 개수 세기 planner ──
+  function planConnectedComponents() {
+    const steps = [];
+    const visited = new Set();
+    const colorMap = {};
+    const palette = ['#0f766e', '#7c3aed', '#b45309', '#0369a1', '#be123c'];
+    let compCount = 0;
+
+    function colorHighlight() {
+      const h = {};
+      Object.keys(colorMap).forEach(id => { h[id] = {color: colorMap[id]}; });
+      return h;
+    }
+
+    for (let v = 0; v < V; v++) {
+      if (visited.has(v)) { continue; }
+      compCount++;
+      const color = palette[(compCount - 1) % palette.length];
+      steps.push({
+        highlight: colorHighlight(),
+        msg: `정점 ${v} 미방문 -> 새 연결 요소 #${compCount} BFS 시작`,
+        tag: 'traverse', output: [], queue: []
+      });
+
+      const queue = [v];
+      visited.add(v);
+      colorMap[v] = color;
+      while (queue.length) {
+        const cur = queue.shift();
+        steps.push({
+          highlight: colorHighlight(),
+          msg: `poll() -> ${cur} 을(를) 연결 요소 #${compCount}에 포함`,
+          tag: 'insert', output: [], queue: [...queue]
+        });
+        for (const next of graph[cur]) {
+          if (!visited.has(next)) {
+            visited.add(next);
+            colorMap[next] = color;
+            queue.push(next);
+          }
+        }
+      }
+      steps.push({
+        highlight: colorHighlight(),
+        msg: `연결 요소 #${compCount} 탐색 완료`,
+        tag: 'done', output: [], queue: []
+      });
+    }
+    steps.push({
+      highlight: colorHighlight(),
+      msg: `모든 정점 순회 완료 -> 전체 연결 요소 개수 = ${compCount}`,
+      tag: 'done', output: [], queue: []
+    });
+    return steps;
+  }
+
+  // ── 렌더 ──
+  function renderGraph(highlight, highlightEdges, startId) {
+    const wrap = document.getElementById('graphCanvasWrap');
+    const canvas = document.getElementById('graphCanvas');
+    const svg = document.getElementById('graphEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    const scrollEl = document.querySelector('.graph-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / CANVAS_W) : 1;
+
+    wrap.style.width = (CANVAS_W * scale) + 'px';
+    wrap.style.height = (CANVAS_H * scale) + 'px';
+    canvas.style.width = CANVAS_W + 'px';
+    canvas.style.height = CANVAS_H + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', CANVAS_W);
+    svg.setAttribute('height', CANVAS_H);
+    svg.setAttribute('viewBox', `0 0 ${CANVAS_W} ${CANVAS_H}`);
+
+    let edgeSvg = '';
+    edgesData.forEach(([a, b]) => {
+      const [x1, y1] = nodePositions[a], [x2, y2] = nodePositions[b];
+      const isPath = highlightEdges && highlightEdges.has(edgeKey(a, b));
+      edgeSvg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="graph-edge${isPath
+          ? ' path-edge' : ''}" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    for (let id = 0; id < V; id++) {
+      const [x, y] = nodePositions[id];
+      const hl = highlight ? highlight[id] : null;
+      let cls = 'gnode';
+      let style = '';
+      if (hl) {
+        if (typeof hl === 'string') {
+          cls += ' state-' + hl;
+        } else if (hl.color) { style = `background:${hl.color};border-color:${hl.color};color:#fff;`; }
+      }
+      const isStart = id === startId;
+      html += `<div class="gnode-wrap" style="left:${x - 22}px; top:${y - 22}px;">
+          ${isStart ? '<div class="pos-tag start">START</div>' : ''}
+          <div class="${cls}" style="${style}">${id}</div>
+        </div>`;
+    }
+    layer.innerHTML = html;
+  }
+
+  function renderOutput(output, queue) {
+    const el = document.getElementById('outputStrip');
+    let html = '<span class="output-label">결과</span>';
+    if (!output || output.length === 0) {
+      html += '<span class="output-chip">-</span>';
+    } else {
+      output.forEach(v => { html += `<span class="output-chip active">${v}</span>`; });
+    }
+    if (queue && queue.length) {
+      html += '<span class="output-label" style="margin-left:14px;">큐</span>';
+      queue.forEach(v => { html += `<span class="queue-chip">${v}</span>`; });
+    }
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">발견/처리</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderGraph(step.highlight, step.highlightEdges || new Set(), currentStartId);
+    renderOutput(step.output, step.queue);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const start = clampV(parseInt(document.getElementById('startInput').value));
+    const dest = clampV(parseInt(document.getElementById('destInput').value));
+
+    let plan;
+    if (op === 'bfs') {
+      plan = planBasicBFS(start);
+      currentStartId = start;
+    } else if (op === 'shortestPath') {
+      plan = planShortestPath(start, dest);
+      currentStartId = start;
+    } else {
+      plan = planConnectedComponents();
+      currentStartId = null;
+    }
+
+    steps = plan;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('startGroup').style.display = op === 'connectedComponents' ? 'none'
+        : 'flex';
+    document.getElementById('destGroup').style.display = op === 'shortestPath' ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('startInput').addEventListener('input', markDirty);
+  document.getElementById('destInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    stopPlay();
+    currentStartId = null;
+    steps = [{
+      highlight: {},
+      msg: '그래프를 초기화했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: '',
+      output: [],
+      queue: []
+    }];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  updateOpUI();
+  steps = [{
+    highlight: {},
+    msg: '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+    tag: '',
+    output: [],
+    queue: []
+  }];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>

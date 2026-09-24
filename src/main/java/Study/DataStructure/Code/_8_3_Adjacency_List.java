@@ -87,6 +87,13 @@ public class _8_3_Adjacency_List {
       vertexCount--;
     }
 
+    public boolean hasVertex(int vertex) {
+      idxCheckWhileVertex(vertex);
+
+      return vertexFlag.contains(vertex) && adjacencyMap.get(vertex) != null;
+    }
+
+
     public void addEdge(int u, int v) {
       idxCheckWhileEdge(u, v);
 
@@ -94,7 +101,7 @@ public class _8_3_Adjacency_List {
       LinkedHashSet<Integer> list2 = adjacencyMap.get(v);
 
       if (list.contains(v)) {
-        throw new IllegalArgumentException("이미 추가 되어있는 간선 추가 시도");
+        throw new IllegalArgumentException("이미 추가 되어있는 간선 추가 시도, U: " + u + ", V: " + v);
       }
 
       list.addLast(v);
@@ -150,7 +157,7 @@ public class _8_3_Adjacency_List {
       }
     }
 
-    private void printAllAdjacency(int size) {
+    public void printAllAdjacency(int size) {
       for (int i = 0; i < size; i++) {
         if (vertexFlag.contains(i)) {
           System.out.println(i + ": " + getAdjacentVertices(i));

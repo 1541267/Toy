@@ -1,0 +1,1396 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>그래프 - 인접 행렬 & 인접 리스트 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 64px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .btn {
+      padding: 6px 10px;
+      font-size: 0.74rem;
+    }
+
+    .ctrl-group input[type=number] {
+      width: 54px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 복잡도 표 ── */
+  .complexity-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.74rem;
+    margin-top: 0.4rem;
+
+    & th,
+    & td {
+      text-align: left;
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--card-border);
+      color: var(--text-sub);
+    }
+
+    & th {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    & td.good {
+      color: var(--good-text);
+      font-weight: 600;
+    }
+
+    & td.warn {
+      color: var(--warn-text);
+      font-weight: 600;
+    }
+  }
+
+  /* ── 정보 칩 ── */
+  .info-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .info-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.76rem;
+    color: var(--text-sub);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+
+    & strong {
+      color: var(--text);
+      font-weight: 700;
+    }
+  }
+
+  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
+  .phase-traverse {
+    background: var(--tag-blue-bg);
+    color: var(--tag-blue-text);
+  }
+
+  /* ── 인접 행렬 / 인접 리스트 시각화 ── */
+  .viz-scroll {
+    padding: 0.5rem 0.25rem 0.25rem;
+    overflow-x: auto;
+  }
+
+  .matrix-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .matrix-table {
+    border-collapse: collapse;
+
+    & th,
+    & td {
+      width: 34px;
+      height: 34px;
+      min-width: 34px;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      border: 1px solid var(--surface-border);
+      color: var(--text-sub);
+      transition: background 0.2s, color 0.2s, transform 0.2s;
+    }
+
+    & th {
+      background: var(--surface-bg);
+      color: var(--text-dim);
+    }
+
+    & th.corner {
+      background: transparent;
+      border: none;
+    }
+
+    & td.mcell {
+      background: var(--card-bg);
+      color: var(--text-dim);
+
+      &.has-edge {
+        color: var(--accent-strong);
+        background: #202844;
+      }
+
+      &.nonexist {
+        color: var(--text-dim);
+        background: transparent;
+        opacity: 0.35;
+      }
+
+      &.state-current {
+        background: var(--state-compare);
+        color: #ecfeff;
+      }
+
+      &.state-target {
+        background: var(--state-swap);
+        color: #fff7ed;
+      }
+
+      &.state-new {
+        background: var(--good-border);
+        color: #ecfdf5;
+        animation: pop 0.35s ease;
+      }
+
+      &.state-removing {
+        background: var(--tag-red-bg);
+        color: var(--bad-text);
+        text-decoration: line-through;
+        opacity: 0.7;
+      }
+    }
+
+    & th.state-current {
+      background: var(--state-compare);
+      color: #ecfeff;
+    }
+
+    & th.state-target {
+      background: var(--state-swap);
+      color: #fff7ed;
+    }
+
+    & th.state-new {
+      background: var(--good-border);
+      color: #ecfdf5;
+    }
+
+    & th.state-removing {
+      background: var(--tag-red-bg);
+      color: var(--bad-text);
+    }
+
+    & th.nonexist {
+      opacity: 0.35;
+    }
+  }
+
+  .list-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .list-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 4px;
+    border-bottom: 1px dashed var(--card-border);
+    flex-wrap: wrap;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &.nonexist {
+      opacity: 0.35;
+    }
+  }
+
+  .list-vlabel {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--surface-border);
+    background: var(--surface-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.12);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.12);
+    }
+
+    &.state-new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.state-removing {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      opacity: 0.6;
+    }
+  }
+
+  .list-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .list-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.73rem;
+    color: var(--text-sub);
+    font-family: "Consolas", monospace;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+
+    &.state-new {
+      border-color: var(--good-border);
+      color: var(--good-text);
+      background: var(--good-bg);
+      animation: pop 0.3s ease;
+    }
+
+    &.state-removing {
+      border-color: var(--bad-border);
+      color: var(--bad-text);
+      background: var(--bad-bg);
+      text-decoration: line-through;
+    }
+
+    &.state-current,
+    &.state-target {
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+      background: var(--tag-teal-bg);
+    }
+  }
+
+  .list-empty {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .subhead {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    text-align: center;
+  }
+
+  .result-strip {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0.75rem 0 0.6rem;
+    min-height: 1.4em;
+  }
+
+  .result-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .result-label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 2px;
+    min-width: 90px;
+  }
+
+  .result-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--good-border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.74rem;
+    color: var(--good-text);
+    font-family: "Consolas", monospace;
+  }
+
+  @media (max-width: 620px) {
+    .divider-v {
+      display: none;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .code-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">그래프 - 인접 행렬 & 인접 리스트</h1>
+    <p>Adjacency Matrix (boolean 존재 플래그) vs Adjacency List (LinkedHashSet) 동일 연산 비교 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 그래프 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🗺️ 그래프란</h3>
+        <ul>
+          <li>정점(Vertex)과 간선(Edge)의 집합, 트리보다 더 일반화된 비선형 구조 (사이클 허용, 루트 개념 없음)</li>
+          <li>간선의 표현 방법이 곧 그래프 구현의 핵심 -> 인접 행렬(2차원 배열) vs 인접 리스트(정점별 이웃 목록)</li>
+          <li>둘 다 정점 존재 여부와 간선 연결 여부라는 두 가지 책임을 분리해서 관리해야 버그가 줄어듦</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🎯 설계 원칙: 상태 분리</h3>
+        <ul>
+          <li>Circular Queue의 size 필드(꽉 참/빔 구분)와 동일한 원칙이 그래프에도 그대로 적용됨</li>
+          <li>하나의 상태 변수가 두 가지 의미를 겸하면 결국 어딘가에서 충돌 (self-loop, 가중치 확장 시 특히)</li>
+          <li>정점 존재 여부 전용 저장소(boolean[] / Set)를 간선 저장소와 완전히 분리하는 것이 표준</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">🔢 인접 행렬 (Adjacency Matrix)</div>
+
+      <div class="note-card">
+        <h3>🔢 정점 존재 플래그 설계 변천</h3>
+        <ul>
+          <li>1차 시도: matrix[v][v]를 정점 존재 플래그로 재활용 (별도 공간 절약)</li>
+          <li>문제점: self-loop을 표현할 공간이 대각선과 충돌, 가중치 그래프 확장 시 존재플래그와 weight가 충돌</li>
+          <li>개선: boolean[] vertexExists를 별도 분리 -> 정점 존재와 간선 연결의 책임 완전 분리</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚠️ self-loop(자기 참조 간선) 정책</h3>
+        <ul>
+          <li>상태 머신, 오토마타, 마르코프 체인 등에서는 필요하지만 일반적인 그래프 문제에서는 불필요</li>
+          <li>학습 단계에서는 addEdge(u,v)에서 u==v를 예외로 막아 원천 차단</li>
+          <li>지원 시 추가 고려사항: 자기 자신 포함 여부, degree 계산 +2 처리, BFS/DFS 무한루프 방지(visited)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🗑 removeVertex(vertex) 처리</h3>
+        <ul>
+          <li>해당 정점의 행(row)과 열(column) 전체를 0으로 초기화해야 완전히 제거됨</li>
+          <li>무방향 그래프는 matrix[i][v] == matrix[v][i]로 대칭 -> 한 루프에서 양쪽 동시 처리 가능</li>
+          <li>비용: O(V) - 정점 수만큼 행/열을 순회</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚖️ 인접 행렬 장단점</h3>
+        <ul>
+          <li>장점: 간선 존재 확인 O(1), 구현이 직관적, dense 그래프에서 공간 낭비 적음</li>
+          <li>단점: 공간복잡도 O(V²) 고정 (실제 간선 수와 무관)</li>
+          <li>단점: 인접 정점 조회 시 연결 안 된 칸까지 전부 스캔 -> sparse 그래프에서 비효율</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">📋 인접 리스트 (Adjacency List)</div>
+
+      <div class="note-card">
+        <h3>📦 내부 자료구조: LinkedHashSet 선택 이유</h3>
+        <ul>
+          <li>List(ArrayList 등) 사용 시: addEdge를 중복 호출하면 같은 간선이 여러 번 쌓임 (Matrix는 대입이라 문제 없었지만 List는
+            add()가 중복 허용)
+          </li>
+          <li>Set으로 전환: 구조적으로 중복 간선을 원천 차단, contains()가 O(1)이라 addEdge/hasEdge 성능도 개선</li>
+          <li>LinkedHashSet: 중복 제거 + 삽입 순서 보존을 동시에 만족 (HashSet은 순서 보장 안 됨)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🕸 dangling reference 방지 (removeVertex)</h3>
+        <ul>
+          <li>이 정점 자신의 리스트(adjacencyMap.remove(vertex))만 지우면 안 됨</li>
+          <li>이 정점을 인접 목록에 들고 있는 다른 모든 이웃 정점들의 리스트에서도 이 정점을 제거해야 함</li>
+          <li>누락 시 이미 삭제된 정점이 다른 정점의 조회 결과에 계속 남아있는 버그 발생</li>
+          <li>비용: O(degree) - 연결이 적은 정점을 지울 땐 Matrix보다 빠름</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔗 addEdge/removeEdge 대칭성</h3>
+        <ul>
+          <li>무방향 간선 u-v는 u의 리스트에 v 저장 + v의 리스트에 u 저장, 두 곳에 나뉘어 저장됨</li>
+          <li>한쪽만 갱신하면 hasEdge(u,v)와 hasEdge(v,u) 결과가 어긋나는 버그로 직결됨</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">⚖️ Matrix vs List 최종 비교</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 연산별 시간복잡도 비교</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>인접 행렬</th>
+            <th>인접 리스트 (Set 기반)</th>
+          </tr>
+          <tr>
+            <td>공간복잡도</td>
+            <td class="warn">O(V²) 고정</td>
+            <td class="good">O(V+E) 실제 간선만큼</td>
+          </tr>
+          <tr>
+            <td>hasEdge(u,v)</td>
+            <td class="good">O(1)</td>
+            <td class="good">O(1) - Set 선택으로 달성</td>
+          </tr>
+          <tr>
+            <td>removeVertex(v)</td>
+            <td class="warn">O(V) - 행/열 전체 스캔</td>
+            <td class="good">O(degree) - 연결된 만큼만</td>
+          </tr>
+          <tr>
+            <td>getAdjacentVertices(v)</td>
+            <td class="warn">O(V) - 행 전체 스캔</td>
+            <td class="good">O(degree) - 실제 이웃만</td>
+          </tr>
+          <tr>
+            <td>순회 순서</td>
+            <td>인덱스 오름차순 고정</td>
+            <td>삽입 순서 그대로 (LinkedHashSet)</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">실무 기준: 정점 수가 많고 간선이
+          희소(sparse)한 경우가 대부분이라 인접 리스트가 표준 선택 (SNS, 도로망, 웹 그래프 등). 정점 수가 적고 촘촘한(dense) 그래프에서는 인접 행렬도
+          여전히 유효.</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="addVertex">addVertex(v) - 정점 추가</option>
+        <option value="removeVertex">removeVertex(v) - 정점 삭제</option>
+        <option value="addEdge">addEdge(u,v) - 간선 추가</option>
+        <option value="removeEdge">removeEdge(u,v) - 간선 삭제</option>
+        <option value="hasEdge">hasEdge(u,v) - 간선 확인</option>
+        <option value="getAdjacentVertices">getAdjacentVertices(v) - 인접 조회</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="uGroup">
+      <label id="uLabel">v</label>
+      <input type="number" id="uInput" value="0" min="0" max="5">
+    </div>
+    <div class="ctrl-group" id="vGroup">
+      <label>v</label>
+      <input type="number" id="vInput" value="1" min="0" max="5">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewGraph">🔄 새 그래프</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">capacity = <strong id="infoCapacity">6</strong></div>
+    <div class="info-chip">vertexCount = <strong id="infoVertexCount">0</strong></div>
+    <div class="info-chip">edgeCount = <strong id="infoEdgeCount">0</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="dual">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Adjacency Matrix</div>
+      </div>
+      <div class="subhead">matrix[u][v] (0 = 없음, 1 = 간선 존재)</div>
+      <div class="viz-scroll">
+        <div class="matrix-wrap" id="matrixWrap"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Adjacency List</div>
+      </div>
+      <div class="subhead">정점별 LinkedHashSet (삽입 순서 유지)</div>
+      <div class="viz-scroll">
+        <div class="list-wrap" id="listWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">실행 로그</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="result-strip" id="resultStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 확인 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        대상 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        새로 추가 (new)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        제거 중 (removing)
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [실행]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          Adjacency Matrix (boolean 존재 플래그 버전)
+        </div>
+        <pre><span class="kw">private</span> <span class="ty">int</span>[][] <span
+            class="nm">matrix</span>;
+<span class="kw">private</span> <span class="ty">boolean</span>[] <span
+              class="nm">vertexExists</span>;
+<span class="kw">private</span> <span class="ty">int</span> <span class="nm">vertexCount</span>;
+<span class="kw">private</span> <span class="ty">int</span> <span class="nm">capacity</span>;
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">addVertex</span>(<span
+              class="ty">int</span> <span class="nm">vertex</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">vertex</span>);
+
+  <span class="kw">if</span> (<span class="nm">vertexExists</span>[<span class="nm">vertex</span>]) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span
+              class="st">&quot;이미 추가 되어있는 Vertex&quot;</span>);
+  }
+
+  <span class="nm">vertexExists</span>[<span class="nm">vertex</span>] = <span
+              class="kw">true</span>;
+  <span class="nm">vertexCount</span>++;
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span
+              class="fn">removeVertex</span>(<span class="ty">int</span> <span
+              class="nm">vertex</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">vertex</span>);
+
+  <span class="kw">if</span> (!<span class="nm">vertexExists</span>[<span class="nm">vertex</span>]) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span
+              class="st">&quot;저장되어있는 Vertex가 없음&quot;</span>);
+  }
+
+  <span class="nm">vertexExists</span>[<span class="nm">vertex</span>] = <span
+              class="kw">false</span>;
+  <span class="nm">vertexCount</span>--;
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">capacity</span>; <span
+              class="nm">i</span>++) {
+    <span class="nm">matrix</span>[<span class="nm">i</span>][<span
+              class="nm">vertex</span>] = <span class="nu">0</span>;
+    <span class="nm">matrix</span>[<span class="nm">vertex</span>][<span
+              class="nm">i</span>] = <span class="nu">0</span>;
+  }
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">addEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+
+  <span class="kw">if</span> (<span class="nm">matrix</span>[<span class="nm">u</span>][<span
+              class="nm">v</span>] == <span class="nu">1</span>) {<span class="kw">return</span>;}
+
+  <span class="nm">matrix</span>[<span class="nm">u</span>][<span class="nm">v</span>] = <span
+              class="nu">1</span>;
+  <span class="nm">matrix</span>[<span class="nm">v</span>][<span class="nm">u</span>] = <span
+              class="nu">1</span>;
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">removeEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+
+  <span class="kw">if</span> (<span class="nm">matrix</span>[<span class="nm">u</span>][<span
+              class="nm">v</span>] == <span class="nu">0</span>) {<span class="kw">return</span>;}
+  <span class="nm">matrix</span>[<span class="nm">u</span>][<span class="nm">v</span>] = <span
+              class="nu">0</span>;
+  <span class="nm">matrix</span>[<span class="nm">v</span>][<span class="nm">u</span>] = <span
+              class="nu">0</span>;
+}
+
+<span class="kw">public</span> <span class="ty">boolean</span> <span class="fn">hasEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+  <span class="kw">return</span> <span class="nm">matrix</span>[<span class="nm">u</span>][<span
+              class="nm">v</span>] == <span class="nu">1</span>;
+}
+
+<span class="ck">// v 와 인접한 정점들 반환</span>
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="fn">getAdjacentVertices</span>(<span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">v</span>);
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">result</span> = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">capacity</span>; <span
+              class="nm">i</span>++) {
+    <span class="kw">if</span> (<span class="nm">matrix</span>[<span class="nm">v</span>][<span
+              class="nm">i</span>] == <span class="nu">1</span> && <span
+              class="nm">i</span> != <span class="nm">v</span>) {
+      <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">i</span>);
+    }
+  }
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">idxCheckWhileEdge</span>(<span class="ty">int</span> <span
+              class="nm">u</span>, <span class="ty">int</span> <span class="nm">v</span>) {
+  <span class="kw">if</span> (<span class="nm">u</span> == <span class="nm">v</span>) {<span
+              class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;Self Looping&quot;</span>);}
+  <span class="kw">if</span> (<span class="nm">u</span> &gt; <span
+              class="nm">capacity</span> - <span class="nu">1</span> || <span class="nm">v</span> &gt; <span
+              class="nm">capacity</span> - <span class="nu">1</span> || <span class="nm">u</span> &lt; <span
+              class="nu">0</span> || <span class="nm">v</span> &lt; <span class="nu">0</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="st">&quot;IOOB, U: &quot;</span> + <span class="nm">u</span> + <span
+              class="st">&quot;, V: &quot;</span> + <span class="nm">v</span>);
+  }
+
+  <span class="kw">if</span> (!<span class="nm">vertexExists</span>[<span
+              class="nm">u</span>] || !<span class="nm">vertexExists</span>[<span
+              class="nm">v</span>]) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;Vertex가 없는 곳에 Edge 추가 혹은 삭제 시도, U: &quot;</span> + <span
+              class="nm">u</span> + <span class="st">&quot;, V: &quot;</span> + <span
+              class="nm">v</span>);
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">idxCheckWhileVertex</span>(<span class="ty">int</span> <span
+              class="nm">idx</span>) {
+  <span class="kw">if</span> (<span class="nm">idx</span> &gt; <span
+              class="nm">capacity</span> - <span class="nu">1</span> || <span class="nm">idx</span> &lt; <span
+              class="nu">0</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="st">&quot;IOOB, idx: &quot;</span> + <span class="nm">idx</span>);
+  }
+}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          Adjacency List (LinkedHashSet 기반)
+        </div>
+        <pre><span class="ty">Map</span>&lt;<span class="ty">Integer</span>, <span class="ty">LinkedHashSet</span>&lt;<span
+            class="ty">Integer</span>&gt;&gt; <span class="nm">adjacencyMap</span>;
+<span class="ty">Set</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">vertexFlag</span> = <span class="kw">new</span> <span
+              class="ty">HashSet</span>&lt;&gt;();
+<span class="kw">private</span> <span class="ty">int</span> <span
+              class="nm">vertexCount</span> = <span class="nu">0</span>;
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">addVertex</span>(<span
+              class="ty">int</span> <span class="nm">vertex</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">vertex</span>);
+
+  <span class="kw">if</span> (<span class="nm">vertexFlag</span>.<span
+              class="fn">contains</span>(<span class="nm">vertex</span>)) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span
+              class="st">&quot;이미 추가 되어있는 정점&quot;</span>);
+  }
+
+  <span class="nm">vertexFlag</span>.<span class="fn">add</span>(<span class="nm">vertex</span>);
+  <span class="nm">adjacencyMap</span>.<span class="fn">put</span>(<span
+              class="nm">vertex</span>, <span class="kw">new</span> <span
+              class="ty">LinkedHashSet</span>&lt;&gt;());
+  <span class="nm">vertexCount</span>++;
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span
+              class="fn">removeVertex</span>(<span class="ty">int</span> <span
+              class="nm">vertex</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">vertex</span>);
+
+  <span class="kw">if</span> (!<span class="nm">vertexFlag</span>.<span
+              class="fn">contains</span>(<span class="nm">vertex</span>) || <span class="nm">adjacencyMap</span>.<span
+              class="fn">get</span>(<span class="nm">vertex</span>) == <span class="kw">null</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span class="st">&quot;추가 되어있지 않은 정점 삭제 시도&quot;</span>);
+  }
+
+  <span class="kw">for</span> (<span class="ty">Integer</span> <span class="nm">num</span> : <span
+              class="nm">adjacencyMap</span>.<span class="fn">get</span>(<span
+              class="nm">vertex</span>)) {
+    <span class="nm">adjacencyMap</span>.<span class="fn">get</span>(<span
+              class="nm">num</span>).<span class="fn">remove</span>(<span class="nm">vertex</span>);
+  }
+
+  <span class="nm">vertexFlag</span>.<span class="fn">remove</span>(<span class="nm">vertex</span>);
+  <span class="nm">adjacencyMap</span>.<span class="fn">remove</span>(<span class="nm">vertex</span>);
+  <span class="nm">vertexCount</span>--;
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">addEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+
+  <span class="ty">LinkedHashSet</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">list</span> = <span class="nm">adjacencyMap</span>.<span
+              class="fn">get</span>(<span class="nm">u</span>);
+  <span class="ty">LinkedHashSet</span>&lt;<span class="ty">Integer</span>&gt; <span class="nm">list2</span> = <span
+              class="nm">adjacencyMap</span>.<span class="fn">get</span>(<span class="nm">v</span>);
+
+  <span class="kw">if</span> (<span class="nm">list</span>.<span class="fn">contains</span>(<span
+              class="nm">v</span>)) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;이미 추가 되어있는 간선 추가 시도&quot;</span>);
+  }
+
+  <span class="nm">list</span>.<span class="fn">addLast</span>(<span class="nm">v</span>);
+  <span class="nm">list2</span>.<span class="fn">addLast</span>(<span class="nm">u</span>);
+}
+
+<span class="kw">public</span> <span class="kw">void</span> <span class="fn">removeEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+
+  <span class="ty">LinkedHashSet</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">list</span> = <span class="nm">adjacencyMap</span>.<span
+              class="fn">get</span>(<span class="nm">u</span>);
+  <span class="ty">LinkedHashSet</span>&lt;<span class="ty">Integer</span>&gt; <span class="nm">list2</span> = <span
+              class="nm">adjacencyMap</span>.<span class="fn">get</span>(<span class="nm">v</span>);
+
+  <span class="kw">if</span> (!<span class="nm">list</span>.<span class="fn">contains</span>(<span
+              class="nm">v</span>)) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;추가 되어있지 않은 간선 제거 시도&quot;</span>);
+  }
+
+  <span class="nm">list</span>.<span class="fn">remove</span>(<span class="nm">v</span>);
+  <span class="nm">list2</span>.<span class="fn">remove</span>(<span class="nm">u</span>);
+}
+
+<span class="kw">public</span> <span class="ty">boolean</span> <span class="fn">hasEdge</span>(<span
+              class="ty">int</span> <span class="nm">u</span>, <span class="ty">int</span> <span
+              class="nm">v</span>) {
+  <span class="fn">idxCheckWhileEdge</span>(<span class="nm">u</span>, <span class="nm">v</span>);
+  <span class="ty">LinkedHashSet</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">list</span> = <span class="nm">adjacencyMap</span>.<span
+              class="fn">get</span>(<span class="nm">u</span>);
+
+  <span class="kw">return</span> <span class="nm">list</span>.<span class="fn">contains</span>(<span
+              class="nm">v</span>);
+}
+
+<span class="kw">public</span> <span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="fn">getAdjacentVertices</span>(<span class="ty">int</span> <span class="nm">vertex</span>) {
+  <span class="fn">idxCheckWhileVertex</span>(<span class="nm">vertex</span>);
+
+  <span class="kw">if</span> (!<span class="nm">adjacencyMap</span>.<span
+              class="fn">containsKey</span>(<span class="nm">vertex</span>)) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;정점이 존재하지 않는 인덱스 조회&quot;</span>);
+  }
+
+  <span class="kw">return</span> <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;(<span
+              class="nm">adjacencyMap</span>.<span class="fn">get</span>(<span
+              class="nm">vertex</span>));
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">idxCheckWhileEdge</span>(<span class="ty">int</span> <span
+              class="nm">u</span>, <span class="ty">int</span> <span class="nm">v</span>) {
+  <span class="kw">if</span> (<span class="nm">u</span> == <span class="nm">v</span>) {<span
+              class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;Self Looping&quot;</span>);}
+  <span class="kw">if</span> (<span class="nm">u</span> &lt; <span class="nu">0</span> || <span
+              class="nm">v</span> &lt; <span class="nu">0</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="st">&quot;IOOB, U: &quot;</span> + <span class="nm">u</span> + <span
+              class="st">&quot;, V: &quot;</span> + <span class="nm">v</span>);
+  }
+
+  <span class="kw">if</span> (!<span class="nm">vertexFlag</span>.<span
+              class="fn">contains</span>(<span class="nm">u</span>) || !<span
+              class="nm">vertexFlag</span>.<span class="fn">contains</span>(<span
+              class="nm">v</span>)) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+              class="st">&quot;Vertex가 없는 곳에 Edge 추가 혹은 삭제 시도, U: &quot;</span> + <span
+              class="nm">u</span> + <span class="st">&quot;, V: &quot;</span> + <span
+              class="nm">v</span>);
+  }
+}
+
+<span class="kw">private</span> <span class="kw">void</span> <span
+              class="fn">idxCheckWhileVertex</span>(<span class="ty">int</span> <span
+              class="nm">idx</span>) {
+  <span class="kw">if</span> (<span class="nm">idx</span> &lt; <span class="nu">0</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span class="ty">IndexOutOfBoundsException</span>(<span
+              class="st">&quot;잘못된 Vertex idx: &quot;</span> + <span class="nm">idx</span>);
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  const CAPACITY = 6;
+  let vertexExists = new Array(CAPACITY).fill(false);
+  let adjOrder = Array.from({length: CAPACITY}, () => []);
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function snap(ve, ao) { return {vertexExists: [...ve], adjOrder: ao.map(a => [...a])}; }
+
+  function edgeCount(ve, ao) {
+    let sum = 0;
+    for (let i = 0; i < CAPACITY; i++) { if (ve[i]) { sum += ao[i].length; } }
+    return sum / 2;
+  }
+
+  function mkStep(ve, ao, cellHl, headerHl, listHl, msg, tag, output) {
+    return {
+      ...snap(ve, ao),
+      cellHl: cellHl || {},
+      headerHl: headerHl || {},
+      listHl: listHl || {},
+      msg,
+      tag,
+      output: output || null
+    };
+  }
+
+  // 공통 idx / 존재 검증 (시각화 전용 헬퍼, 실제 예외 대신 에러 스텝 생성용)
+  function vertexError(ve, v) {
+    if (isNaN(v) || v < 0 || v
+        >= CAPACITY) { return `잘못된 정점 인덱스(${v}) -> IndexOutOfBoundsException`; }
+    return null;
+  }
+
+  function edgeIdxError(u, v) {
+    if (u === v) { return `자기 자신에게 간선 시도(${u}) -> IllegalArgumentException("Self Looping")`; }
+    if (u < 0 || v < 0 || u >= CAPACITY || v
+        >= CAPACITY) { return `잘못된 인덱스 U:${u}, V:${v} -> IndexOutOfBoundsException`; }
+    return null;
+  }
+
+  // ── planner: addVertex ──
+  function planAddVertex(ve, ao, v) {
+    const steps = [];
+    const err = vertexError(ve, v);
+    if (err) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, err, 'error'));
+      return {steps, ve, ao};
+    }
+
+    steps.push(mkStep(ve, ao, {}, {[v]: 'current'}, {[v]: {vlabel: 'current'}},
+        `addVertex(${v}) 호출 -> idxCheckWhileVertex 통과, 존재 여부 확인 중`, 'traverse'));
+    if (ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[v]: 'target'}, {[v]: {vlabel: 'target'}},
+          `이미 추가되어 있는 Vertex(${v}) -> IllegalStateException`, 'error'));
+      return {steps, ve, ao};
+    }
+    const nve = [...ve];
+    nve[v] = true;
+    const nao = ao.map(a => [...a]);
+    nao[v] = [];
+    steps.push(mkStep(nve, nao, {}, {[v]: 'new'}, {[v]: {vlabel: 'new'}},
+        `vertexExists[${v}]=true (Matrix) / adjacencyMap.put(${v}, 빈 LinkedHashSet) (List) -> vertexCount++`,
+        'done'));
+    return {steps, ve: nve, ao: nao};
+  }
+
+  // ── planner: removeVertex ──
+  function planRemoveVertex(ve, ao, v) {
+    const steps = [];
+    const err = vertexError(ve, v);
+    if (err) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, err, 'error'));
+      return {steps, ve, ao};
+    }
+    if (!ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[v]: 'target'}, {[v]: {vlabel: 'target'}},
+          `저장되어있는 Vertex(${v})가 없음 -> IllegalStateException`, 'error'));
+      return {steps, ve, ao};
+    }
+    let curVe = [...ve], curAo = ao.map(a => [...a]);
+    const neighbors = [...curAo[v]];
+    steps.push(mkStep(curVe, curAo, {}, {[v]: 'target'}, {[v]: {vlabel: 'target'}},
+        `삭제 대상 정점(${v}) 확인 -> 이웃: [${neighbors.join(', ') || '없음'}]`, 'remove'));
+
+    neighbors.forEach(n => {
+      const cellHl = {[`${n}_${v}`]: 'removing', [`${v}_${n}`]: 'removing'};
+      const listHl = {[v]: {vlabel: 'target'}, [n]: {vlabel: 'current', chips: {[v]: 'removing'}}};
+      steps.push(mkStep(curVe, curAo, cellHl, {[v]: 'target', [n]: 'current'}, listHl,
+          `이웃 정점(${n})의 리스트/행렬에서 (${v}) 제거 -> dangling reference 방지 (O(degree))`, 'remove'));
+      curAo = curAo.map(a => [...a]);
+      curAo[n] = curAo[n].filter(x => x !== v);
+    });
+
+    const nve = [...curVe];
+    nve[v] = false;
+    const nao = curAo.map(a => [...a]);
+    nao[v] = [];
+    steps.push(mkStep(nve, nao, {}, {[v]: 'removing'}, {},
+        `vertexExists[${v}]=false, 행/열 전체 제거 (Matrix, O(V)) / adjacencyMap.remove(${v}) (List, O(degree)) -> vertexCount--`,
+        'done'));
+    return {steps, ve: nve, ao: nao};
+  }
+
+  // ── planner: addEdge ──
+  function planAddEdge(ve, ao, u, v) {
+    const steps = [];
+    const idxErr = edgeIdxError(u, v);
+    if (idxErr) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, idxErr, 'error'));
+      return {steps, ve, ao};
+    }
+    if (!ve[u] || !ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[u]: 'target', [v]: 'target'}, {},
+          `Vertex가 없는 곳에 Edge 추가 시도 (U:${u}, V:${v}) -> IllegalArgumentException`, 'error'));
+      return {steps, ve, ao};
+    }
+    steps.push(mkStep(ve, ao, {}, {[u]: 'current', [v]: 'current'},
+        {[u]: {vlabel: 'current'}, [v]: {vlabel: 'current'}},
+        `addEdge(${u}, ${v}) 호출 -> 두 정점 존재 확인 완료`, 'traverse'));
+    if (ao[u].includes(v)) {
+      steps.push(mkStep(ve, ao, {[`${u}_${v}`]: 'target', [`${v}_${u}`]: 'target'}, {}, {},
+          `이미 추가 되어있는 간선(${u}-${v}) -> IllegalArgumentException`, 'error'));
+      return {steps, ve, ao};
+    }
+    const nao = ao.map(a => [...a]);
+    nao[u] = [...nao[u], v];
+    nao[v] = [...nao[v], u];
+    const listHl = {
+      [u]: {vlabel: 'new', chips: {[v]: 'new'}},
+      [v]: {vlabel: 'new', chips: {[u]: 'new'}}
+    };
+    steps.push(mkStep(ve, nao, {[`${u}_${v}`]: 'new', [`${v}_${u}`]: 'new'}, {}, listHl,
+        `matrix[${u}][${v}]=matrix[${v}][${u}]=1 (Matrix) / list.addLast() 양쪽 모두 (List) -> 간선 추가 완료`,
+        'insert'));
+    return {steps, ve, ao: nao};
+  }
+
+  // ── planner: removeEdge ──
+  function planRemoveEdge(ve, ao, u, v) {
+    const steps = [];
+    const idxErr = edgeIdxError(u, v);
+    if (idxErr) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, idxErr, 'error'));
+      return {steps, ve, ao};
+    }
+    if (!ve[u] || !ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[u]: 'target', [v]: 'target'}, {},
+          `Vertex가 없는 곳에 Edge 삭제 시도 (U:${u}, V:${v}) -> IllegalArgumentException`, 'error'));
+      return {steps, ve, ao};
+    }
+    steps.push(mkStep(ve, ao, {[`${u}_${v}`]: 'current', [`${v}_${u}`]: 'current'},
+        {[u]: 'current', [v]: 'current'},
+        {[u]: {vlabel: 'current'}, [v]: {vlabel: 'current'}},
+        `removeEdge(${u}, ${v}) 호출 -> 간선 존재 여부 확인 중`, 'traverse'));
+    if (!ao[u].includes(v)) {
+      steps.push(
+          mkStep(ve, ao, {}, {}, {}, `추가 되어있지 않은 간선(${u}-${v}) 제거 시도 -> IllegalArgumentException`,
+              'error'));
+      return {steps, ve, ao};
+    }
+    const listHl = {
+      [u]: {vlabel: 'target', chips: {[v]: 'removing'}},
+      [v]: {vlabel: 'target', chips: {[u]: 'removing'}}
+    };
+    steps.push(mkStep(ve, ao, {[`${u}_${v}`]: 'removing', [`${v}_${u}`]: 'removing'}, {}, listHl,
+        `matrix / list 양쪽에서 간선(${u}-${v}) 제거 중`, 'remove'));
+    const nao = ao.map(a => [...a]);
+    nao[u] = nao[u].filter(x => x !== v);
+    nao[v] = nao[v].filter(x => x !== u);
+    steps.push(mkStep(ve, nao, {}, {}, {},
+        `matrix[${u}][${v}]=matrix[${v}][${u}]=0 / list.remove() 양쪽 모두 -> 간선 삭제 완료`, 'done'));
+    return {steps, ve, ao: nao};
+  }
+
+  // ── planner: hasEdge ──
+  function planHasEdge(ve, ao, u, v) {
+    const steps = [];
+    const idxErr = edgeIdxError(u, v);
+    if (idxErr) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, idxErr, 'error'));
+      return {steps, ve, ao};
+    }
+    if (!ve[u] || !ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[u]: 'target', [v]: 'target'}, {},
+          `Vertex가 없는 곳에서 hasEdge 조회 시도 (U:${u}, V:${v}) -> IllegalArgumentException`, 'error'));
+      return {steps, ve, ao};
+    }
+    const has = ao[u].includes(v);
+    const cellHl = {[`${u}_${v}`]: has ? 'new' : 'target'};
+    const listHl = {[u]: {vlabel: 'current', chips: has ? {[v]: 'new'} : {}}};
+    steps.push(mkStep(ve, ao, cellHl, {[u]: 'current', [v]: 'current'}, listHl,
+        `hasEdge(${u}, ${v}) -> matrix[${u}][${v}]==1 확인 (Matrix O(1)) / list.contains(${v}) 확인 (List O(1)) -> 결과: ${has}`,
+        'done',
+        {matrix: [`hasEdge = ${has}`], list: [`hasEdge = ${has}`]}));
+    return {steps, ve, ao};
+  }
+
+  // ── planner: getAdjacentVertices ──
+  function planGetAdjacent(ve, ao, v) {
+    const steps = [];
+    const err = vertexError(ve, v);
+    if (err) {
+      steps.push(mkStep(ve, ao, {}, {}, {}, err, 'error'));
+      return {steps, ve, ao};
+    }
+    if (!ve[v]) {
+      steps.push(mkStep(ve, ao, {}, {[v]: 'target'}, {},
+          `정점(${v})이 존재하지 않는 인덱스 조회 -> IllegalArgumentException`, 'error'));
+      return {steps, ve, ao};
+    }
+    const listOrder = [...ao[v]];
+    const matrixOrder = [...ao[v]].sort((a, b) => a - b);
+    const cellHl = {};
+    matrixOrder.forEach(n => { cellHl[`${v}_${n}`] = 'current'; });
+    const chips = {};
+    listOrder.forEach(n => { chips[n] = 'current'; });
+    const listHl = {[v]: {vlabel: 'target', chips}};
+    steps.push(mkStep(ve, ao, cellHl, {[v]: 'target'}, listHl,
+        `getAdjacentVertices(${v}) -> Matrix는 행(${v}) 전체 스캔(O(V)), List는 이웃만 순회(O(degree))`,
+        'traverse',
+        {matrix: matrixOrder.map(String), list: listOrder.map(String)}));
+    steps.push(mkStep(ve, ao, cellHl, {[v]: 'target'}, listHl,
+        `조회 순서 비교 -> Matrix: 인덱스 오름차순 고정 / List: 삽입(LinkedHashSet) 순서 그대로 유지`, 'done',
+        {matrix: matrixOrder.map(String), list: listOrder.map(String)}));
+    return {steps, ve, ao};
+  }
+
+  // ── 렌더 ──
+  function renderMatrix(ve, ao, cellHl, headerHl) {
+    let html = '<table class="matrix-table"><tr><th class="corner"></th>';
+    for (let c = 0; c < CAPACITY; c++) {
+      const hs = headerHl[c] ? ` state-${headerHl[c]}` : '';
+      const ne = ve[c] ? '' : ' nonexist';
+      html += `<th class="${hs}${ne}">${c}</th>`;
+    }
+    html += '</tr>';
+    for (let r = 0; r < CAPACITY; r++) {
+      const rhs = headerHl[r] ? ` state-${headerHl[r]}` : '';
+      const rne = ve[r] ? '' : ' nonexist';
+      html += `<tr><th class="${rhs}${rne}">${r}</th>`;
+      for (let c = 0; c < CAPACITY; c++) {
+        const key = `${r}_${c}`;
+        const cs = cellHl[key] ? ` state-${cellHl[key]}` : '';
+        if (!ve[r] || !ve[c]) {
+          html += `<td class="mcell nonexist${cs}">·</td>`;
+        } else {
+          const val = ao[r].includes(c) ? 1 : 0;
+          html += `<td class="mcell${val ? ' has-edge' : ''}${cs}">${val}</td>`;
+        }
+      }
+      html += '</tr>';
+    }
+    html += '</table>';
+    document.getElementById('matrixWrap').innerHTML = html;
+  }
+
+  function renderList(ve, ao, listHl) {
+    let html = '';
+    for (let v = 0; v < CAPACITY; v++) {
+      if (!ve[v]) {
+        html += `<div class="list-row nonexist"><div class="list-vlabel">${v}</div><span class="list-empty">(정점 없음)</span></div>`;
+        continue;
+      }
+      const hl = listHl[v] || {};
+      const vcls = hl.vlabel ? ` state-${hl.vlabel}` : '';
+      let chipsHtml = '';
+      if (ao[v].length === 0) {
+        chipsHtml = '<span class="list-empty">(빈 목록)</span>';
+      } else {
+        ao[v].forEach(n => {
+          const ccls = (hl.chips && hl.chips[n]) ? ` state-${hl.chips[n]}` : '';
+          chipsHtml += `<span class="list-chip${ccls}">${n}</span>`;
+        });
+      }
+      html += `<div class="list-row"><div class="list-vlabel${vcls}">${v}</div><div class="list-chips">${chipsHtml}</div></div>`;
+    }
+    document.getElementById('listWrap').innerHTML = html;
+  }
+
+  function renderResult(output) {
+    const el = document.getElementById('resultStrip');
+    if (!output) {
+      el.innerHTML = '';
+      return;
+    }
+    let html = '';
+    html += `<div class="result-row"><span class="result-label">Matrix 결과</span>${output.matrix.map(
+        v => `<span class="result-chip">${v}</span>`).join('')
+    || '<span class="list-empty">-</span>'}</div>`;
+    html += `<div class="result-row"><span class="result-label">List 결과</span>${output.list.map(
+        v => `<span class="result-chip">${v}</span>`).join('')
+    || '<span class="list-empty">-</span>'}</div>`;
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">삽입</span>',
+    'remove': '<span class="phase-tag phase-remove">삭제</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderMatrix(step.vertexExists, step.adjOrder, step.cellHl, step.headerHl);
+    renderList(step.vertexExists, step.adjOrder, step.listHl);
+    renderResult(step.output);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoVertexCount').textContent = step.vertexExists.filter(
+        Boolean).length;
+    document.getElementById('infoEdgeCount').textContent = edgeCount(step.vertexExists,
+        step.adjOrder);
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const u = parseInt(document.getElementById('uInput').value);
+    const v = parseInt(document.getElementById('vInput').value);
+    let plan;
+    if (op === 'addVertex') { plan = planAddVertex(vertexExists, adjOrder, u); } else if (op
+        === 'removeVertex') { plan = planRemoveVertex(vertexExists, adjOrder, u); } else if (op
+        === 'addEdge') { plan = planAddEdge(vertexExists, adjOrder, u, v); } else if (op
+        === 'removeEdge') { plan = planRemoveEdge(vertexExists, adjOrder, u, v); } else if (op
+        === 'hasEdge') { plan = planHasEdge(vertexExists, adjOrder, u, v); } else if (op
+        === 'getAdjacentVertices') { plan = planGetAdjacent(vertexExists, adjOrder, u); }
+
+    steps = plan.steps;
+    vertexExists = plan.ve;
+    adjOrder = plan.ao;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    const needsV = op === 'addEdge' || op === 'removeEdge' || op === 'hasEdge';
+    document.getElementById('vGroup').style.display = needsV ? 'flex' : 'none';
+    document.getElementById('uLabel').textContent = needsV ? 'u' : 'v';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('uInput').addEventListener('input', markDirty);
+  document.getElementById('vInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  function randomGraph() {
+    const ve = new Array(CAPACITY).fill(true);
+    const ao = Array.from({length: CAPACITY}, () => []);
+    const candidateEdges = [];
+    for (let i = 0; i < CAPACITY; i++) {
+      for (let j = i + 1; j < CAPACITY; j++) { candidateEdges.push([i, j]); }
+    }
+    for (let i = candidateEdges.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [candidateEdges[i], candidateEdges[j]] = [candidateEdges[j], candidateEdges[i]];
+    }
+    const edgeTarget = 5 + Math.floor(Math.random() * 3);
+    candidateEdges.slice(0, edgeTarget).forEach(([a, b]) => {
+      ao[a].push(b);
+      ao[b].push(a);
+    });
+    return {ve, ao};
+  }
+
+  document.getElementById('btnNewGraph').addEventListener('click', () => {
+    stopPlay();
+    const g = randomGraph();
+    vertexExists = g.ve;
+    adjOrder = g.ao;
+    steps = [mkStep(vertexExists, adjOrder, {}, {}, {},
+        '새 그래프를 생성했습니다. 연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', '')];
+    stepIdx = 0;
+    needsNewRun = true;
+    document.getElementById('infoCapacity').textContent = CAPACITY;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  // 초기화
+  updateOpUI();
+  const initG = randomGraph();
+  vertexExists = initG.ve;
+  adjOrder = initG.ao;
+  steps = [mkStep(vertexExists, adjOrder, {}, {}, {}, '연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.', '')];
+  stepIdx = 0;
+  needsNewRun = true;
+  document.getElementById('infoCapacity').textContent = CAPACITY;
+  showFrame(0);
+</script>
+</html>
