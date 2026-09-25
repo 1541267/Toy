@@ -24,13 +24,6 @@
     }
   }
 
-  @media (max-width: 480px) {
-    .btn {
-      padding: 6px 10px;
-      font-size: 0.74rem;
-    }
-  }
-
   .note-card {
     flex: 1 1 320px;
   }
@@ -42,59 +35,6 @@
     line-height: 1.6;
     display: flex;
     align-items: center;
-  }
-
-  .complexity-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.74rem;
-    margin-top: 0.4rem;
-
-    & th, & td {
-      text-align: left;
-      padding: 4px 6px;
-      border-bottom: 1px solid var(--card-border);
-      color: var(--text-sub);
-    }
-
-    & th {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    & td.good {
-      color: var(--good-text);
-      font-weight: 600;
-    }
-
-    & td.warn {
-      color: var(--warn-text);
-      font-weight: 600;
-    }
-  }
-
-  .info-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-chip {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.76rem;
-    color: var(--text-sub);
-    display: flex;
-    gap: 6px;
-    align-items: center;
-
-    & strong {
-      color: var(--text);
-      font-weight: 700;
-    }
   }
 
   .phase-visit {
@@ -129,56 +69,22 @@
   }
 
   .graph-canvas-wrap {
-    position: relative;
-    margin: 0 auto;
-    overflow: hidden;
+    /* position/margin/overflow 기본값은 공용 css 사용, 이 파일만 max-width 추가 */
     max-width: 100%;
   }
 
-  .graph-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-origin: top left;
-  }
-
-  .graph-edges {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
+  /* graph-canvas 기본 위치·스케일은 공용 css 사용 */
   .graph-edges line.graph-edge {
     stroke: #334155;
     stroke-width: 2;
   }
 
-  .nodes-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .gnode-wrap {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
+  /* nodes-layer / gnode-wrap 레이아웃은 공용 css 사용 */
   .pos-tag {
     position: absolute;
     top: -20px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
 
     &.isolated {
       background: var(--tag-red-bg);
@@ -188,19 +94,6 @@
   }
 
   .gnode {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid var(--surface-border);
-    background: var(--surface-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #cbd5e1;
-    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
-
     &.state-visited {
       background: var(--tag-teal-bg);
       border-color: var(--state-compare);
@@ -246,39 +139,6 @@
     }
   }
 
-  .output-strip {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    min-height: 28px;
-    margin: 0.75rem 0 0.6rem;
-  }
-
-  .output-label {
-    font-size: 0.66rem;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-right: 2px;
-  }
-
-  .output-chip {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 0.74rem;
-    color: var(--text-dim);
-    font-family: "Consolas", monospace;
-
-    &.active {
-      border-color: var(--good-border);
-      color: var(--good-text);
-    }
-  }
-
   .stack-chip {
     background: var(--tag-amber-bg);
     border: 1px solid var(--tag-amber-text);
@@ -289,25 +149,6 @@
     font-family: "Consolas", monospace;
   }
 
-  .empty-msg {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    padding: 1.5rem 0;
-    text-align: center;
-    width: 100%;
-  }
-
-  @media (max-width: 620px) {
-    .divider-v {
-      display: none;
-    }
-  }
-
-  @media (max-width: 820px) {
-    .code-grid {
-      grid-template-columns: 1fr;
-    }
-  }
 </style>
 
 <body>

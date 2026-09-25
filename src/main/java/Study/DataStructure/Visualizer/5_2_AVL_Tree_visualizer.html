@@ -30,11 +30,6 @@
   }
 
   @media (max-width: 480px) {
-    .btn {
-      padding: 6px 10px;
-      font-size: 0.74rem;
-    }
-
     .ctrl-group input[type=number] {
       width: 66px;
     }
@@ -49,95 +44,11 @@
     align-items: center;
   }
 
-  .phase-tag {
-    flex-shrink: 0;
-  }
-
-  /* ── 복잡도 표 ── */
-  .complexity-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.74rem;
-    margin-top: 0.4rem;
-
-    & th,
-    & td {
-      text-align: left;
-      padding: 4px 6px;
-      border-bottom: 1px solid var(--card-border);
-      color: var(--text-sub);
-    }
-
-    & th {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    & td.good {
-      color: var(--good-text);
-      font-weight: 600;
-    }
-
-    & td.warn {
-      color: var(--warn-text);
-      font-weight: 600;
-    }
-  }
-
-  /* ── 정보 칩 ── */
-  .info-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-chip {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.76rem;
-    color: var(--text-sub);
-    display: flex;
-    gap: 6px;
-    align-items: center;
-
-    & strong {
-      color: var(--text);
-      font-weight: 700;
-    }
-  }
-
   /* ── 트리 시각화 ──
      노드가 늘어나 트리 폭이 화면(특히 모바일)보다 커지면, 가로 스크롤 대신
      tree-canvas 전체를 transform: scale()로 축소해서 한 화면에 들어오도록 함
-     (wrap은 축소된 실제 크기로, canvas는 원본 크기 그대로 유지한 채 스케일만 적용) */
-  .tree-scroll {
-    padding: 1rem 0.5rem 0.5rem;
-  }
-
-  .empty-msg {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    padding: 1.5rem 0;
-    text-align: center;
-    width: 100%;
-  }
-
-  .tree-canvas-wrap {
-    position: relative;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  .tree-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-origin: top left;
-  }
-
+     (wrap은 축소된 실제 크기로, canvas는 원본 크기 그대로 유지한 채 스케일만 적용.
+     scroll/canvas-wrap/canvas/nodes-layer/empty-msg는 공용 css 사용) */
   .tree-svg {
     position: absolute;
     top: 0;
@@ -151,14 +62,6 @@
     }
   }
 
-  .nodes-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
   .node-pos {
     position: absolute;
     transform: translate(-50%, -50%);
@@ -168,19 +71,6 @@
   }
 
   .avl-node {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: 2px solid var(--surface-border);
-    background: var(--surface-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: #cbd5e1;
-    transition: background 0.2s, border-color 0.2s, transform 0.2s, opacity 0.2s;
-
     &.visited-fwd {
       background: var(--tag-teal-bg);
       border-color: var(--state-compare);
@@ -240,11 +130,6 @@
   }
 
   /* ── 로그 phase 태그 ── */
-  .phase-traverse {
-    background: var(--tag-blue-bg);
-    color: var(--tag-blue-text);
-  }
-
   .phase-traverse-bwd {
     background: var(--tag-purple-bg);
     color: var(--tag-purple-text);

@@ -30,11 +30,6 @@
   }
 
   @media (max-width: 480px) {
-    .btn {
-      padding: 6px 10px;
-      font-size: 0.74rem;
-    }
-
     .ctrl-group input[type=number] {
       width: 60px;
     }
@@ -53,100 +48,12 @@
     align-items: center;
   }
 
-  /* ── 정보 칩 ── */
-  .info-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-chip {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.76rem;
-    color: var(--text-sub);
-    display: flex;
-    gap: 6px;
-    align-items: center;
-
-    & strong {
-      color: var(--text);
-      font-weight: 700;
-    }
-  }
-
-  /* ── 로그 phase 태그 (공용 css에 없는 것만 추가) ── */
-  .phase-traverse {
-    background: var(--tag-blue-bg);
-    color: var(--tag-blue-text);
-  }
-
-  /* ── 트리 시각화 ── */
-  .tree-scroll {
-    padding: 1rem 0.5rem 0.5rem;
-  }
-
-  .tree-canvas-wrap {
-    position: relative;
-    margin: 0 auto;
-    overflow: hidden;
-  }
-
-  .tree-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform-origin: top left;
-  }
-
-  .tree-edges {
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-
-  .tree-edges line.tree-edge {
-    stroke: #334155;
-    stroke-width: 2;
-  }
-
-  .nodes-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .empty-msg {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    padding: 1.5rem 0;
-    text-align: center;
-    width: 100%;
-  }
-
-  .rbnode-wrap {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
+  /* ── 트리 시각화 (canvas-wrap/canvas/edges/nodes-layer/empty-msg/rbnode-wrap은 공용 css 사용) ── */
   .pos-tag {
     position: absolute;
     top: -20px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
 
     &.root {
       background: var(--tag-green-bg);
@@ -245,12 +152,6 @@
     font-weight: 700;
   }
 
-  /* ── 구분선(세로) 반응형 ── */
-  @media (max-width: 620px) {
-    .divider-v {
-      display: none;
-    }
-  }
 </style>
 
 <body>

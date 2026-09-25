@@ -32,11 +32,6 @@
   }
 
   @media (max-width: 480px) {
-    .btn {
-      padding: 6px 10px;
-      font-size: 0.74rem;
-    }
-
     .ctrl-group input[type=number] {
       width: 60px;
     }
@@ -56,66 +51,6 @@
     align-content: normal;
   }
 
-  .phase-tag {
-    flex-shrink: 0;
-  }
-
-  /* ── 복잡도 표 ── */
-  .complexity-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.74rem;
-    margin-top: 0.4rem;
-
-    & th,
-    & td {
-      text-align: left;
-      padding: 4px 6px;
-      border-bottom: 1px solid var(--card-border);
-      color: var(--text-sub);
-    }
-
-    & th {
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-
-    & td.good {
-      color: var(--good-text);
-      font-weight: 600;
-    }
-
-    & td.warn {
-      color: var(--warn-text);
-      font-weight: 600;
-    }
-  }
-
-  /* ── 정보 칩 ── */
-  .info-strip {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-bottom: 1rem;
-  }
-
-  .info-chip {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 0.76rem;
-    color: var(--text-sub);
-    display: flex;
-    gap: 6px;
-    align-items: center;
-
-    & strong {
-      color: var(--text);
-      font-weight: 700;
-    }
-  }
-
   /* ── 노드/연결 리스트 시각화 ── */
   .list-scroll {
     padding: 1.75rem 0.5rem 0.5rem;
@@ -127,14 +62,6 @@
     align-items: flex-end;
     justify-content: center;
     row-gap: 30px;
-    width: 100%;
-  }
-
-  .empty-msg {
-    color: var(--text-dim);
-    font-size: 0.82rem;
-    padding: 1.5rem 0;
-    text-align: center;
     width: 100%;
   }
 
@@ -166,13 +93,6 @@
   }
 
   .pos-tag {
-    font-size: 0.6rem;
-    font-weight: 800;
-    letter-spacing: 0.4px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    white-space: nowrap;
-
     &.head {
       background: var(--tag-green-bg);
       color: var(--tag-green-text);
@@ -288,19 +208,7 @@
     }
   }
 
-  /* ── 구분선(세로) 반응형 ── */
-  @media (max-width: 620px) {
-    .divider-v {
-      display: none;
-    }
-  }
-
   /* ── 로그 phase 태그 ── */
-  .phase-traverse {
-    background: var(--tag-blue-bg);
-    color: var(--tag-blue-text);
-  }
-
   .phase-traverse-fwd {
     background: var(--tag-teal-bg);
     color: var(--tag-teal-text);
