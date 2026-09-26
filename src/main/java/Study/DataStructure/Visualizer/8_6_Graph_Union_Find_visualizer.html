@@ -1,0 +1,1033 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Union-Find (Disjoint Set) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 60px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ctrl-group input[type=number] {
+      width: 52px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 포레스트(forest) 시각화 - 공용 css의 tree-canvas-wrap/tnode-wrap/tnode/pos-tag 재사용 ── */
+  .pos-tag.root {
+    background: var(--tag-green-bg);
+    color: var(--tag-green-text);
+    border: 1px solid var(--tag-green2-bg);
+  }
+
+  .tnode {
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.12);
+    }
+
+    &.state-visited {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-root {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+      color: var(--good-text);
+      transform: scale(1.15);
+    }
+
+    &.state-compressed {
+      background: var(--state-alt2);
+      border-color: var(--tag-purple-text);
+      color: #f5f3ff;
+      animation: pop 0.35s ease;
+    }
+
+    &.state-small {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(0.92);
+    }
+
+    &.state-large {
+      background: var(--state-mark);
+      border-color: #93c5fd;
+      color: #eff6ff;
+      transform: scale(1.15);
+    }
+
+    &.state-target {
+      border-color: var(--warn-text);
+      box-shadow: 0 0 0 3px rgba(252, 211, 77, 0.25);
+    }
+  }
+
+  /* ── parent[] / size[] 배열 상태 표시 (이 파일 전용) ── */
+  .uf-array-view {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .uf-array-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .uf-array-rowlabel {
+    width: 48px;
+    flex-shrink: 0;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  .uf-array-cells {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .uf-cell {
+    width: 34px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-family: 'Consolas', monospace;
+    color: var(--text-sub);
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+    }
+
+    &.state-visited {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-root {
+      background: var(--good-bg);
+      border-color: var(--good-border);
+      color: var(--good-text);
+      font-weight: 700;
+    }
+
+    &.state-compressed {
+      background: var(--state-alt2);
+      border-color: var(--tag-purple-text);
+      color: #f5f3ff;
+    }
+
+    &.state-small {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+    }
+
+    &.state-large {
+      background: var(--state-mark);
+      border-color: #93c5fd;
+      color: #eff6ff;
+    }
+
+    &.state-target {
+      border-color: var(--warn-text);
+      box-shadow: 0 0 0 2px rgba(252, 211, 77, 0.25);
+    }
+  }
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">Union-Find (Disjoint Set Union, DSU)</h1>
+    <p>find(경로 압축) + union(size 비교) + isConnected 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle" open>
+    <summary>📖 Union-Find 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🔗 Union-Find란</h3>
+        <ul>
+          <li>원소들을 서로 겹치지 않는 그룹(집합)으로 나누고, 그룹 소속 여부를 빠르게 판단/병합하는 자료구조</li>
+          <li>그래프의 간선(연결 정보) 자체를 저장하는 자료구조는 아님 (인접리스트/인접행렬과 다른 역할)</li>
+          <li>parent 배열은 원본 간선의 순서나 모양을 보존하지 않고, path compression 이후엔 원래 어떤 간선으로 연결됐는지도 알 수 없음</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🎯 왜 필요한가</h3>
+        <ul>
+          <li>두 정점이 같은 연결 요소에 속하는지 판단</li>
+          <li>간선을 하나씩 추가하며 사이클 발생 여부 판단 (Kruskal MST의 핵심)</li>
+          <li>그래프가 고정되어 있지 않고 간선이 점진적으로 추가되는 상황에서, 매번 DFS/BFS로 새로 확인하는 비효율을 피함</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🌲 핵심 구조</h3>
+        <ul>
+          <li>각 그룹을 하나의 트리로 표현하고, 트리의 루트를 그 그룹의 대표(representative)로 삼음</li>
+          <li>parent[i]는 i의 부모, 자기 자신이 부모면 루트</li>
+          <li>초기화 시 모든 원소가 자기 자신을 부모로 가짐 (n개의 독립된 트리)</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🔧 연산</h3>
+        <ul>
+          <li><strong>find(x)</strong>: x가 속한 트리의 루트를 찾을 때까지 parent를 계속 타고 올라감</li>
+          <li><strong>union(x, y)</strong>: find(x), find(y)로 각각의 루트를 찾고, 한 루트를 다른 루트의 자식으로 붙여 그룹을
+            병합
+          </li>
+          <li><strong>isConnected(x, y)</strong>: find(x) == find(y) 로 즉시 같은 그룹인지 판단</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">⚙️ 최적화 기법</div>
+
+      <div class="note-card">
+        <h3>⚠️ 최적화 없는 구현의 문제</h3>
+        <ul>
+          <li>union 시 무조건 한쪽 루트를 다른 쪽 밑에 붙이면, 간선이 순차적으로 이어지는 패턴(0-1, 1-2, 2-3, ...)에서 트리가 한쪽으로 계속
+            길어짐
+          </li>
+          <li>결국 연결리스트와 다를 바 없는 모양이 되어 find가 최악의 경우 O(n) (BST의 편향 트리와 같은 메커니즘)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>📏 Union by Rank / Size</h3>
+        <ul>
+          <li>두 그룹을 합칠 때 더 작은(낮은) 트리를 더 큰(높은) 트리 밑에 붙임 → 트리 높이가 함부로 늘어나는 것을 막음</li>
+          <li>rank 기준은 트리 높이(상한선), size 기준은 트리에 속한 노드 수 (구현이 더 직관적)</li>
+          <li>이 최적화만으로도 트리 높이가 O(log n)으로 보장됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🗜 Path Compression</h3>
+        <ul>
+          <li>find(x) 실행 후 루트를 찾고 나면, 그 경로에 있던 모든 노드의 parent를 바로 루트로 재연결</li>
+          <li>재귀 구현은 parent[idx] = find(parent[idx]); return parent[idx]; 한 줄로 표현되고, 콜스택이 되감기며 경로상의
+            모든
+            노드를 순서대로 압축
+          </li>
+          <li>반복문 구현은 되감기가 없으므로, 루트를 찾는 순회와 시작 인덱스부터 루트까지 다시 순회하며 parent를 루트로 직접 연결하는 순회로
+            두 단계로 명시적으로 분리해야 함
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🚀 두 최적화를 함께 쓰는 이유</h3>
+        <ul>
+          <li>Path Compression만 있으면, 이미 길어진 트리에서 첫 find 호출은 여전히 느림 (압축은 그 이후에만 효과를 냄)</li>
+          <li>Union by Rank/Size만 있으면, 높이는 O(log n)으로 보장되지만 find할 때마다 매번 그 높이를 그대로 타고 올라가야 함</li>
+          <li>둘을 함께 적용하면 amortized O(α(n))에 근접 (α는 역 아커만 함수, n이 아무리 커져도 사실상 4~5를 넘지 않을 정도로 극도로 느리게
+            증가하여 실무에서는 사실상 상수 시간으로 취급)
+          </li>
+        </ul>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>최적화 없음</th>
+            <th>Rank/Size + Path Compression</th>
+          </tr>
+          <tr>
+            <td>find(x)</td>
+            <td class="warn">O(n)</td>
+            <td class="good">Amortized O(α(n))</td>
+          </tr>
+          <tr>
+            <td>union(x, y)</td>
+            <td class="warn">O(n)</td>
+            <td class="good">Amortized O(α(n))</td>
+          </tr>
+          <tr>
+            <td>isConnected(x, y)</td>
+            <td class="warn">O(n)</td>
+            <td class="good">Amortized O(α(n))</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🧵 union 조기 종료와 find의 부수효과</h3>
+        <ul>
+          <li>union(x, y)에서 두 원소가 이미 같은 그룹이면(rootX == rootY) size 갱신 없이 조기 리턴</li>
+          <li>하지만 그 이전에 호출된 find(x), find(y) 자체는 이미 실행된 것이므로 path compression 효과는 그대로 남음</li>
+          <li>union 결과가 조기 종료되어도 find의 부수효과(경로 압축)는 별개로 발생 - isConnected 같은 단순 조회 연산도 내부적으로 find를
+            호출하므로 트리 구조를 변형시킬 수 있음
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🛠 활용처</h3>
+        <ul>
+          <li>Kruskal MST: 간선을 가중치 오름차순 정렬 후 하나씩 확인, 이미 같은 그룹이면(사이클) 스킵, 아니면 union</li>
+          <li>연결 요소 개수 구하기: 모든 간선에 대해 union 수행 후, 서로 다른 루트 개수를 세면 됨</li>
+          <li>네트워크 연결 판별, 이미지 내 연결된 영역 찾기(Connected Component Labeling) 등</li>
+        </ul>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="union">union(x, y) - 합치기</option>
+        <option value="find">find(x) - 루트 찾기</option>
+        <option value="isConnected">isConnected(x, y) - 연결 확인</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="xGroup">
+      <label>x</label>
+      <input type="number" id="xInput" min="0" max="9" value="0">
+    </div>
+    <div class="ctrl-group" id="yGroup">
+      <label>y</label>
+      <input type="number" id="yInput" min="0" max="9" value="1">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewSet">🔄 새 집합</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">n = <strong id="infoN">10</strong></div>
+    <div class="info-chip">그룹 수 = <strong id="infoGroups">10</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">parent[] 기반 포레스트(forest)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="tree-scroll">
+      <div class="tree-canvas-wrap" id="forestWrap">
+        <div class="tree-canvas" id="forestCanvas">
+          <svg class="tree-edges" id="forestEdges"></svg>
+          <div class="nodes-layer" id="forestNodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="uf-array-view">
+      <div class="uf-array-row">
+        <div class="uf-array-rowlabel">index</div>
+        <div class="uf-array-cells" id="idxCells"></div>
+      </div>
+      <div class="uf-array-row">
+        <div class="uf-array-rowlabel">parent</div>
+        <div class="uf-array-cells" id="parentCells"></div>
+      </div>
+      <div class="uf-array-row">
+        <div class="uf-array-rowlabel">size</div>
+        <div class="uf-array-cells" id="sizeCells"></div>
+      </div>
+    </div>
+
+    <div class="legend" style="margin-top:0.9rem;">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        탐색 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        지나온 경로 (visited)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        루트 (root)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9;"></div>
+        경로 압축 (path compression)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        작은 트리 (union 시 붙는 쪽)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8;"></div>
+        큰 트리 (union 시 받는 쪽)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:2px solid #fcd34d;"></div>
+        대상 원소 (x / y)
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산과 x, y 값을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        _8_7_Union_Find - Edge / UnionFind 전체 구현
+      </div>
+      <pre><span class="kw">public</span> <span class="kw">class</span> <span class="ty">_8_7_Union_Find</span> {
+
+  <span class="kw">static</span> <span class="kw">class</span> <span class="ty">Edge</span> {
+
+    <span class="kw">private</span> <span class="ty">int</span> <span class="nm">from</span>;
+    <span class="kw">private</span> <span class="ty">int</span> <span class="nm">to</span>;
+    <span class="kw">private</span> <span class="ty">int</span> <span class="nm">weight</span>;
+
+    <span class="kw">public</span> <span class="ty">Edge</span>(<span class="ty">int</span> <span
+            class="nm">from</span>, <span class="ty">int</span> <span class="nm">to</span>, <span
+            class="ty">int</span> <span class="nm">weight</span>) {
+      <span class="kw">this</span>.<span class="nm">from</span> = <span class="nm">from</span>;
+      <span class="kw">this</span>.<span class="nm">to</span> = <span class="nm">to</span>;
+      <span class="kw">this</span>.<span class="nm">weight</span> = <span class="nm">weight</span>;
+    }
+
+    <span class="kw">public</span> <span class="ty">String</span> <span class="fn">toString</span>() {
+      <span class="kw">return</span> <span class="st">&quot;(&quot;</span> + <span
+            class="nm">from</span> + <span class="st">&quot;, &quot;</span> + <span
+            class="nm">to</span> + <span class="st">&quot;, &quot;</span> + <span
+            class="nm">weight</span> + <span class="st">&quot;)&quot;</span>;
+    }
+  }
+
+  <span class="kw">static</span> <span class="kw">class</span> <span class="ty">UnionFind</span> {
+
+    <span class="kw">private</span> <span class="ty">int</span>[] <span class="nm">parent</span>;
+    <span class="kw">private</span> <span class="ty">int</span>[] <span class="nm">size</span>;
+
+    <span class="kw">public</span> <span class="ty">UnionFind</span>(<span
+            class="ty">int</span> <span class="nm">n</span>) {
+      <span class="kw">if</span> (<span class="nm">n</span> &lt; <span class="nu">1</span>) {<span
+            class="kw">throw</span> <span class="kw">new</span> <span class="ty">IllegalArgumentException</span>(<span
+            class="st">&quot;배열 초기화 크기가 너무 작음&quot;</span>);}
+      <span class="kw">this</span>.<span class="nm">parent</span> = <span
+            class="kw">new</span> <span class="ty">int</span>[<span class="nm">n</span>];
+      <span class="kw">this</span>.<span class="nm">size</span> = <span class="kw">new</span> <span
+            class="ty">int</span>[<span class="nm">n</span>];
+
+      <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+            class="nm">i</span>++) {
+        <span class="nm">parent</span>[<span class="nm">i</span>] = <span class="nm">i</span>;
+        <span class="nm">size</span>[<span class="nm">i</span>] = <span class="nu">1</span>;
+      }
+    }
+
+    <span class="kw">public</span> <span class="ty">int</span> <span
+            class="fn">recursionFindRoot</span>(<span class="ty">int</span> <span
+            class="nm">idx</span>) {
+      <span class="kw">if</span> (<span class="nm">idx</span> &gt;= <span
+            class="nm">size</span>.<span class="nm">length</span> || <span class="nm">idx</span> &lt; <span
+            class="nu">0</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span
+            class="ty">IndexOutOfBoundsException</span>(<span class="st">&quot;잘못된 인덱스 범위, Idx: &quot;</span> + <span
+            class="nm">idx</span>);}
+      <span class="ck">// x의 루트를 찾아서 반환</span>
+      <span class="kw">if</span> (<span class="nm">parent</span>[<span
+            class="nm">idx</span>] == <span class="nm">idx</span>) {
+        <span class="kw">return</span> <span class="nm">idx</span>;
+      }
+
+      <span class="ck">// path compression 적용 지점</span>
+      <span class="ty">int</span> <span class="nm">root</span> = <span
+            class="fn">recursionFindRoot</span>(<span class="nm">parent</span>[<span
+            class="nm">idx</span>]);
+
+      <span class="nm">parent</span>[<span class="nm">idx</span>] = <span class="nm">root</span>;
+
+      <span class="kw">return</span> <span class="nm">root</span>;
+    }
+
+    <span class="ck">// 재귀호출은 크기가 클 경우 스택 오버플로우 가능성, 반복문이 기본</span>
+    <span class="kw">public</span> <span class="ty">int</span> <span
+            class="fn">LoopingfindRoot</span>(<span class="ty">int</span> <span
+            class="nm">idx</span>) {
+      <span class="kw">if</span> (<span class="nm">idx</span> &gt;= <span
+            class="nm">size</span>.<span class="nm">length</span> || <span class="nm">idx</span> &lt; <span
+            class="nu">0</span>) {<span class="kw">throw</span> <span class="kw">new</span> <span
+            class="ty">IndexOutOfBoundsException</span>(<span class="st">&quot;잘못된 인덱스 범위, Idx: &quot;</span> + <span
+            class="nm">idx</span>);}
+
+      <span class="ty">int</span> <span class="nm">root</span> = <span class="nm">idx</span>;
+
+      <span class="ck">// root 찾기</span>
+      <span class="kw">while</span> (<span class="nm">parent</span>[<span class="nm">root</span>] != <span
+            class="nm">root</span>) {
+        <span class="nm">root</span> = <span class="nm">parent</span>[<span class="nm">root</span>];
+      }
+
+      <span class="ty">int</span> <span class="nm">cur</span> = <span class="nm">idx</span>;
+
+      <span class="ck">// idx부터 root까지 다시 한번 순회, 모든 노드의 parent를 root로 직접 연결</span>
+      <span class="ck">// path compression</span>
+      <span class="kw">while</span> (<span class="nm">parent</span>[<span class="nm">cur</span>] != <span
+            class="nm">root</span>) {
+        <span class="ty">int</span> <span class="nm">next</span> = <span
+            class="nm">parent</span>[<span class="nm">cur</span>];
+        <span class="nm">parent</span>[<span class="nm">cur</span>] = <span class="nm">root</span>;
+        <span class="nm">cur</span> = <span class="nm">next</span>;
+      }
+
+      <span class="kw">return</span> <span class="nm">root</span>;
+    }
+
+    <span class="kw">public</span> <span class="kw">void</span> <span class="fn">union</span>(<span
+            class="ty">int</span> <span class="nm">x</span>, <span class="ty">int</span> <span
+            class="nm">y</span>) {
+      <span class="ty">int</span> <span class="nm">rootX</span> = <span
+            class="fn">LoopingfindRoot</span>(<span class="nm">x</span>);
+      <span class="ty">int</span> <span class="nm">rootY</span> = <span
+            class="fn">LoopingfindRoot</span>(<span class="nm">y</span>);
+
+      <span class="kw">if</span> (<span class="nm">rootX</span> == <span
+            class="nm">rootY</span>) {<span class="kw">return</span>;}
+
+      <span class="ck">// 사이즈 비교없이 무조건 한쪽의 루트에 붙인다면 연결리스트처럼 한쪽으로 몰릴 가능성</span>
+      <span class="kw">if</span> (<span class="nm">size</span>[<span
+            class="nm">rootX</span>] &lt; <span class="nm">size</span>[<span class="nm">rootY</span>]) {
+        <span class="nm">size</span>[<span class="nm">rootY</span>] += <span class="nm">size</span>[<span
+            class="nm">rootX</span>];
+        <span class="nm">parent</span>[<span class="nm">rootX</span>] = <span
+            class="nm">rootY</span>;
+      } <span class="kw">else</span> {
+        <span class="nm">size</span>[<span class="nm">rootX</span>] += <span class="nm">size</span>[<span
+            class="nm">rootY</span>];
+        <span class="nm">parent</span>[<span class="nm">rootY</span>] = <span
+            class="nm">rootX</span>;
+      }
+    }
+
+    <span class="kw">public</span> <span class="ty">boolean</span> <span
+            class="fn">isConnected</span>(<span class="ty">int</span> <span
+            class="nm">x</span>, <span class="ty">int</span> <span class="nm">y</span>) {
+
+      <span class="ty">int</span> <span class="nm">rootX</span> = <span
+            class="fn">LoopingfindRoot</span>(<span class="nm">x</span>);
+      <span class="ty">int</span> <span class="nm">rootY</span> = <span
+            class="fn">LoopingfindRoot</span>(<span class="nm">y</span>);
+
+      <span class="kw">return</span> <span class="nm">rootX</span> == <span class="nm">rootY</span>;
+    }
+  }
+}</pre>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  const NF = 10; // 원소 개수 고정
+
+  let ufState = null; // {parent:[], size:[]}
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── 상태 유틸 ──
+  function initState(n) {
+    const parent = Array.from({length: n}, (_, i) => i);
+    const size = Array(n).fill(1);
+    return {parent, size};
+  }
+
+  function cloneState(state) { return {parent: state.parent.slice(), size: state.size.slice()}; }
+
+  function silentFindRoot(state, idx) {
+    let root = idx;
+    while (state.parent[root] !== root) { root = state.parent[root]; }
+    let cur = idx;
+    while (state.parent[cur] !== root) {
+      const next = state.parent[cur];
+      state.parent[cur] = root;
+      cur = next;
+    }
+    return root;
+  }
+
+  function silentUnion(state, x, y) {
+    const rx = silentFindRoot(state, x);
+    const ry = silentFindRoot(state, y);
+    if (rx === ry) { return; }
+    if (state.size[rx] < state.size[ry]) {
+      state.size[ry] += state.size[rx];
+      state.parent[rx] = ry;
+    } else {
+      state.size[rx] += state.size[ry];
+      state.parent[ry] = rx;
+    }
+  }
+
+  function randomForest(n) {
+    const state = initState(n);
+    const unionCount = Math.floor(n / 2) + 1;
+    for (let i = 0; i < unionCount; i++) {
+      const x = Math.floor(Math.random() * n);
+      const y = Math.floor(Math.random() * n);
+      if (x !== y) { silentUnion(state, x, y); }
+    }
+    return state;
+  }
+
+  function countGroups(parentArr) {
+    let c = 0;
+    parentArr.forEach((p, i) => { if (p === i) { c++; } });
+    return c;
+  }
+
+  function validIdx(v) { return Number.isInteger(v) && v >= 0 && v < NF; }
+
+  function makeStep(state, highlight, msg, tag) {
+    return {parent: state.parent.slice(), size: state.size.slice(), highlight, msg, tag};
+  }
+
+  function errorPlan(state, msg) {
+    return {steps: [makeStep(state, {}, msg, 'error')], result: state};
+  }
+
+  // ── find(x) 애니메이션 (탐색 단계 + path compression 단계) ──
+  function animatedFindRoot(work, idx, steps) {
+    const path = [];
+    let cur = idx;
+    steps.push(makeStep(work, {[idx]: 'current'}, `find(${idx}) 시작`, 'traverse'));
+    while (work.parent[cur] !== cur) {
+      path.push(cur);
+      const nxt = work.parent[cur];
+      const hl = {};
+      path.forEach(p => { hl[p] = 'visited'; });
+      hl[cur] = 'current';
+      steps.push(makeStep(work, hl, `parent[${cur}] = ${nxt} -> 아직 루트 아님, 위로 이동`, 'traverse'));
+      cur = nxt;
+    }
+    const root = cur;
+    const hlRoot = {};
+    path.forEach(p => { hlRoot[p] = 'visited'; });
+    hlRoot[root] = 'root';
+    steps.push(makeStep(work, hlRoot, `parent[${root}] == ${root} -> 루트 발견`, 'done'));
+
+    let node = idx;
+    while (node !== root) {
+      const next = work.parent[node];
+      if (next !== root) {
+        work.parent[node] = root;
+        steps.push(makeStep(work, {[node]: 'compressed', [root]: 'root'},
+            `parent[${node}] = ${root} 로 직접 연결 (path compression)`, 'insert'));
+      }
+      node = next;
+    }
+    return root;
+  }
+
+  // ── union(x, y) ──
+  function planUnion(globalState, x, y) {
+    if (!validIdx(x) || !validIdx(y)) {
+      return errorPlan(globalState, '값이 올바른 인덱스가 아닙니다 (0~9 범위)');
+    }
+    const work = cloneState(globalState);
+    const steps = [];
+    steps.push(makeStep(work, {[x]: 'target', [y]: 'target'}, `union(${x}, ${y}) 호출`, 'traverse'));
+
+    const rootX = animatedFindRoot(work, x, steps);
+    steps.push(makeStep(work, {[rootX]: 'root'}, `find(${x}) 결과 -> rootX = ${rootX}`, 'done'));
+
+    const rootY = animatedFindRoot(work, y, steps);
+    steps.push(
+        makeStep(work, {[rootX]: 'root', [rootY]: 'root'}, `find(${y}) 결과 -> rootY = ${rootY}`,
+            'done'));
+
+    if (rootX === rootY) {
+      steps.push(makeStep(work, {[rootX]: 'root'},
+          `rootX == rootY (${rootX}) -> 이미 같은 그룹, size 갱신 없이 조기 종료`, 'error'));
+      return {steps, result: work};
+    }
+
+    steps.push(makeStep(work, {[rootX]: 'root', [rootY]: 'root'},
+        `size[${rootX}] = ${work.size[rootX]}, size[${rootY}] = ${work.size[rootY]} 비교`,
+        'traverse'));
+
+    if (work.size[rootX] < work.size[rootY]) {
+      work.size[rootY] += work.size[rootX];
+      work.parent[rootX] = rootY;
+      steps.push(makeStep(work, {[rootX]: 'small', [rootY]: 'large'},
+          `size[${rootX}] < size[${rootY}] -> parent[${rootX}] = ${rootY}, size[${rootY}] = ${work.size[rootY]}`,
+          'insert'));
+    } else {
+      work.size[rootX] += work.size[rootY];
+      work.parent[rootY] = rootX;
+      steps.push(makeStep(work, {[rootY]: 'small', [rootX]: 'large'},
+          `size[${rootX}] >= size[${rootY}] -> parent[${rootY}] = ${rootX}, size[${rootX}] = ${work.size[rootX]}`,
+          'insert'));
+    }
+    steps.push(makeStep(work, {}, `union(${x}, ${y}) 완료`, 'done'));
+    return {steps, result: work};
+  }
+
+  // ── find(x) 단독 실행 ──
+  function planFind(globalState, x) {
+    if (!validIdx(x)) { return errorPlan(globalState, '값이 올바른 인덱스가 아닙니다 (0~9 범위)'); }
+    const work = cloneState(globalState);
+    const steps = [];
+    steps.push(makeStep(work, {[x]: 'target'}, `find(${x}) 호출`, 'traverse'));
+    const root = animatedFindRoot(work, x, steps);
+    steps.push(makeStep(work, {[root]: 'root'}, `find(${x}) 결과 -> ${root}`, 'done'));
+    return {steps, result: work};
+  }
+
+  // ── isConnected(x, y) ──
+  function planIsConnected(globalState, x, y) {
+    if (!validIdx(x) || !validIdx(y)) {
+      return errorPlan(globalState, '값이 올바른 인덱스가 아닙니다 (0~9 범위)');
+    }
+    const work = cloneState(globalState);
+    const steps = [];
+    steps.push(
+        makeStep(work, {[x]: 'target', [y]: 'target'}, `isConnected(${x}, ${y}) 호출`, 'traverse'));
+    const rootX = animatedFindRoot(work, x, steps);
+    const rootY = animatedFindRoot(work, y, steps);
+    const connected = rootX === rootY;
+    steps.push(makeStep(work, {[rootX]: 'root', [rootY]: 'root'},
+        `rootX(${rootX}) ${connected ? '==' : '!='} rootY(${rootY}) -> ${connected ? 'true (같은 그룹)'
+            : 'false (다른 그룹)'}`, connected ? 'done' : 'error'));
+    return {steps, result: work};
+  }
+
+  // ── 포레스트 레이아웃/렌더 ──
+  function buildChildren(parentArr, n) {
+    const children = Array.from({length: n}, () => []);
+    for (let i = 0; i < n; i++) { if (parentArr[i] !== i) { children[parentArr[i]].push(i); } }
+    return children;
+  }
+
+  function layoutForest(parentArr, n) {
+    const children = buildChildren(parentArr, n);
+    const pos = {};
+    const counter = {x: 0};
+    let maxDepth = 0;
+
+    function layoutNode(id, depth) {
+      maxDepth = Math.max(maxDepth, depth);
+      const kids = children[id].slice().sort((a, b) => a - b);
+      if (kids.length === 0) {
+        pos[id] = {x: counter.x, y: depth};
+        counter.x += 1;
+      } else {
+        kids.forEach(c => layoutNode(c, depth + 1));
+        const xs = kids.map(c => pos[c].x);
+        pos[id] = {x: (Math.min(...xs) + Math.max(...xs)) / 2, y: depth};
+      }
+    }
+
+    const roots = [];
+    for (let i = 0; i < n; i++) { if (parentArr[i] === i) { roots.push(i); } }
+    roots.forEach(r => {
+      layoutNode(r, 0);
+      counter.x += 1; // 트리 사이 간격
+    });
+    return {pos, maxX: counter.x - 2, maxDepth, roots};
+  }
+
+  function collectEdges(parentArr, n) {
+    const edges = [];
+    for (let i = 0; i < n; i++) {
+      if (parentArr[i] !== i) {
+        edges.push({child: i, parent: parentArr[i]});
+      }
+    }
+    return edges;
+  }
+
+  function renderForest(parentArr, highlight) {
+    const wrap = document.getElementById('forestWrap');
+    const canvas = document.getElementById('forestCanvas');
+    const svg = document.getElementById('forestEdges');
+    const layer = document.getElementById('forestNodesLayer');
+
+    const {pos, maxX, maxDepth, roots} = layoutForest(parentArr, NF);
+    const edges = collectEdges(parentArr, NF);
+    const spacingX = 62, spacingY = 76, padX = 32, padTop = 30, nodeSize = 44;
+    const width = Math.max((Math.max(maxX, 0) + 1) * spacingX + padX * 2, 320);
+    const height = (maxDepth + 1) * spacingY + padTop + nodeSize;
+
+    const scrollEl = document.querySelector('.tree-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const posMap = {};
+    for (let i = 0; i < NF; i++) {
+      posMap[i] = {
+        cx: padX + pos[i].x * spacingX + spacingX / 2,
+        cy: padTop + pos[i].y * spacingY + nodeSize / 2
+      };
+    }
+
+    let edgeSvg = '';
+    edges.forEach(e => {
+      const c = posMap[e.child], p = posMap[e.parent];
+      edgeSvg += `<line x1="${c.cx}" y1="${c.cy}" x2="${p.cx}" y2="${p.cy}" class="tree-edge" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    for (let i = 0; i < NF; i++) {
+      const p = posMap[i];
+      const hl = highlight[i];
+      let cls = 'tnode';
+      if (hl) { cls += ' state-' + hl; }
+      const isRoot = roots.includes(i);
+      html += `<div class="tnode-wrap" style="left:${p.cx - nodeSize / 2}px; top:${p.cy - nodeSize
+      / 2}px;">
+          ${isRoot ? '<div class="pos-tag root">ROOT</div>' : ''}
+          <div class="${cls}">${i}</div>
+        </div>`;
+    }
+    layer.innerHTML = html;
+  }
+
+  function renderArrayView(parentArr, sizeArr, highlight) {
+    let idxHtml = '', parentHtml = '', sizeHtml = '';
+    for (let i = 0; i < NF; i++) {
+      const hl = highlight[i] ? ' state-' + highlight[i] : '';
+      idxHtml += `<div class="uf-cell${hl}">${i}</div>`;
+      parentHtml += `<div class="uf-cell${hl}">${parentArr[i]}</div>`;
+      sizeHtml += `<div class="uf-cell${hl}">${parentArr[i] === i ? sizeArr[i] : '-'}</div>`;
+    }
+    document.getElementById('idxCells').innerHTML = idxHtml;
+    document.getElementById('parentCells').innerHTML = parentHtml;
+    document.getElementById('sizeCells').innerHTML = sizeHtml;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">갱신</span>',
+    'remove': '<span class="phase-tag phase-remove">비교</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">종료</span>',
+  };
+
+  function renderStep(step) {
+    renderForest(step.parent, step.highlight);
+    renderArrayView(step.parent, step.size, step.highlight);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoGroups').textContent = countGroups(step.parent);
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const x = parseInt(document.getElementById('xInput').value);
+    const y = parseInt(document.getElementById('yInput').value);
+    let plan;
+    if (op === 'union') { plan = planUnion(ufState, x, y); } else if (op
+        === 'find') { plan = planFind(ufState, x); } else if (op
+        === 'isConnected') { plan = planIsConnected(ufState, x, y); }
+
+    steps = plan.steps;
+    ufState = plan.result;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('yGroup').style.display = op === 'find' ? 'none' : 'flex';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  document.getElementById('xInput').addEventListener('input', markDirty);
+  document.getElementById('yInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnNewSet').addEventListener('click', () => {
+    stopPlay();
+    ufState = randomForest(NF);
+    steps = [{
+      parent: ufState.parent.slice(),
+      size: ufState.size.slice(),
+      highlight: {},
+      msg: '새 집합을 생성했습니다. 연산과 x, y 값을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: ''
+    }];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  updateOpUI();
+  ufState = randomForest(NF);
+  steps = [{
+    parent: ufState.parent.slice(),
+    size: ufState.size.slice(),
+    highlight: {},
+    msg: '연산과 x, y 값을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+    tag: ''
+  }];
+  stepIdx = 0;
+  needsNewRun = true;
+  showFrame(0);
+</script>
+</html>

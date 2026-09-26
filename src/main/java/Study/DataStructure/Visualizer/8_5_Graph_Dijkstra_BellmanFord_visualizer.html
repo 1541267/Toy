@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>다익스트라 & 벨만-포드 (그래프 최단 경로) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 78px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ctrl-group input[type=number] {
+      width: 60px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 그래프 스크롤 래퍼 (트리 시각화의 .tree-scroll과 동일한 용도, 그래프 전용) ── */
+  .graph-scroll {
+    padding: 1rem 0.5rem 0.5rem;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    &.start {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+  }
+
+  /* ── 노드(정점) 상태 (공용 css의 .gnode 베이스에 상태별 색상만 추가) ── */
+  .gnode {
+    &.state-compare {
+      background: var(--tag-teal-bg);
+      border-color: var(--state-compare);
+      color: var(--tag-teal-text);
+    }
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.15);
+    }
+
+    &.state-visited {
+      background: var(--surface-bg);
+      border-color: var(--state-compare);
+      color: #94dfd6;
+      opacity: 0.85;
+    }
+
+    &.state-new {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+      animation: pop 0.35s ease;
+    }
+
+    &.state-cycle {
+      background: var(--tag-red-bg);
+      border-color: #f87171;
+      color: var(--bad-text);
+      transform: scale(1.1);
+    }
+  }
+
+  /* ── 간선(edge) 상태: 공용 css에 없는 방향성 그래프 전용 스타일이라 이 파일에서 정의 ── */
+  .graph-edge {
+    fill: none;
+    stroke: #334155;
+    stroke-width: 2;
+
+    &.edge-compare {
+      stroke: var(--state-compare);
+      stroke-width: 2.5;
+    }
+
+    &.edge-relaxed {
+      stroke: var(--good-border);
+      stroke-width: 2.5;
+    }
+
+    &.edge-path {
+      stroke: var(--state-swap);
+      stroke-width: 3;
+    }
+
+    &.edge-cycle {
+      stroke: #f87171;
+      stroke-width: 3;
+    }
+  }
+
+  .edge-label-bg {
+    fill: #0f1117;
+    stroke: #252d45;
+
+    &.edge-label-compare {
+      stroke: var(--state-compare);
+    }
+
+    &.edge-label-relaxed {
+      stroke: var(--good-border);
+    }
+
+    &.edge-label-path {
+      stroke: var(--state-swap);
+    }
+
+    &.edge-label-cycle {
+      stroke: #f87171;
+    }
+  }
+
+  .edge-label-text {
+    font-size: 11px;
+    text-anchor: middle;
+    font-family: Consolas, monospace;
+    fill: #cbd5e1;
+
+    &.edge-label-text-compare {
+      fill: #5eead4;
+    }
+
+    &.edge-label-text-relaxed {
+      fill: #6ee7b7;
+    }
+
+    &.edge-label-text-path {
+      fill: #fcd34d;
+    }
+
+    &.edge-label-text-cycle {
+      fill: #fca5a5;
+    }
+  }
+
+  /* 결과 스트립(dist/queue/pass)은 공용 css의 .output-strip/.output-chip/.queue-chip 사용 */
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">다익스트라 & 벨만-포드 (그래프 최단 경로)</h1>
+    <p>우선순위 큐 기반 다익스트라(지연 삭제 + 경로 복원) / 간선 완화 기반 벨만-포드(음수 사이클 탐지) 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 그래프 최단 경로 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+
+      <div class="section-divider">🧭 다익스트라 (Dijkstra)</div>
+
+      <div class="note-card">
+        <h3>🧭 다익스트라 개요</h3>
+        <ul>
+          <li>가중치가 있는 그래프에서 하나의 출발 정점부터 모든 정점까지의 최단 거리를 구하는 알고리즘</li>
+          <li>조건: 모든 간선의 가중치가 음수가 아니어야 함</li>
+          <li>지금까지 계산된 거리가 가장 작은 정점을 매번 선택해야 하므로 단순 큐 대신 우선순위 큐(min-heap)가 필요</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🆚 BFS와의 차이</h3>
+        <ul>
+          <li>BFS: 모든 간선을 동일한 무게(1)로 취급 -> 최단 경로 = 간선 개수(hop 수)가 최소인 경로</li>
+          <li>다익스트라: 간선마다 가중치가 다름 -> 최단 경로 = 거쳐온 가중치의 총합이 최소인 경로</li>
+          <li>모든 간선의 가중치를 1로 통일한 그래프에 다익스트라를 돌리면 BFS와 결과가 동일해짐 (BFS는 다익스트라의 특수 케이스)</li>
+          <li>먼저 방문한 순서가 곧 최단 거리라는 BFS의 전제가 가중치 도입 순간 깨짐</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🐢 지연 삭제(Lazy Deletion)</h3>
+        <ul>
+          <li>표준 PriorityQueue는 이미 들어있는 원소의 우선순위를 직접 수정(decrease-key)하기 어려움</li>
+          <li>그래서 더 짧은 거리를 찾을 때마다 갱신 대신 새로 push, 큐 안에 낡은 항목이 남을 수 있음</li>
+          <li>poll 시점에 curNode.distance와 dist[]를 비교해서, curNode.distance가 더 크면 이미 더 짧은 경로로 갱신된 낡은
+            정보이므로 스킵
+          </li>
+          <li>visited[]로 영구 확정하는 최적화가 없는 버전이라, 음수 가중치가 있어도 사이클만 없다면 결과적으로 정답이 나올 수 있음(단, 효율 보장은
+            깨짐)
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧵 경로 복원 (parent[])</h3>
+        <ul>
+          <li>dist[]는 거리(숫자)만 저장, 실제로 어떤 정점들을 거쳤는지는 알 수 없음</li>
+          <li>parent[]를 별도로 두고 relax 성공 시 parent[도착점] = 출발점으로 갱신</li>
+          <li>목적지에서부터 시작해서 parent를 따라 -1이 나올 때까지 역추적, 모은 뒤 reverse하면 시작점 -> 목적지 순서의 실제 경로가 됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚡ 그리디로 동작하는 이유</h3>
+        <ul>
+          <li>음수 가중치가 없다는 전제 덕분에, 한 번 poll(확정)된 정점의 거리는 이후 더 짧은 경로로 다시 갱신될 수 없음</li>
+          <li>그래서 큐에서 꺼낸 순간 바로 그 정점의 최단 거리를 확정 지어도 안전함</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 다익스트라 시간복잡도</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>구현 방식</th>
+            <th>시간복잡도</th>
+            <th>비고</th>
+          </tr>
+          <tr>
+            <td>인접리스트 + 우선순위 큐(이진 힙)</td>
+            <td class="good">O((V + E) log V)</td>
+            <td>가장 일반적인 구현</td>
+          </tr>
+          <tr>
+            <td>인접행렬 + 배열 선형 탐색</td>
+            <td class="warn">O(V^2)</td>
+            <td>이웃 확인 자체가 이미 O(V)라 힙 사용 이득 없음</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">decrease-key를 O(log n)에 하려면
+          정점과 힙 배열 인덱스를 매핑하는 별도 구조(Indexed Priority Queue)가 필요, 이 구현은 그 대신 지연 삭제 방식을 사용</p>
+      </div>
+
+      <div class="section-divider">➕➖ 벨만-포드 (Bellman-Ford)</div>
+
+      <div class="note-card">
+        <h3>➕➖ 벨만-포드 개요</h3>
+        <ul>
+          <li>다익스트라와 동일하게 출발 정점부터 모든 정점까지의 거리를 구하지만 음수 가중치 간선이 있어도 동작함</li>
+          <li>조건: 음수 사이클은 없어야 함</li>
+          <li>우선순위 큐로 순서를 고르는 대신, 그래프의 모든 간선을 V-1번 반복해서 무차별적으로 relax</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔁 V-1번 반복하는 이유</h3>
+        <ul>
+          <li>정점이 V개면 사이클 없는 최단 경로가 거칠 수 있는 간선의 최대 개수는 V-1개</li>
+          <li>한 번의 전체 패스(모든 간선 순회)마다 최소 하나의 새로운 hop이 확정된다고 보장할 수 있으므로 V-1번 반복하면 모든 최단 경로가 수렴</li>
+          <li>한 패스 전체를 다 돈 뒤에도 갱신이 하나도 없었다면 이미 수렴 완료 -> 조기 종료 가능(단, 이 체크는 반드시 패스 전체가 끝난 뒤 딱 한 번만)
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🚨 음수 사이클 탐지 원리</h3>
+        <ul>
+          <li>V-1번으로 이미 모든 최단 경로가 수렴했어야 정상</li>
+          <li>V번째 패스에서도 여전히 더 짧아지는 간선이 있다면, 사이클을 돌 때마다 거리가 계속 줄어드는 경로가 있다는 뜻 -> 음수 사이클 존재</li>
+          <li>다익스트라는 애초에 음수 가중치를 전제하지 않으므로 이 탐지 자체가 불가능</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⚖️ 다익스트라 vs 벨만-포드</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>비교 항목</th>
+            <th>다익스트라</th>
+            <th>벨만-포드</th>
+          </tr>
+          <tr>
+            <td>음수 가중치</td>
+            <td class="warn">불가(오답 위험)</td>
+            <td class="good">가능</td>
+          </tr>
+          <tr>
+            <td>음수 사이클 탐지</td>
+            <td class="warn">불가</td>
+            <td class="good">가능(고유 기능)</td>
+          </tr>
+          <tr>
+            <td>자료구조</td>
+            <td>우선순위 큐 필수</td>
+            <td>단순 반복문만으로 충분</td>
+          </tr>
+          <tr>
+            <td>매 반복의 순회 대상</td>
+            <td>poll된 정점의 인접 정점만</td>
+            <td>매 패스마다 모든 간선</td>
+          </tr>
+          <tr>
+            <td>시간복잡도</td>
+            <td class="good">O((V+E) log V)</td>
+            <td class="warn">O(V x E)</td>
+          </tr>
+          <tr>
+            <td>접근 방식</td>
+            <td>그리디(한 번 확정하면 안 바뀜)</td>
+            <td>반복적으로 계속 완화</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">다익스트라는 똑똑하게 순서를 골라 한 번씩만
+          확정하는 방식, 벨만-포드는 순서 상관없이 여러 번 반복해서 수렴시키는 방식 - 그 무차별함 덕분에 음수 가중치도 버티고 사이클 존재 여부까지 검증 가능</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>알고리즘</label>
+      <select id="opSelect">
+        <option value="dijkstra">dijkstra(start, target) - 우선순위 큐</option>
+        <option value="bellmanFord">bellmanFord(start) - 간선 완화</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="graphGroup" style="display:none;">
+      <label>그래프</label>
+      <select id="graphSelect">
+        <option value="normal">기본 그래프 (음수 간선 포함)</option>
+        <option value="cycle">음수 사이클 그래프</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="targetGroup">
+      <label>target</label>
+      <input type="number" id="targetInput" value="4" min="0" max="4">
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">🔄 그래프 초기화</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">V = <strong id="infoV">-</strong></div>
+    <div class="info-chip">E = <strong id="infoE">-</strong></div>
+    <div class="info-chip">start = <strong id="infoStart">0</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Graph Shortest Path</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="graph-scroll">
+      <div class="graph-canvas-wrap" id="graphCanvasWrap">
+        <div class="graph-canvas" id="graphCanvas">
+          <svg class="graph-edges" id="graphEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="output-strip" id="distStrip"></div>
+    <div class="output-strip" id="rightStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 처리 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0c3a37;"></div>
+        비교/지나온 경로 (visited)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        갱신됨 (relax 성공)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        최종 경로 (path)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        음수 사이클 간선
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">알고리즘과 그래프를 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통 부분 - Edge, createGraph
+      </div>
+      <pre>
+<span class="kw">static</span> <span class="kw">class</span> <span class="ty">Edge</span> {
+
+  <span class="kw">private</span> <span class="kw">int</span> <span class="nm">from</span>;
+  <span class="kw">private</span> <span class="kw">int</span> <span class="nm">dest</span>;
+  <span class="kw">private</span> <span class="kw">int</span> <span class="nm">weight</span>;
+
+  <span class="kw">public</span> <span class="ty">Edge</span>(<span class="kw">int</span> <span
+          class="nm">from</span>, <span
+          class="kw">int</span> <span class="nm">dest</span>, <span class="kw">int</span> <span
+          class="nm">weight</span>) {
+    <span class="kw">this</span>.<span class="nm">from</span> = <span class="nm">from</span>;
+    <span class="kw">this</span>.<span class="nm">dest</span> = <span class="nm">dest</span>;
+    <span class="kw">this</span>.<span class="nm">weight</span> = <span class="nm">weight</span>;
+  }
+}
+
+<span class="ck">// 정점 개수만큼 빈 인접 리스트를 미리 만들어 둠</span>
+<span class="kw">static</span> <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span
+          class="ty">Edge</span>&gt;&gt; <span class="fn">createGraph</span>(<span
+          class="kw">int</span> <span
+          class="nm">v</span>) {
+  <span class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span
+          class="ty">Edge</span>&gt;&gt; <span class="nm">graph</span> = <span class="kw">new</span> <span
+          class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="kw">int</span> <span class="nm">i</span> = <span
+          class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">v</span>; <span
+          class="nm">i</span>++) {
+    <span class="nm">graph</span>.<span class="fn">add</span>(<span class="kw">new</span> <span
+          class="ty">ArrayList</span>&lt;&gt;());
+  }
+
+  <span class="kw">return</span> <span class="nm">graph</span>;
+}
+      </pre>
+    </div>
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          다익스트라 - NodeDistance + dijkstra + 경로 복원
+        </div>
+        <pre><span class="kw">static</span> <span class="kw">class</span> <span
+            class="ty">NodeDistance</span> <span class="kw">implements</span> <span
+            class="ty">Comparable</span>&lt;<span class="ty">NodeDistance</span>&gt; {
+
+  <span class="kw">private</span> <span class="kw">int</span> <span class="nm">vertex</span>;
+  <span class="kw">private</span> <span class="kw">int</span> <span class="nm">distance</span>;
+
+  <span class="kw">public</span> <span class="ty">NodeDistance</span>(<span
+              class="kw">int</span> <span
+              class="nm">vertex</span>, <span class="kw">int</span> <span
+              class="nm">distance</span>) {
+    <span class="kw">this</span>.<span class="nm">vertex</span> = <span class="nm">vertex</span>;
+    <span class="kw">this</span>.<span class="nm">distance</span> = <span class="nm">distance</span>;
+  }
+
+  <span class="kw">public</span> <span class="kw">int</span> <span class="fn">compareTo</span>(<span
+              class="ty">NodeDistance</span> <span class="nm">o</span>) {
+    <span class="kw">return</span> <span class="ty">Integer</span>.<span
+              class="fn">compare</span>(<span
+              class="kw">this</span>.<span class="nm">distance</span>, <span
+              class="nm">o</span>.<span
+              class="nm">distance</span>);
+  }
+}
+
+<span class="ck">// 거리 배열만 반환하는 기본 버전</span>
+<span class="kw">private</span> <span class="kw">static</span> <span class="kw">int</span>[] <span
+              class="fn">dijkstra</span>(<span class="ty">List</span>&lt;<span
+              class="ty">List</span>&lt;<span class="ty">Edge</span>&gt;&gt; <span
+              class="nm">graph</span>, <span class="kw">int</span> <span
+              class="nm">start</span>, <span
+              class="kw">int</span> <span class="nm">v</span>) {
+
+  <span class="kw">int</span>[] <span class="nm">dist</span> = <span class="kw">new</span> <span
+              class="kw">int</span>[<span class="nm">v</span>];
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span class="nm">dist</span>, <span
+              class="ty">Integer</span>.<span class="nm">MAX_VALUE</span>);
+
+  <span class="nm">dist</span>[<span class="nm">start</span>] = <span class="nu">0</span>;
+
+  <span class="ty">PriorityQueue</span>&lt;<span class="ty">NodeDistance</span>&gt; <span
+              class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">PriorityQueue</span>&lt;&gt;();
+  <span class="nm">queue</span>.<span class="fn">add</span>(<span class="kw">new</span> <span
+              class="ty">NodeDistance</span>(<span class="nm">start</span>, <span
+              class="nu">0</span>));
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">NodeDistance</span> <span class="nm">curNode</span> = <span
+              class="nm">queue</span>.<span class="fn">poll</span>();
+
+    <span class="ck">// 지연 삭제: 이미 더 짧은 경로로 갱신된 낡은 항목이면 스킵</span>
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span
+              class="nm">distance</span> &gt; <span class="nm">dist</span>[<span
+              class="nm">curNode</span>.<span class="nm">vertex</span>]) {<span
+              class="kw">continue</span>;}
+
+    <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+              class="nm">graph</span>.<span class="fn">get</span>(<span
+              class="nm">curNode</span>.<span
+              class="nm">vertex</span>)) {
+      <span class="kw">int</span> <span class="nm">newDist</span> = <span
+              class="nm">curNode</span>.<span class="nm">distance</span> + <span
+              class="nm">edge</span>.<span class="nm">weight</span>;
+
+      <span class="kw">if</span> (<span class="nm">newDist</span> &lt; <span
+              class="nm">dist</span>[<span class="nm">edge</span>.<span class="nm">dest</span>]) {
+        <span class="nm">dist</span>[<span class="nm">edge</span>.<span
+              class="nm">dest</span>] = <span class="nm">newDist</span>;
+        <span class="nm">queue</span>.<span class="fn">add</span>(<span
+              class="kw">new</span> <span class="ty">NodeDistance</span>(<span
+              class="nm">edge</span>.<span class="nm">dest</span>, <span
+              class="nm">newDist</span>));
+      }
+    }
+  }
+
+  <span class="kw">return</span> <span class="nm">dist</span>;
+}
+
+<span class="ck">// parent[]로 실제 경로까지 복원하는 버전</span>
+<span class="kw">private</span> <span class="kw">static</span> <span
+              class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="fn">pathRecordDijkstra</span>(<span class="ty">List</span>&lt;<span
+              class="ty">List</span>&lt;<span class="ty">Edge</span>&gt;&gt; <span
+              class="nm">graph</span>, <span class="kw">int</span> <span
+              class="nm">start</span>, <span
+              class="kw">int</span> <span class="nm">target</span>, <span
+              class="kw">int</span> <span
+              class="nm">v</span>) {
+
+  <span class="kw">int</span>[] <span class="nm">dist</span> = <span class="kw">new</span> <span
+              class="kw">int</span>[<span class="nm">v</span>];
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span class="nm">dist</span>, <span
+              class="ty">Integer</span>.<span class="nm">MAX_VALUE</span>);
+  <span class="nm">dist</span>[<span class="nm">start</span>] = <span class="nu">0</span>;
+
+  <span class="kw">int</span>[] <span class="nm">parent</span> = <span class="kw">new</span> <span
+              class="kw">int</span>[<span class="nm">v</span>];
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span class="nm">parent</span>, -<span
+              class="nu">1</span>);
+
+  <span class="ty">PriorityQueue</span>&lt;<span class="ty">NodeDistance</span>&gt; <span
+              class="nm">queue</span> = <span class="kw">new</span> <span
+              class="ty">PriorityQueue</span>&lt;&gt;();
+  <span class="nm">queue</span>.<span class="fn">add</span>(<span class="kw">new</span> <span
+              class="ty">NodeDistance</span>(<span class="nm">start</span>, <span
+              class="nu">0</span>));
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">NodeDistance</span> <span class="nm">curNode</span> = <span
+              class="nm">queue</span>.<span class="fn">poll</span>();
+    <span class="kw">if</span> (<span class="nm">curNode</span>.<span
+              class="nm">distance</span> &gt; <span class="nm">dist</span>[<span
+              class="nm">curNode</span>.<span class="nm">vertex</span>]) {<span
+              class="kw">continue</span>;}
+
+    <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+              class="nm">graph</span>.<span class="fn">get</span>(<span
+              class="nm">curNode</span>.<span
+              class="nm">vertex</span>)) {
+      <span class="kw">int</span> <span class="nm">newDist</span> = <span
+              class="nm">curNode</span>.<span class="nm">distance</span> + <span
+              class="nm">edge</span>.<span class="nm">weight</span>;
+
+      <span class="kw">if</span> (<span class="nm">newDist</span> &lt; <span
+              class="nm">dist</span>[<span class="nm">edge</span>.<span class="nm">dest</span>]) {
+        <span class="nm">dist</span>[<span class="nm">edge</span>.<span
+              class="nm">dest</span>] = <span class="nm">newDist</span>;
+        <span class="nm">queue</span>.<span class="fn">add</span>(<span
+              class="kw">new</span> <span class="ty">NodeDistance</span>(<span
+              class="nm">edge</span>.<span class="nm">dest</span>, <span
+              class="nm">newDist</span>));
+        <span class="nm">parent</span>[<span class="nm">edge</span>.<span
+              class="nm">dest</span>] = <span class="nm">curNode</span>.<span
+              class="nm">vertex</span>;
+      }
+    }
+  }
+
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">path</span> = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+  <span class="kw">int</span> <span class="nm">cur</span> = <span class="nm">target</span>;
+
+  <span class="kw">while</span> (<span class="nm">cur</span> != -<span class="nu">1</span>) {
+    <span class="nm">path</span>.<span class="fn">add</span>(<span class="nm">cur</span>);
+    <span class="nm">cur</span> = <span class="nm">parent</span>[<span class="nm">cur</span>];
+  }
+
+  <span class="ty">Collections</span>.<span class="fn">reverse</span>(<span class="nm">path</span>);
+  <span class="kw">return</span> <span class="nm">path</span>;
+}
+        </pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#f87171"></div>
+          벨만-포드 - V-1번 완화 + 음수 사이클 탐지
+        </div>
+        <pre><span class="kw">private</span> <span class="kw">static</span> <span
+            class="kw">int</span>[] <span class="fn">bellmanFord</span>(<span
+            class="ty">List</span>&lt;<span class="ty">List</span>&lt;<span
+            class="ty">Edge</span>&gt;&gt; <span class="nm">graph</span>, <span
+            class="kw">int</span> <span class="nm">start</span>, <span class="kw">int</span> <span
+            class="nm">v</span>) {
+  <span class="kw">int</span>[] <span class="nm">distance</span> = <span class="kw">new</span> <span
+              class="kw">int</span>[<span class="nm">v</span>];
+  <span class="ty">Arrays</span>.<span class="fn">fill</span>(<span
+              class="nm">distance</span>, <span
+              class="ty">Integer</span>.<span class="nm">MAX_VALUE</span>);
+  <span class="nm">distance</span>[<span class="nm">start</span>] = <span class="nu">0</span>;
+
+  <span class="ck">// v - 1번 완화</span>
+  <span class="kw">for</span> (<span class="kw">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">v</span> - <span
+              class="nu">1</span>; <span class="nm">i</span>++) {
+
+    <span class="kw">boolean</span> <span class="nm">updated</span> = <span
+              class="kw">false</span>;
+
+    <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Edge</span>&gt; <span class="nm">edges</span> : <span
+              class="nm">graph</span>) {
+      <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+              class="nm">edges</span>) {
+
+        <span class="kw">int</span> <span class="nm">curVertex</span> = <span
+              class="nm">edge</span>.<span class="nm">from</span>;
+        <span class="kw">int</span> <span class="nm">nextVertex</span> = <span
+              class="nm">edge</span>.<span class="nm">dest</span>;
+
+        <span class="kw">if</span> (<span class="nm">distance</span>[<span
+              class="nm">curVertex</span>] != <span class="ty">Integer</span>.<span
+              class="nm">MAX_VALUE</span>
+            &amp;&amp; <span class="nm">distance</span>[<span
+              class="nm">nextVertex</span>] &gt; <span class="nm">distance</span>[<span
+              class="nm">curVertex</span>] + <span class="nm">edge</span>.<span
+              class="nm">weight</span>) {
+          <span class="nm">distance</span>[<span class="nm">nextVertex</span>] = <span
+              class="nm">distance</span>[<span class="nm">curVertex</span>] + <span
+              class="nm">edge</span>.<span class="nm">weight</span>;
+          <span class="nm">updated</span> = <span class="kw">true</span>;
+        }
+      }
+    }
+
+    <span class="ck">// 이번 반복에서 아무것도 갱신되지 않았다면 이미 수렴 완료</span>
+    <span class="kw">if</span> (!<span class="nm">updated</span>) {<span
+              class="kw">break</span>;}
+  }
+
+  <span class="ck">// V번째 패스: 그래도 갱신이 일어나면 음수 사이클 존재</span>
+  <span class="kw">for</span> (<span class="ty">List</span>&lt;<span
+              class="ty">Edge</span>&gt; <span class="nm">edges</span> : <span
+              class="nm">graph</span>) {
+    <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+              class="nm">edges</span>) {
+      <span class="kw">int</span> <span class="nm">curVertex</span> = <span
+              class="nm">edge</span>.<span class="nm">from</span>;
+      <span class="kw">int</span> <span class="nm">nextVertex</span> = <span
+              class="nm">edge</span>.<span class="nm">dest</span>;
+
+      <span class="kw">if</span> (<span class="nm">distance</span>[<span
+              class="nm">curVertex</span>] != <span class="ty">Integer</span>.<span
+              class="nm">MAX_VALUE</span>
+          &amp;&amp; <span class="nm">distance</span>[<span
+              class="nm">nextVertex</span>] &gt; <span class="nm">distance</span>[<span
+              class="nm">curVertex</span>] + <span class="nm">edge</span>.<span
+              class="nm">weight</span>) {
+        <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalStateException</span>(<span class="st">&quot;음수 사이클이 존재&quot;</span>);
+      }
+    }
+  }
+
+  <span class="kw">return</span> <span class="nm">distance</span>;
+}
+        </pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  function fmt(v) { return v === Infinity ? '∞' : v; }
+
+  // ── 그래프 정의 ──
+  const MAIN_NODES = [
+    {id: 0, x: 70, y: 170}, {id: 1, x: 270, y: 70}, {id: 2, x: 270, y: 270},
+    {id: 3, x: 460, y: 170}, {id: 4, x: 630, y: 170}
+  ];
+
+  function mainEdges(w21) {
+    return [
+      {from: 0, dest: 1, weight: 4},
+      {from: 0, dest: 2, weight: 1},
+      {from: 2, dest: 1, weight: w21},
+      {from: 1, dest: 3, weight: 1},
+      {from: 2, dest: 3, weight: 5},
+      {from: 3, dest: 4, weight: 3},
+      {from: 1, dest: 4, weight: 7}
+    ];
+  }
+
+  const CYCLE_NODES = [
+    {id: 0, x: 70, y: 170}, {id: 1, x: 290, y: 80},
+    {id: 2, x: 290, y: 260}, {id: 3, x: 490, y: 170}
+  ];
+
+  const CYCLE_EDGES = [
+    {from: 0, dest: 1, weight: 1},
+    {from: 1, dest: 2, weight: -2},
+    {from: 2, dest: 1, weight: -2},
+    {from: 2, dest: 3, weight: 1}
+  ];
+
+  function getCurrentGraph() {
+    const op = document.getElementById('opSelect').value;
+    if (op === 'dijkstra') {
+      return {nodes: MAIN_NODES, edges: mainEdges(2), V: 5};
+    }
+    const graphType = document.getElementById('graphSelect').value;
+    if (graphType === 'cycle') {
+      return {nodes: CYCLE_NODES, edges: CYCLE_EDGES, V: 4};
+    }
+    return {nodes: MAIN_NODES, edges: mainEdges(-2), V: 5};
+  }
+
+  let currentGraphData = null;
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── 다익스트라 planner ──
+  function planDijkstra(edges, v, start, target) {
+    const steps = [];
+    const dist = new Array(v).fill(Infinity);
+    const parent = new Array(v).fill(-1);
+    dist[start] = 0;
+    let queue = [{vertex: start, distance: 0}];
+
+    const snap = q => q.map(x => `(${x.vertex},${x.distance})`);
+
+    steps.push({
+      dist: [...dist], edgeHL: {}, nodeHL: {[start]: 'current'}, queue: snap(queue),
+      msg: `초기화: dist[${start}]=0, 나머지는 INF. queue에 (${start},0) push`, tag: 'insert'
+    });
+
+    while (queue.length) {
+      let minIdx = 0;
+      for (let i = 1; i < queue.length; i++) {
+        if (queue[i].distance < queue[minIdx].distance) { minIdx = i; }
+      }
+      const cur = queue[minIdx];
+      queue.splice(minIdx, 1);
+
+      steps.push({
+        dist: [...dist], edgeHL: {}, nodeHL: {[cur.vertex]: 'current'}, queue: snap(queue),
+        msg: `poll() -> 정점 ${cur.vertex} (거리 ${cur.distance}) 꺼냄`, tag: 'traverse'
+      });
+
+      if (cur.distance > dist[cur.vertex]) {
+        steps.push({
+          dist: [...dist], edgeHL: {}, nodeHL: {[cur.vertex]: 'visited'}, queue: snap(queue),
+          msg: `지연 삭제: curNode.distance(${cur.distance}) > dist[${cur.vertex}](${fmt(
+              dist[cur.vertex])}) -> 낡은 항목, skip`,
+          tag: 'error'
+        });
+        continue;
+      }
+
+      const neighbors = edges.filter(e => e.from === cur.vertex);
+      for (const e of neighbors) {
+        const newDist = cur.distance + e.weight;
+        const key = `${e.from}-${e.dest}`;
+        steps.push({
+          dist: [...dist],
+          edgeHL: {[key]: 'compare'},
+          nodeHL: {[cur.vertex]: 'current', [e.dest]: 'compare'},
+          queue: snap(queue),
+          msg: `relax 시도: dist[${cur.vertex}](${cur.distance}) + weight(${e.weight}) = ${newDist} vs dist[${e.dest}](${fmt(
+              dist[e.dest])})`,
+          tag: 'traverse'
+        });
+        if (newDist < dist[e.dest]) {
+          dist[e.dest] = newDist;
+          parent[e.dest] = cur.vertex;
+          queue.push({vertex: e.dest, distance: newDist});
+          steps.push({
+            dist: [...dist],
+            edgeHL: {[key]: 'relaxed'},
+            nodeHL: {[cur.vertex]: 'visited', [e.dest]: 'new'},
+            queue: snap(queue),
+            msg: `갱신: dist[${e.dest}] = ${newDist}, parent[${e.dest}] = ${cur.vertex} -> queue에 (${e.dest},${newDist}) push`,
+            tag: 'insert'
+          });
+        }
+      }
+    }
+
+    let path = [];
+    if (dist[target] !== Infinity) {
+      let c = target;
+      while (c !== -1) {
+        path.push(c);
+        c = parent[c];
+      }
+      path.reverse();
+    }
+
+    const edgeHL = {};
+    for (let i = 0; i < path.length - 1; i++) { edgeHL[`${path[i]}-${path[i + 1]}`] = 'path'; }
+    const nodeHL = {};
+    path.forEach(pv => { nodeHL[pv] = 'new'; });
+
+    steps.push({
+      dist: [...dist], edgeHL, nodeHL, queue: [],
+      msg: path.length
+          ? `dijkstra 완료. target(${target})까지 최단 거리 ${dist[target]}, 경로: ${path.join(' -> ')}`
+          : `dijkstra 완료. target(${target})까지 도달 불가 (dist = ∞)`,
+      tag: 'done'
+    });
+
+    return steps;
+  }
+
+  // ── 벨만-포드 planner ──
+  function planBellmanFord(edges, v, start) {
+    const steps = [];
+    const dist = new Array(v).fill(Infinity);
+    dist[start] = 0;
+
+    steps.push({
+      dist: [...dist], edgeHL: {}, nodeHL: {[start]: 'current'}, pass: 0,
+      msg: `초기화: dist[${start}]=0, 나머지는 INF`, tag: 'insert'
+    });
+
+    for (let i = 0; i < v - 1; i++) {
+      let updated = false;
+      steps.push({
+        dist: [...dist], edgeHL: {}, nodeHL: {}, pass: i + 1,
+        msg: `${i + 1}번째 패스 시작 (총 ${v - 1}번 중)`, tag: 'traverse'
+      });
+
+      for (const e of edges) {
+        const key = `${e.from}-${e.dest}`;
+        const relaxable = dist[e.from] !== Infinity && dist[e.dest] > dist[e.from] + e.weight;
+        steps.push({
+          dist: [...dist],
+          edgeHL: {[key]: 'compare'},
+          nodeHL: {[e.from]: 'current', [e.dest]: 'compare'},
+          pass: i + 1,
+          msg: `edge(${e.from}->${e.dest}, w=${e.weight}) 검사: dist[${e.from}](${fmt(
+              dist[e.from])}) + ${e.weight} vs dist[${e.dest}](${fmt(dist[e.dest])})`,
+          tag: 'traverse'
+        });
+        if (relaxable) {
+          dist[e.dest] = dist[e.from] + e.weight;
+          updated = true;
+          steps.push({
+            dist: [...dist],
+            edgeHL: {[key]: 'relaxed'},
+            nodeHL: {[e.from]: 'visited', [e.dest]: 'new'},
+            pass: i + 1,
+            msg: `갱신: dist[${e.dest}] = ${dist[e.dest]}`,
+            tag: 'insert'
+          });
+        }
+      }
+
+      if (!updated) {
+        steps.push({
+          dist: [...dist], edgeHL: {}, nodeHL: {}, pass: i + 1,
+          msg: `이번 패스에서 갱신 없음 -> 이미 수렴, 조기 종료`, tag: 'done'
+        });
+        break;
+      }
+    }
+
+    let cycleFound = false;
+    steps.push({
+      dist: [...dist], edgeHL: {}, nodeHL: {}, pass: v,
+      msg: `V번째 패스로 음수 사이클 검사 시작`, tag: 'traverse'
+    });
+
+    for (const e of edges) {
+      const key = `${e.from}-${e.dest}`;
+      const relaxable = dist[e.from] !== Infinity && dist[e.dest] > dist[e.from] + e.weight;
+      steps.push({
+        dist: [...dist], edgeHL: {[key]: relaxable ? 'cycle' : 'compare'},
+        nodeHL: {[e.from]: 'current', [e.dest]: 'compare'}, pass: v,
+        msg: `edge(${e.from}->${e.dest}) 재검사: ${relaxable ? '여전히 더 짧아짐 -> 음수 사이클 신호' : '갱신 없음'}`,
+        tag: relaxable ? 'error' : 'traverse'
+      });
+      if (relaxable) { cycleFound = true; }
+    }
+
+    steps.push({
+      dist: [...dist], edgeHL: {}, nodeHL: {}, pass: v,
+      msg: cycleFound ? `음수 사이클 존재 -> IllegalStateException`
+          : `음수 사이클 없음 -> bellmanFord 완료, 최종 dist 확정`,
+      tag: cycleFound ? 'error' : 'done'
+    });
+
+    return steps;
+  }
+
+  // ── 렌더 ──
+  function renderGraph(gdata, nodeHL, edgeHL) {
+    const {nodes, edges} = gdata;
+    const radius = 22;
+    const width = Math.max(...nodes.map(n => n.x)) + radius + 50;
+    const height = Math.max(...nodes.map(n => n.y)) + radius + 40;
+
+    const wrap = document.getElementById('graphCanvasWrap');
+    const canvas = document.getElementById('graphCanvas');
+    const svg = document.getElementById('graphEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    const scrollEl = document.querySelector('.graph-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    const posMap = {};
+    nodes.forEach(n => { posMap[n.id] = {x: n.x, y: n.y}; });
+
+    function hasReverse(e) { return edges.some(o => o.from === e.dest && o.dest === e.from); }
+
+    let svgHtml = `<defs>
+      <marker id="arrow-normal" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#475569"/></marker>
+      <marker id="arrow-compare" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#0f766e"/></marker>
+      <marker id="arrow-relaxed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#065f46"/></marker>
+      <marker id="arrow-path" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#b45309"/></marker>
+      <marker id="arrow-cycle" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="#f87171"/></marker>
+    </defs>`;
+
+    edges.forEach(e => {
+      const key = `${e.from}-${e.dest}`;
+      const state = edgeHL[key] || 'normal';
+      const p1 = posMap[e.from], p2 = posMap[e.dest];
+      const dx = p2.x - p1.x, dy = p2.y - p1.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const startX = p1.x + ux * radius, startY = p1.y + uy * radius;
+      const endX = p2.x - ux * (radius + 9), endY = p2.y - uy * (radius + 9);
+
+      let pathD, midX, midY;
+      if (hasReverse(e)) {
+        const px = -uy, py = ux;
+        const offset = 26;
+        const cx = (startX + endX) / 2 + px * offset;
+        const cy = (startY + endY) / 2 + py * offset;
+        pathD = `M${startX},${startY} Q${cx},${cy} ${endX},${endY}`;
+        midX = cx;
+        midY = cy;
+      } else {
+        pathD = `M${startX},${startY} L${endX},${endY}`;
+        midX = (startX + endX) / 2;
+        midY = (startY + endY) / 2;
+      }
+
+      svgHtml += `<path d="${pathD}" class="graph-edge edge-${state}" marker-end="url(#arrow-${state})"/>`;
+      svgHtml += `<rect x="${midX - 13}" y="${midY
+      - 10}" width="26" height="16" rx="4" class="edge-label-bg edge-label-${state}"/>`;
+      svgHtml += `<text x="${midX}" y="${midY
+      + 2}" class="edge-label-text edge-label-text-${state}">${e.weight}</text>`;
+    });
+    svg.innerHTML = svgHtml;
+
+    let nodeHtml = '';
+    nodes.forEach(n => {
+      const hl = nodeHL[n.id];
+      let cls = 'gnode';
+      if (hl) { cls += ' state-' + hl; }
+      nodeHtml += `<div class="gnode-wrap" style="left:${n.x - radius}px; top:${n.y - radius}px;">
+          ${n.id === 0 ? '<div class="pos-tag start">START</div>' : ''}
+          <div class="${cls}">${n.id}</div>
+        </div>`;
+    });
+    layer.innerHTML = nodeHtml;
+  }
+
+  function renderDistStrip(dist, v) {
+    const el = document.getElementById('distStrip');
+    let html = '<span class="output-label">dist[]</span>';
+    for (let i = 0; i < v; i++) {
+      const val = dist[i];
+      html += `<span class="output-chip ${val !== Infinity ? 'active' : ''}">${i}:${fmt(
+          val)}</span>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function renderRightStrip(mode, data) {
+    const el = document.getElementById('rightStrip');
+    if (mode === 'queue') {
+      let html = '<span class="output-label">우선순위 큐</span>';
+      if (!data || data.length === 0) { html += '<span class="output-chip">-</span>'; } else {
+        data.forEach(q => { html += `<span class="queue-chip">${q}</span>`; });
+      }
+      el.innerHTML = html;
+    } else {
+      el.innerHTML = `<span class="output-label">패스</span><span class="queue-chip">${data} / ${currentGraphData.V
+      - 1} (+1 사이클 검사)</span>`;
+    }
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">완화</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>'
+  };
+
+  function renderStep(step) {
+    renderGraph(currentGraphData, step.nodeHL, step.edgeHL);
+    renderDistStrip(step.dist, currentGraphData.V);
+    if (document.getElementById('opSelect').value === 'dijkstra') {
+      renderRightStrip('queue', step.queue);
+    } else {
+      renderRightStrip('pass', step.pass);
+    }
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function clampTarget(val, max) {
+    if (isNaN(val)) { return max; }
+    return Math.min(Math.max(val, 0), max);
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = document.getElementById('opSelect').value;
+    const gdata = getCurrentGraph();
+    currentGraphData = gdata;
+
+    let plan;
+    if (op === 'dijkstra') {
+      const target = clampTarget(parseInt(document.getElementById('targetInput').value),
+          gdata.V - 1);
+      plan = planDijkstra(gdata.edges, gdata.V, 0, target);
+    } else {
+      plan = planBellmanFord(gdata.edges, gdata.V, 0);
+    }
+
+    steps = plan;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = document.getElementById('opSelect').value;
+    document.getElementById('graphGroup').style.display = op === 'bellmanFord' ? 'flex' : 'none';
+    document.getElementById('targetGroup').style.display = op === 'dijkstra' ? 'flex' : 'none';
+  }
+
+  function updateInfoChips(gdata) {
+    document.getElementById('infoV').textContent = gdata.V;
+    document.getElementById('infoE').textContent = gdata.edges.length;
+  }
+
+  function refreshPreview() {
+    const gdata = getCurrentGraph();
+    currentGraphData = gdata;
+    const dist = new Array(gdata.V).fill(Infinity);
+    dist[0] = 0;
+    renderGraph(gdata, {0: 'current'}, {});
+    renderDistStrip(dist, gdata.V);
+    if (document.getElementById('opSelect').value === 'dijkstra') {
+      renderRightStrip('queue', []);
+    } else {
+      renderRightStrip('pass', 0);
+    }
+    document.getElementById('logBox').innerHTML = '알고리즘과 그래프를 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.';
+    document.getElementById('stepCounter').textContent = '-';
+    document.getElementById('infoStep').textContent = '-';
+    updateInfoChips(gdata);
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+    refreshPreview();
+  });
+  document.getElementById('graphSelect').addEventListener('change', () => {
+    markDirty();
+    refreshPreview();
+  });
+  document.getElementById('targetInput').addEventListener('input', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    stopPlay();
+    needsNewRun = true;
+    refreshPreview();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) {
+        showFrame(stepIdx);
+      } else if (currentGraphData) { refreshPreview(); }
+    }, 120);
+  });
+
+  updateOpUI();
+  refreshPreview();
+</script>
+</html>
