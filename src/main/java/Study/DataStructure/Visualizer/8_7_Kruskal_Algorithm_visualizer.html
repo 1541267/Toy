@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>크루스칼(Kruskal) MST 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select {
+      width: auto;
+      padding: 5px 8px;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 그래프 시각화 (canvas-wrap/canvas/edges/nodes-layer는 공용 css 사용) ── */
+  .graph-scroll {
+    padding: 1.2rem 0.5rem 0.5rem;
+  }
+
+  .gnode {
+    color: #111827;
+    font-weight: 800;
+
+    &.state-current {
+      border-color: var(--state-compare);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.35);
+      transform: scale(1.18);
+    }
+  }
+
+  .graph-edge-line {
+    stroke: var(--surface-border);
+    stroke-width: 1.5;
+    opacity: 0.6;
+    transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s;
+
+    &.state-current {
+      stroke: var(--state-compare);
+      stroke-width: 4;
+      opacity: 1;
+    }
+
+    &.state-accepted {
+      stroke: var(--good-border);
+      stroke-width: 4;
+      opacity: 1;
+    }
+
+    &.state-rejected {
+      stroke: var(--bad-border);
+      stroke-width: 2;
+      stroke-dasharray: 5 4;
+      opacity: 0.5;
+    }
+  }
+
+  .edge-weight-bg {
+    fill: var(--code-bg);
+    stroke: var(--card-border);
+    stroke-width: 1;
+
+    &.state-current {
+      stroke: var(--state-compare);
+    }
+
+    &.state-accepted {
+      stroke: var(--good-border);
+    }
+
+    &.state-rejected {
+      stroke: var(--bad-border);
+      opacity: 0.6;
+    }
+  }
+
+  .edge-weight-text {
+    font-size: 11px;
+    font-family: "Consolas", monospace;
+    font-weight: 700;
+    fill: var(--text-sub);
+
+    &.state-current {
+      fill: var(--tag-teal-text);
+    }
+
+    &.state-accepted {
+      fill: var(--good-text);
+    }
+
+    &.state-rejected {
+      fill: var(--bad-text);
+    }
+  }
+
+  /* ── 간선 목록 / Union-Find 배열 스트립 ── */
+  .edge-strip,
+  .uf-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    margin: 0.7rem 0 0.6rem;
+  }
+
+  .edge-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 4px 9px;
+    font-family: "Consolas", monospace;
+    font-size: 0.78rem;
+    color: var(--text-sub);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+
+    & .w {
+      color: var(--text-dim);
+      font-size: 0.7rem;
+    }
+
+    &.state-current {
+      border-color: var(--state-compare);
+      background: #0c3a37;
+      color: var(--tag-teal-text);
+    }
+
+    &.state-accepted {
+      border-color: var(--good-border);
+      background: var(--good-bg);
+      color: var(--good-text);
+    }
+
+    &.state-rejected {
+      border-color: var(--bad-border);
+      background: var(--bad-bg);
+      color: var(--bad-text);
+      opacity: 0.65;
+      text-decoration: line-through;
+    }
+  }
+
+  .uf-cell {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 4px 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Consolas", monospace;
+    min-width: 34px;
+    transition: background 0.15s, border-color 0.15s;
+
+    &.state-new {
+      border-color: var(--good-border);
+      background: var(--good-bg);
+      animation: pop 0.35s ease;
+    }
+  }
+
+  .uf-idx {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+  }
+
+  .uf-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">크루스칼(Kruskal) MST</h1>
+    <p>간선 중심 Greedy + Union-Find 기반 최소 신장 트리 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 Kruskal MST 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🌲 신장 트리 & MST</h3>
+        <ul>
+          <li>신장 트리: 모든 정점을 포함하면서 사이클이 없는 부분 그래프, 정점이 V개면 간선은 항상 V-1개</li>
+          <li>MST: 신장 트리 중 간선 가중치 합이 최소인 트리</li>
+          <li>가중치 있는 무방향 연결 그래프에서 정의, 비연결 그래프면 최소 신장 숲(forest)이 나옴</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚙️ Kruskal 개요 (간선 중심 Greedy)</h3>
+        <ul>
+          <li>모든 간선을 가중치 오름차순 정렬</li>
+          <li>간선을 하나씩 꺼내 양 끝 정점이 이미 같은 집합인지 확인</li>
+          <li>다른 집합이면 채택 & union, 같은 집합이면 사이클이라 버림</li>
+          <li>채택한 간선이 V-1개가 되면 조기 종료</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🔗 Union-Find와의 관계</h3>
+        <ul>
+          <li>선택된 간선들만으로 두 정점의 연결 여부를 DFS/BFS로 매번 확인하면 최악의 경우 간선마다 O(V+E)</li>
+          <li>Union-Find(경로 압축 + union by size)를 쓰면 이 판단이 사실상 O(1)에 가까움(O(α(n)))</li>
+          <li>결과적으로 알고리즘의 병목이 간선 정렬(O(E log E))로 이동</li>
+          <li>union()이 성공 여부(boolean)를 리턴하도록 하면, 같은 집합인지 확인 + union 실행을 한 번의 호출로 처리 가능
+            -> findRoot를 이중으로 호출하는 비효율 제거
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⏱ 시간복잡도</h3>
+        <ul>
+          <li>전체: O(E log E), E ≤ V^2 이므로 O(E log V)와 사실상 동일</li>
+          <li>Prim(우선순위 큐 기반, O(E log V))과 점근적으로 유사하나, 간선이 적은 sparse 그래프에서 특히 유리</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🧩 비연결 그래프 처리</h3>
+        <ul>
+          <li>모든 간선을 다 순회해도 채택된 간선이 V-1개 미만이면 비연결 그래프</li>
+          <li>정점 0~V-1을 순회하며 findRoot() 결과의 distinct 개수를 세면 연결 요소 개수를 알 수 있음</li>
+          <li>이 경우 결과는 MST가 아니라 최소 신장 숲, 연결 요소 개수만큼 트리로 나뉨</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">✂️ Cut Property - Greedy가 최적해를 보장하는 이유</div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>✂️ Cut Property</h3>
+        <ul>
+          <li>Cut: 전체 정점을 논리적으로 두 그룹 A, B로 나누는 것, 실제 그래프를 바꾸는 게 아니라 간선의 안전성을 설명하기 위한 개념</li>
+          <li>Crossing Edge: A와 B를 연결하는 간선</li>
+          <li>Cut Property: 어떤 cut이 주어졌을 때, 그 cut을 가로지르는 간선 중 가중치가 가장 작은 간선을 포함하는 MST가 항상 존재함
+            -> 그 간선을 선택해도 전체 최적성을 잃지 않음
+          </li>
+          <li>Kruskal에서 현재까지 선택된 간선들이 만드는 하나의 연결 요소를 A, 나머지 정점을 B로 보면 하나의 cut이 만들어지고,
+            서로 다른 요소를 잇는 간선이 그 cut의 Crossing Edge가 됨
+          </li>
+          <li>가중치 오름차순으로 확인하므로 항상 그 cut에서 가장 가벼운 Crossing Edge를 선택하게 되고, Cut Property에 의해 이 선택은
+            안전함
+          </li>
+          <li>동일 가중치 간선이 여러 개면 MST가 여러 개 존재할 수 있음: 총 가중치 합은 항상 유일하지만, 그 합을 만드는 구체적인 간선
+            조합은 정렬 안정성이나 tie-break 기준에 따라 달라질 수 있음
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>📉 path compression / union by size가 없다면</h3>
+        <ul>
+          <li>매번 한쪽을 다른 쪽 밑에 무조건 붙이기만 하면 트리가 한쪽으로 계속 길어지는 편향 구조가 될 수 있음</li>
+          <li>이 경우 정점 개수만큼 깊이가 길어진 연결리스트와 다를 바 없는 최악의 형태가 되어, findRoot가 매번 O(n)까지 나빠질 수 있음</li>
+          <li>union by size(또는 rank)는 낮은 트리를 높은 트리 밑에 붙여서 이런 편향을 막고, path compression은 한 번 찾은 경로를
+            눌러서
+            이후 조회를 더 빠르게 만듦
+          </li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 연산 복잡도</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>시간복잡도</th>
+            <th>비고</th>
+          </tr>
+          <tr>
+            <td>간선 정렬</td>
+            <td class="warn">O(E log E)</td>
+            <td>알고리즘의 병목 구간</td>
+          </tr>
+          <tr>
+            <td>findRoot(경로 압축)</td>
+            <td class="good">O(α(n))</td>
+            <td>사실상 상수에 가까움</td>
+          </tr>
+          <tr>
+            <td>union(size 기준)</td>
+            <td class="good">O(α(n))</td>
+            <td>findRoot 2회 + 트리 결합</td>
+          </tr>
+          <tr>
+            <td>전체 Kruskal</td>
+            <td class="warn">O(E log E)</td>
+            <td>E ≤ V^2 이므로 O(E log V)와 동일</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">비교: Prim은 우선순위 큐로 정점을 확장(O(E
+          log
+          V)), Kruskal은 간선을 정렬해 전역적으로 가장 가벼운 것부터 채택</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>그래프</label>
+      <select id="typeSelect">
+        <option value="connected">연결형 그래프</option>
+        <option value="disconnected">비연결형 그래프</option>
+      </select>
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">🔄 초기화</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">V(정점) = <strong id="infoV">12</strong></div>
+    <div class="info-chip">목표 간선 수(V-1) = <strong id="infoTarget">11</strong></div>
+    <div class="info-chip">채택된 간선 수 = <strong id="infoMstCount">0</strong></div>
+    <div class="info-chip">연결 요소 수 = <strong id="infoComponents">12</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Graph (Union-Find 그룹 = 정점 색상)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="graph-scroll">
+      <div class="graph-canvas-wrap" id="graphCanvasWrap">
+        <div class="graph-canvas" id="graphCanvas">
+          <svg class="graph-edges" id="graphEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="edge-strip" id="edgeStrip"></div>
+    <div class="uf-strip" id="ufStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#334155;"></div>
+        미확인 간선 (pending)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 확인 중인 간선 / 정점
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        채택된 간선 (MST)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        버려진 간선 (사이클 발생)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#a3e635;"></div>
+        정점 색상 = 현재 속한 연결 요소(Union-Find 그룹), 같은 색 = 같은 집합
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">그래프와 실행 방식을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드 · 구현 클래스</div>
+
+    <div class="code-grid" style="margin-bottom: 1rem;">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#67e8f9"></div>
+          Edge 클래스
+        </div>
+        <pre><span class="kw">static</span> <span class="kw">class</span> <span
+            class="ty">Edge</span> {
+
+  <span class="kw">private</span> <span class="kw">final</span> <span class="ty">int</span> <span
+              class="nm">from</span>;
+  <span class="kw">private</span> <span class="kw">final</span> <span class="ty">int</span> <span
+              class="nm">to</span>;
+  <span class="kw">private</span> <span class="kw">final</span> <span class="ty">int</span> <span
+              class="nm">weight</span>;
+
+  <span class="kw">public</span> <span class="fn">Edge</span>(<span class="ty">int</span> <span
+              class="nm">from</span>, <span class="ty">int</span> <span class="nm">to</span>, <span
+              class="ty">int</span> <span class="nm">weight</span>) {
+    <span class="kw">this</span>.<span class="nm">from</span> = <span class="nm">from</span>;
+    <span class="kw">this</span>.<span class="nm">to</span> = <span class="nm">to</span>;
+    <span class="kw">this</span>.<span class="nm">weight</span> = <span class="nm">weight</span>;
+  }
+
+  <span class="kw">@Override</span>
+  <span class="kw">public</span> <span class="ty">String</span> <span
+              class="fn">toString</span>() {
+    <span class="kw">return</span> <span class="st">&quot;Edge [from=&quot;</span> + <span
+              class="nm">from</span> + <span class="st">&quot;, to=&quot;</span> + <span
+              class="nm">to</span> + <span class="st">&quot;, weight=&quot;</span> + <span
+              class="nm">weight</span> + <span class="st">&quot;]\n&quot;</span>;
+  }
+}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          UnionFind 클래스
+        </div>
+        <pre><span class="kw">static</span> <span class="kw">class</span> <span
+            class="ty">UnionFind</span> {
+
+  <span class="kw">private</span> <span class="ty">int</span>[] <span class="nm">parent</span>;
+  <span class="kw">private</span> <span class="ty">int</span>[] <span class="nm">size</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span
+              class="nm">connectedComponentCount</span>;
+
+  <span class="kw">public</span> <span class="fn">UnionFind</span>(<span class="ty">int</span> <span
+              class="nm">n</span>) {
+    <span class="kw">if</span> (<span class="nm">n</span> &lt; <span class="nu">1</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IllegalArgumentException</span>(<span class="st">&quot;배열 초기화 크기가 너무 작음, idx: &quot;</span> + <span
+              class="nm">n</span>);
+    }
+
+    <span class="kw">this</span>.<span class="nm">parent</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">n</span>];
+    <span class="kw">this</span>.<span class="nm">size</span> = <span class="kw">new</span> <span
+              class="ty">int</span>[<span class="nm">n</span>];
+    <span class="nm">connectedComponentCount</span> = <span class="nm">n</span>;
+    <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">n</span>; <span
+              class="nm">i</span>++) {
+      <span class="nm">parent</span>[<span class="nm">i</span>] = <span class="nm">i</span>;
+      <span class="nm">size</span>[<span class="nm">i</span>] = <span class="nu">1</span>;
+    }
+  }
+
+  <span class="kw">public</span> <span class="ty">int</span> <span
+              class="fn">findRoot</span>(<span class="ty">int</span> <span class="nm">idx</span>) {
+    <span class="kw">if</span> (<span class="nm">idx</span> &lt; <span class="nu">0</span> || <span
+              class="nm">idx</span> &gt;= <span class="nm">parent</span>.<span
+              class="nm">length</span>) {
+      <span class="kw">throw</span> <span class="kw">new</span> <span
+              class="ty">IndexOutOfBoundsException</span>(<span class="st">&quot;잘못 된 인덱스, idx: &quot;</span> + <span
+              class="nm">idx</span>);
+    }
+
+    <span class="ty">int</span> <span class="nm">root</span> = <span class="nm">idx</span>;
+
+    <span class="ck">// find root</span>
+    <span class="kw">while</span> (<span class="nm">root</span> != <span
+              class="nm">parent</span>[<span class="nm">root</span>]) {
+      <span class="nm">root</span> = <span class="nm">parent</span>[<span class="nm">root</span>];
+    }
+
+    <span class="ty">int</span> <span class="nm">cur</span> = <span class="nm">idx</span>;
+
+    <span class="ck">// path compression</span>
+    <span class="kw">while</span> (<span class="nm">cur</span> != <span
+              class="nm">parent</span>[<span class="nm">cur</span>]) {
+      <span class="nm">parent</span>[<span class="nm">cur</span>] = <span class="nm">root</span>;
+      <span class="nm">cur</span> = <span class="nm">parent</span>[<span class="nm">cur</span>];
+    }
+
+    <span class="kw">return</span> <span class="nm">root</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">boolean</span> <span
+              class="fn">union</span>(<span class="ty">int</span> <span class="nm">x</span>, <span
+              class="ty">int</span> <span class="nm">y</span>) {
+    <span class="ty">int</span> <span class="nm">rootX</span> = <span
+              class="fn">findRoot</span>(<span class="nm">x</span>);
+    <span class="ty">int</span> <span class="nm">rootY</span> = <span
+              class="fn">findRoot</span>(<span class="nm">y</span>);
+
+    <span class="kw">if</span> (<span class="nm">rootX</span> == <span
+              class="nm">rootY</span>) {<span class="kw">return</span> <span
+              class="kw">false</span>;}
+
+    <span class="kw">if</span> (<span class="nm">size</span>[<span
+              class="nm">rootX</span>] &lt; <span
+              class="nm">size</span>[<span class="nm">rootY</span>]) {
+      <span class="nm">size</span>[<span class="nm">rootY</span>] += <span
+              class="nm">size</span>[<span class="nm">rootX</span>];
+      <span class="nm">parent</span>[<span class="nm">rootX</span>] = <span
+              class="nm">rootY</span>;
+    } <span class="kw">else</span> {
+      <span class="nm">size</span>[<span class="nm">rootX</span>] += <span
+              class="nm">size</span>[<span class="nm">rootY</span>];
+      <span class="nm">parent</span>[<span class="nm">rootY</span>] = <span
+              class="nm">rootX</span>;
+    }
+
+    <span class="nm">connectedComponentCount</span>--;
+    <span class="kw">return</span> <span class="kw">true</span>;
+  }
+
+  <span class="kw">public</span> <span class="ty">boolean</span> <span
+              class="fn">isConnected</span>(<span class="ty">int</span> <span
+              class="nm">x</span>, <span
+              class="ty">int</span> <span class="nm">y</span>) {
+    <span class="kw">return</span> <span class="fn">findRoot</span>(<span
+              class="nm">x</span>) == <span class="fn">findRoot</span>(<span class="nm">y</span>);
+  }
+
+  <span class="kw">public</span> <span class="ty">int</span> <span
+              class="fn">getConnectedComponentCount</span>() {
+    <span class="kw">return</span> <span class="nm">connectedComponentCount</span>;
+  }
+}</pre>
+      </div>
+    </div>
+
+    <div class="code-section-title sub">🧰 헬퍼 메서드</div>
+
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#93c5fd"></div>
+          간선 정렬 & Kruskal 메인 로직
+        </div>
+        <pre><span class="ck">// 간선 가중치 오름차 정렬</span>
+<span class="kw">private</span> <span class="kw">static</span> <span
+              class="ty">List</span>&lt;<span class="ty">Edge</span>&gt; <span
+              class="fn">createEdgeListAndSortByWeightOrder</span>(<span
+              class="ty">int</span>[][] <span
+              class="nm">edges</span>) {
+  <span class="ty">List</span>&lt;<span class="ty">Edge</span>&gt; <span
+              class="nm">edgesList</span> = <span class="kw">new</span> <span
+              class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="ty">int</span>[] <span class="nm">arr</span> : <span
+              class="nm">edges</span>) {
+    <span class="nm">edgesList</span>.<span class="fn">add</span>(<span class="kw">new</span> <span
+              class="ty">Edge</span>(<span class="nm">arr</span>[<span class="nu">0</span>], <span
+              class="nm">arr</span>[<span class="nu">1</span>], <span class="nm">arr</span>[<span
+              class="nu">2</span>]));
+  }
+
+  <span class="nm">edgesList</span>.<span class="fn">sort</span>(<span
+              class="ty">Comparator</span>.<span class="fn">comparingInt</span>(<span
+              class="nm">e</span> -&gt; <span class="nm">e</span>.<span class="nm">weight</span>));
+
+  <span class="kw">return</span> <span class="nm">edgesList</span>;
+}
+
+<span class="ck">// 간선을 하나씩 확인하며 사이클이 아니면 채택 & union, V-1개 채택 시 조기 종료</span>
+<span class="kw">private</span> <span class="kw">static</span> <span class="kw">void</span> <span
+              class="fn">DoKruskalMST</span>(<span class="ty">List</span>&lt;<span
+              class="ty">Edge</span>&gt; <span class="nm">edges</span>, <span
+              class="ty">UnionFind</span> <span class="nm">uf</span>, <span
+              class="ty">List</span>&lt;<span class="ty">Edge</span>&gt; <span
+              class="nm">result</span>, <span class="ty">int</span> <span class="nm">v</span>) {
+  <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+              class="nm">edges</span>) {
+    <span class="kw">if</span> (<span class="nm">uf</span>.<span class="fn">union</span>(<span
+              class="nm">edge</span>.<span class="nm">from</span>, <span
+              class="nm">edge</span>.<span
+              class="nm">to</span>)) {
+      <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">edge</span>);
+      <span class="kw">if</span> (<span class="nm">result</span>.<span
+              class="fn">size</span>() == <span
+              class="nm">v</span> - <span class="nu">1</span>) {<span class="kw">break</span>;}
+    }
+  }
+}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#c4b5fd"></div>
+          연결 요소 개수 파악
+        </div>
+        <pre><span class="ck">// 모든 정점을 조사해 findRoot()의 distinct 개수를 세면</span>
+<span class="ck">// 연결 요소(Connected Component) 개수를 알 수 있음 -> O(V)</span>
+<span class="ck">// (또는 union() 성공 시마다 connectedComponentCount--로 O(1) 조회도 가능)</span>
+<span class="kw">private</span> <span class="kw">static</span> <span class="kw">void</span> <span
+              class="fn">findAndPrintConnectedComponents</span>(<span
+              class="ty">UnionFind</span> <span
+              class="nm">uf</span>, <span class="ty">int</span> <span class="nm">v</span>) {
+  <span class="ty">Set</span>&lt;<span class="ty">Integer</span>&gt; <span
+              class="nm">roots</span> = <span class="kw">new</span> <span
+              class="ty">HashSet</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+              class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">v</span>; <span
+              class="nm">i</span>++) {
+    <span class="nm">roots</span>.<span class="fn">add</span>(<span class="nm">uf</span>.<span
+              class="fn">findRoot</span>(<span class="nm">i</span>));
+  }
+
+  <span class="ck">// roots.size() == 1 -> 그래프가 모두 연결됨(MST)</span>
+  <span class="ck">// roots.size() &gt; 1 -> 최소 신장 숲(Minimum Spanning Forest)</span>
+  <span class="ty">System</span>.<span class="nm">out</span>.<span class="fn">println</span>(<span
+              class="st">&quot;Distinct Roots 개수: &quot;</span> + <span
+              class="nm">roots</span>.<span
+              class="fn">size</span>() + <span class="st">&quot;, 연결 요소들: &quot;</span> + <span
+              class="nm">roots</span>);
+  <span class="ck">// UnionFind의 ComponentCount 상태</span>
+  <span class="ty">System</span>.<span class="nm">out</span>.<span class="fn">println</span>(<span
+              class="st">&quot;ConnectedComponentCount: &quot;</span> + <span
+              class="nm">uf.connectedComponentCount</span><span
+              class="nm"></span>);
+}</pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  const V = 12;
+
+  // 공부 내용(_8_8_Kruskal_Algorithm.java)에 등장한 두 가지 예시 그래프를 그대로 사용
+  const graphs = {
+    connected: [
+      [0, 1, 4], [0, 2, 4], [1, 2, 2], [1, 3, 5], [2, 3, 8], [2, 4, 10], [3, 4, 2], [3, 5, 6],
+      [4, 5, 3], [4, 6, 1], [5, 6, 7], [5, 7, 9], [6, 7, 4], [6, 8, 11], [7, 8, 3], [7, 9, 6],
+      [8, 9, 2], [8, 10, 5], [9, 10, 8], [10, 11, 3]
+    ],
+    disconnected: [
+      [0, 1, 4], [0, 2, 4], [1, 2, 2], [1, 3, 5], [2, 3, 8], [2, 4, 10], [3, 4, 2], [3, 5, 6],
+      [4, 5, 3], [4, 6, 1], [5, 6, 7], [5, 7, 9], [6, 7, 4], [6, 8, 11], [7, 8, 3], [9, 10, 2],
+      [10, 11, 3]
+    ]
+  };
+
+  const palette = ['#f87171', '#fb923c', '#fbbf24', '#a3e635', '#4ade80', '#34d399',
+    '#2dd4bf', '#22d3ee', '#60a5fa', '#818cf8', '#a78bfa', '#e879c9'];
+
+  function colorOf(root) { return palette[root % palette.length]; }
+
+  let currentType = 'connected';
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  function buildEdges(raw) {
+    return raw.map((e, i) => ({id: 'e' + i, from: e[0], to: e[1], weight: e[2]}));
+  }
+
+  // ── Union-Find (JS 버전, Java UnionFind와 동일한 findRoot/union 로직) ──
+  class UnionFind {
+    constructor(n) {
+      this.parent = Array.from({length: n}, (_, i) => i);
+      this.size = new Array(n).fill(1);
+      this.components = n;
+    }
+
+    // 경로 압축을 수행하는 실제 findRoot (parent 배열을 변경함)
+    find(x) {
+      let root = x;
+      while (root !== this.parent[root]) { root = this.parent[root]; }
+      let cur = x;
+      while (cur !== this.parent[cur]) {
+        const next = this.parent[cur];
+        this.parent[cur] = root;
+        cur = next;
+      }
+      return root;
+    }
+
+    // 시각화용 조회 전용 root 탐색 (parent 배열을 변경하지 않음)
+    peek(x) {
+      let root = x;
+      while (root !== this.parent[root]) { root = this.parent[root]; }
+      return root;
+    }
+
+    union(x, y) {
+      const rootX = this.find(x), rootY = this.find(y);
+      if (rootX === rootY) { return false; }
+      if (this.size[rootX] < this.size[rootY]) {
+        this.size[rootY] += this.size[rootX];
+        this.parent[rootX] = rootY;
+      } else {
+        this.size[rootX] += this.size[rootY];
+        this.parent[rootY] = rootX;
+      }
+      this.components--;
+      return true;
+    }
+  }
+
+  function vertexColors(uf) {
+    return Array.from({length: V}, (_, i) => colorOf(uf.peek(i)));
+  }
+
+  // ── planner ──
+  function planKruskal(raw) {
+    const steps = [];
+    const edges = buildEdges(raw).sort((a, b) => a.weight - b.weight);
+    const uf = new UnionFind(V);
+    const edgeState = {};
+    edges.forEach(e => { edgeState[e.id] = 'pending'; });
+    const mst = [];
+
+    function push(msg, tag, currentVerts, parentHighlight) {
+      steps.push({
+        edges: edges.map(e => ({...e})),
+        edgeState: {...edgeState},
+        vertexColors: vertexColors(uf),
+        currentVerts: currentVerts || [],
+        parent: uf.parent.slice(),
+        parentHighlight: parentHighlight || [],
+        mstCount: mst.length,
+        componentCount: uf.components,
+        msg, tag
+      });
+    }
+
+    push(`간선 ${edges.length}개를 가중치 오름차순으로 정렬 완료`, 'traverse');
+
+    for (const e of edges) {
+      edgeState[e.id] = 'current';
+      push(`간선(${e.from}-${e.to}, weight ${e.weight}) 확인 중`, 'traverse', [e.from, e.to]);
+
+      const rootFrom = uf.peek(e.from), rootTo = uf.peek(e.to);
+
+      if (rootFrom === rootTo) {
+        edgeState[e.id] = 'rejected';
+        push(`정점 ${e.from}, ${e.to}의 root가 동일(root=${rootFrom}) -> 사이클 발생, 간선 버림`, 'remove',
+            [e.from, e.to]);
+      } else {
+        uf.union(e.from, e.to);
+        edgeState[e.id] = 'accepted';
+        mst.push(e);
+        push(`정점 ${e.from}, ${e.to}의 root가 다름 -> 채택 & union 수행 (${mst.length}/${V - 1})`, 'insert',
+            [e.from, e.to], [rootFrom, rootTo]);
+
+        if (mst.length === V - 1) { break; }
+      }
+    }
+
+    if (mst.length === V - 1) {
+      const total = mst.reduce((s, e) => s + e.weight, 0);
+      push(`Kruskal MST 완성 -> 채택된 간선 ${mst.length}개(V-1), 총 가중치 합: ${total}`, 'done');
+    } else {
+      const roots = new Set(Array.from({length: V}, (_, i) => uf.peek(i)));
+      push(
+          `모든 간선 탐색 종료 -> 채택된 간선 ${mst.length}개(V-1=${V
+          - 1} 미만) -> 그래프가 연결되어 있지 않음, 최소 신장 숲, 연결 요소 개수: ${roots.size}`,
+          'error');
+    }
+
+    return steps;
+  }
+
+  function buildSteps() {
+    steps = planKruskal(graphs[currentType]);
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    buildSteps();
+  }
+
+  // ── 렌더: 그래프(원형 배치) ──
+  function layoutGraphPositions(width, height) {
+    const padding = 46, nodeSize = 44;
+    const R = Math.min(width, height) / 2 - padding - nodeSize / 2;
+    const cx = width / 2, cy = height / 2;
+    const pos = {};
+    for (let i = 0; i < V; i++) {
+      const angle = -Math.PI / 2 + i * (2 * Math.PI / V);
+      pos[i] = {x: cx + R * Math.cos(angle), y: cy + R * Math.sin(angle)};
+    }
+    return pos;
+  }
+
+  function renderGraph(step) {
+    const wrap = document.getElementById('graphCanvasWrap');
+    const canvas = document.getElementById('graphCanvas');
+    const svg = document.getElementById('graphEdges');
+    const layer = document.getElementById('nodesLayer');
+
+    const size = 460;
+    const pos = layoutGraphPositions(size, size);
+
+    const scrollEl = document.querySelector('.graph-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / size) : 1;
+
+    wrap.style.width = (size * scale) + 'px';
+    wrap.style.height = (size * scale) + 'px';
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', size);
+    svg.setAttribute('height', size);
+    svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
+
+    let edgeSvg = '';
+    step.edges.forEach(e => {
+      const p1 = pos[e.from], p2 = pos[e.to];
+      const st = step.edgeState[e.id];
+      const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
+      edgeSvg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" class="graph-edge-line state-${st}" />`;
+      edgeSvg += `<rect x="${midX - 12}" y="${midY
+      - 9}" width="24" height="16" rx="4" class="edge-weight-bg state-${st}"/>`;
+      edgeSvg += `<text x="${midX}" y="${midY
+      + 3}" text-anchor="middle" class="edge-weight-text state-${st}">${e.weight}</text>`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let nodeHtml = '';
+    for (let i = 0; i < V; i++) {
+      const p = pos[i];
+      const isCurrent = step.currentVerts.includes(i);
+      nodeHtml += `<div class="gnode-wrap" style="left:${p.x - 22}px; top:${p.y - 22}px;">
+          <div class="gnode ${isCurrent ? 'state-current'
+          : ''}" style="background:${step.vertexColors[i]};">${i}</div>
+        </div>`;
+    }
+    layer.innerHTML = nodeHtml;
+  }
+
+  function renderEdgeList(step) {
+    const el = document.getElementById('edgeStrip');
+    let html = '<span class="output-label">간선 목록(가중치 순)</span>';
+    step.edges.forEach(e => {
+      const st = step.edgeState[e.id];
+      html += `<div class="edge-chip state-${st}">${e.from}-${e.to} <span class="w">(${e.weight})</span></div>`;
+    });
+    el.innerHTML = html;
+  }
+
+  function renderUfStrip(step) {
+    const el = document.getElementById('ufStrip');
+    let html = '<span class="output-label">Union-Find parent 배열</span>';
+    step.parent.forEach((p, i) => {
+      const hl = step.parentHighlight.includes(i);
+      html += `<div class="uf-cell ${hl ? 'state-new'
+          : ''}"><span class="uf-idx">${i}</span><span class="uf-val">${p}</span></div>`;
+    });
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">채택</span>',
+    'remove': '<span class="phase-tag phase-remove">거절</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">비연결</span>',
+  };
+
+  function renderStep(step) {
+    renderGraph(step);
+    renderEdgeList(step);
+    renderUfStrip(step);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoV').textContent = V;
+    document.getElementById('infoTarget').textContent = V - 1;
+    document.getElementById('infoMstCount').textContent = step.mstCount;
+    document.getElementById('infoComponents').textContent = step.componentCount;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('typeSelect').addEventListener('change', () => {
+    currentType = document.getElementById('typeSelect').value;
+    markDirty();
+    showInitialFrame();
+  });
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    stopPlay();
+    needsNewRun = true;
+    showInitialFrame();
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  // 아직 아무 연산도 하지 않은 초기 프레임 (모든 정점이 독립 집합, 모든 간선 pending)
+  function showInitialFrame() {
+    const edges = buildEdges(graphs[currentType]).sort((a, b) => a.weight - b.weight);
+    const edgeState = {};
+    edges.forEach(e => { edgeState[e.id] = 'pending'; });
+    const initStep = {
+      edges,
+      edgeState,
+      vertexColors: Array.from({length: V}, (_, i) => colorOf(i)),
+      currentVerts: [],
+      parent: Array.from({length: V}, (_, i) => i),
+      parentHighlight: [],
+      mstCount: 0,
+      componentCount: V,
+      msg: '그래프와 실행 방식을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.',
+      tag: ''
+    };
+    steps = [initStep];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  }
+
+  showInitialFrame();
+</script>
+</html>

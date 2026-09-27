@@ -1,13 +1,13 @@
 package Study.DataStructure.Code;
 
 /*
-  - Graph ( u = 시작 정점(source vertex), v = 도착하는 정점(desination vertex)
+  - Graph (u = 시작 정점(source vertex), v = 도착하는 정점(desination vertex)
     -> 정점(Vertex)들이 제한 없이 서로 연결될 수 있는 비선형 자료구조
 
   - 필요한 이유
     -> 트리는 특수한 형태의 그래프(사이클 X, Root O, 부모-자식 관계 명확)
       --> 부모가 하나뿐 -> 경로 유일 -> 사이클 없음, 그리고 root에서 모든 노드로 도달 가능 -> connected
-      --> Connected: root -> 모든 노드로 가는 경로가 "존재"
+      --> Connected: root -> 모든 노드로 가는 경로가 존재
       --> Acyclic: root -> 모든 노드로 가는 경로가 유일 (대안 경로가 없어 되돌아올 길이 없음)
     -> 현실 문제들 중엔 이런 계층 구조로는 표현이 안 되는 관계가 많음
     --> ex) 다대다 연결, 사이클 허용

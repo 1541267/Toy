@@ -48,7 +48,7 @@ import java.util.List;
 
 */
 
-public class _8_4_Depth_First_Search {
+public class _8_4_Depth_First_Search_Algorithm {
 
   static AdjacencyList graph = new AdjacencyList();
   static boolean[] visited;

@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
-- Union-Find (Disjoint Set): 원소들을 서로 겹치지 않는 그룹(집합)으로 나누고, 그룹 소속 여부를 빠르게 판단/병합하는 자료구조
+- Union-Find (Disjoint Set, 서로소 집합 자료 구조): 원소들을 서로 겹치지 않는 그룹(집합)으로 나누고, 그룹 소속 여부를 빠르게 판단/병합하는 자료구조
   - 그래프의 간선(연결 정보) 자체를 저장하는 자료구조가 아님 (인접리스트/인접행렬과 다른 역할)
     -> parent 배열은 원본 간선 순서/모양을 보존하지 않음, path compression 이후엔 원래 어떤 간선으로 연결됐는지 알 수 없음
     -> 오직 각 원소가 최종적으로 어느 그룹(루트)에 속하는지만 표현
@@ -55,16 +55,20 @@ import java.util.List;
     -> union 결과가 조기 종료되어도 find의 부수효과(경로 압축)는 별개로 발생
 
   - 활용처
+    -> 동적 연결성(Dynamic Connectivity)판단: 네트워크에서 노드/엣지가 계속 추가되는 상황에서
+      --> A와 B가 연결돼 있는가? 를 빠르게 구해야 할 때 (그래프를 매번 DFS/BFS 하는 것 보다 훨씬 빠름)
+    -> 사이클 탐지: 무방향 그래프에서 간선을 하나씩 추가하며 사이클이 생기는지 검사 (Kruskal 내부 로직이 이를 활용한 예)
     -> Kruskal MST: 간선을 가중치 오름차순 정렬 후 하나씩 확인, 이미 같은 그룹이면(사이클) 스킵, 아니면 union
     -> 연결 요소 개수 구하기: 모든 간선에 대해 union 수행 후, 서로 다른 루트 개수를 세면 됨
-    -> 네트워크 연결 판별, 이미지 내 연결된 영역 찾기(Connected Component Labeling) 등
+    -> 이미지 처리 중 연결된 영역 찾기(Connected Component Labeling): 픽셀 단위로 인접한 같은 색을 하나의 그룹으로 묶는 문제(플러드필의 대안으로도 사용)
+    ->  네트워크 연결 판별, 계좌 병합, 친구 그룹 찾기류 문제: 이메일
 
   - 그래프 알고리즘과의 관계
     -> Union-Find 자체는 그래프를 만들거나 저장하지 않음 (분할/그룹 소속만 관리)
     -> 원본 그래프(간선 리스트 등)는 별도로 존재하고, Union-Find는 그 위에서 그룹 소속 판단만 빠르게 처리하는 보조 도구로 사용됨
 */
 
-public class _8_7_Union_Find {
+public class _8_7_Union_Find_Algorithm {
 
   static class Edge {
 
@@ -138,12 +142,16 @@ public class _8_7_Union_Find {
       return root;
     }
 
-    public void union(int x, int y) {
+    // union 시도 후 연결되어 있으면 true 반환
+    // 외부에서 isConnected로 검사 후 union을 한다면 find가 총 4번 실행되는 부분을
+    // 한 번의 union 에서 비교 및 검사 반환해 2번으로 최적화
+    public boolean union(int x, int y) {
       int rootX = LoopingfindRoot(x);
       int rootY = LoopingfindRoot(y);
 
-      if (rootX == rootY) {return;}
+      if (rootX == rootY) {return true;}
 
+      // path compression
       // 사이즈 비교없이 무조건 한쪽의 루트에 붙인다면 연결리스트처럼 한쪽으로 몰릴 가능성
       if (size[rootX] < size[rootY]) {
         size[rootY] += size[rootX];
@@ -152,36 +160,69 @@ public class _8_7_Union_Find {
         size[rootX] += size[rootY];
         parent[rootY] = rootX;
       }
+
+      return false;
     }
+    // public void union(int x, int y) {
+    //   int rootX = LoopingfindRoot(x);
+    //   int rootY = LoopingfindRoot(y);
+    //
+    //   if (rootX == rootY) {return;}
+    //
+    //   // 사이즈 비교없이 무조건 한쪽의 루트에 붙인다면 연결리스트처럼 한쪽으로 몰릴 가능성
+    //   if (size[rootX] < size[rootY]) {
+    //     size[rootY] += size[rootX];
+    //     parent[rootX] = rootY;
+    //   } else {
+    //     size[rootX] += size[rootY];
+    //     parent[rootY] = rootX;
+    //   }
+    // }
 
     public boolean isConnected(int x, int y) {
+      return LoopingfindRoot(x) == LoopingfindRoot(y);
+    }
+  }
 
-      int rootX = LoopingfindRoot(x);
-      int rootY = LoopingfindRoot(y);
+  private static List<Edge> createEdgeList(int[][] edges) {
+    List<Edge> edgesList = new ArrayList<>();
 
-      return rootX == rootY;
+    for (int[] arr : edges) {
+      edgesList.add(new Edge(arr[0], arr[1], arr[2]));
+    }
+
+    return edgesList;
+  }
+
+  private static void doUnion(List<Edge> edges, UnionFind uf) {
+    for (Edge edge : edges) {
+      uf.union(edge.from, edge.to);
     }
   }
 
   public static void main(String[] args) {
-    int v = 7;
-    List<Edge> edges = new ArrayList<>();
+    int v = 12;
 
-    edges.add(new Edge(0, 1, 4));
-    edges.add(new Edge(1, 2, 2));
-    edges.add(new Edge(3, 4, 5));
-    edges.add(new Edge(5, 6, 3));
-    edges.add(new Edge(2, 3, 6));
-    edges.add(new Edge(0, 4, 7));
+    System.out.println("==========================================================");
+    System.out.println("연결되어 있는 간선 예시");
+    int[][] edgesArr = {{0, 1, 4}, {0, 2, 4}, {1, 2, 2}, {1, 3, 5}, {2, 3, 8}, {2, 4, 10}, {3, 4, 2}, {3, 5, 6}, {4, 5, 3}, {4, 6, 1},
+        {5, 6, 7}, {5, 7, 9}, {6, 7, 4}, {6, 8, 11}, {7, 8, 3}, {7, 9, 6}, {8, 9, 2}, {8, 10, 5}, {9, 10, 8}, {10, 11, 3}};
+
+    List<Edge> edges = createEdgeList(edgesArr);
+
+    // edges.add(new Edge(0, 1, 4));
+    // edges.add(new Edge(1, 2, 2));
+    // edges.add(new Edge(3, 4, 5));
+    // edges.add(new Edge(5, 6, 3));
+    // edges.add(new Edge(2, 3, 6));
+    // edges.add(new Edge(0, 4, 7));
 
     UnionFind uf = new UnionFind(v);
 
-    for (Edge edge : edges) {
-      uf.union(edge.from, edge.to);
-    }
-
     int x = 3;
     int y = 4;
+
+    doUnion(edges, uf);
 
     System.out.println("uf.parent = " + Arrays.toString(uf.parent));
     System.out.println("uf.size = " + Arrays.toString(uf.size));
@@ -189,5 +230,24 @@ public class _8_7_Union_Find {
     // System.out.println("X: " + x + ", RecursionFindRoot(): " + uf.recursionFindRoot(x));
 
     System.out.println("X: " + x + ", Y: " + y + ", IsConnected: " + uf.isConnected(x, y));
+
+    System.out.println("==========================================================");
+    System.out.println("연결되어 있지 않은 간선 예시");
+    edgesArr = new int[][]{{0, 1, 4}, {0, 2, 4}, {1, 2, 2}, {1, 3, 5}, {2, 3, 8}, {2, 4, 10}, {3, 4, 2}, {3, 5, 6}, {4, 5, 3}, {4, 6, 1},
+        {5, 6, 7}, {5, 7, 9}, {6, 7, 4}, {6, 8, 11}, {7, 8, 3}, {9, 10, 2}, {10, 11, 3}};
+
+    edges = createEdgeList(edgesArr);
+    uf = new UnionFind(v);
+    doUnion(edges, uf);
+
+    x = 4;
+    y = 9;
+
+    System.out.println("uf.parent = " + Arrays.toString(uf.parent));
+    System.out.println("uf.size = " + Arrays.toString(uf.size));
+    System.out.println("X: " + x + ", LoopingfindRoot(): " + uf.LoopingfindRoot(x));
+
+    System.out.println("X: " + x + ", Y: " + y + ", IsConnected: " + uf.isConnected(x, y));
   }
 }
+

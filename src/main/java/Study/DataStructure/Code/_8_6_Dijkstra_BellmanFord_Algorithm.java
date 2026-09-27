@@ -108,7 +108,7 @@ import org.jetbrains.annotations.NotNull;
      버티고 사이클 존재 여부까지 검증 가능
 */
 
-public class _8_6_Dijkstra_BellmanFord_Algolrithm {
+public class _8_6_Dijkstra_BellmanFord_Algorithm {
 
   static class Edge {
 

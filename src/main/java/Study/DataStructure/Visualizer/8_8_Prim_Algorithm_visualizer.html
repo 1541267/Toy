@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prim 알고리즘(MST) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+</head>
+<style>
+  :root {
+    --controls-mb: 1rem;
+    --controls-gap: 0.7rem 1rem;
+    --phasetag-mr: 7px;
+  }
+
+  .btn-row {
+    margin-left: 0;
+  }
+
+  .ctrl-group {
+    & select,
+    & input[type=number] {
+      width: 90px;
+      padding: 5px 8px;
+    }
+
+    & select {
+      width: auto;
+    }
+  }
+
+  .note-card {
+    flex: 1 1 320px;
+  }
+
+  .log-box {
+    padding: 8px 12px;
+    font-size: 0.78rem;
+    min-height: 2.6rem;
+    line-height: 1.6;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── 그래프 시각화 (canvas-wrap/canvas/edges/nodes-layer/gnode-wrap/gnode/pos-tag는 공용 css 사용) ── */
+  .tree-scroll {
+    padding: 1.2rem 0.5rem 0.5rem;
+  }
+
+  .pos-tag {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    &.start {
+      background: var(--tag-green-bg);
+      color: var(--tag-green-text);
+      border: 1px solid var(--tag-green2-bg);
+    }
+  }
+
+  .gnode {
+    &.state-visited {
+      background: var(--good-border);
+      border-color: #34d399;
+      color: #ecfdf5;
+    }
+
+    &.state-current {
+      background: var(--state-compare);
+      border-color: var(--tag-teal-text);
+      color: #ecfeff;
+      transform: scale(1.15);
+    }
+
+    &.state-target {
+      background: var(--state-swap);
+      border-color: var(--warn-text);
+      color: #fff7ed;
+      transform: scale(1.15);
+    }
+  }
+
+  /* 간선(edge) 상태: base(미탐색) / candidate(큐 대기) / mst(채택) / discard(버림) / current(현재 poll) */
+  .graph-edges line.graph-edge {
+    stroke: #334155;
+    stroke-width: 2;
+    transition: stroke 0.15s, stroke-width 0.15s, opacity 0.15s;
+
+    &.candidate {
+      stroke: var(--state-mark);
+      stroke-width: 2.5;
+      stroke-dasharray: 5 4;
+    }
+
+    &.mst {
+      stroke: var(--state-success);
+      stroke-width: 4;
+    }
+
+    &.discard {
+      stroke: var(--bad-text);
+      stroke-width: 2;
+      stroke-dasharray: 3 3;
+      opacity: 0.4;
+    }
+
+    &.current {
+      stroke: var(--state-compare);
+      stroke-width: 4;
+    }
+  }
+
+  /* ── 인접 행렬 행(row) 스캔 스트립 (인접 행렬 모드 전용) ── */
+  .matrix-row-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    margin: 0.9rem 0 0.6rem;
+  }
+
+  .matrix-cell {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 4px 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Consolas", monospace;
+    min-width: 34px;
+    transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+
+    &.active {
+      border-color: var(--state-compare);
+      background: #0c3a37;
+    }
+
+    &.added {
+      border-color: var(--good-border);
+      background: var(--good-bg);
+    }
+
+    &.passed {
+      opacity: 0.35;
+    }
+  }
+
+  .matrix-idx {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+  }
+
+  .matrix-val {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+</style>
+
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">Prim 알고리즘 (MST)</h1>
+    <p>정점 중심 그리디 확장 + 우선순위 큐(Lazy Prim) 기반 최소 신장 트리 시각화</p>
+  </div>
+
+  <!-- Study Notes -->
+  <details class="notes-toggle">
+    <summary>📖 Prim 알고리즘 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🌲 Prim 알고리즘이란</h3>
+        <ul>
+          <li>정점을 중심으로 트리를 확장하며 MST(최소 신장 트리)를 구성하는 그리디 알고리즘</li>
+          <li>방문 정점 집합과 미방문 정점 집합을 나눴을 때, 두 집합을 잇는 간선 중 <strong>최소 가중치 간선</strong>을 매 단계 선택</li>
+          <li>선택된 간선의 반대쪽 정점을 방문 집합에 편입, 모든 정점이 포함될 때까지 반복</li>
+          <li>정점 V개짜리 트리는 항상 간선 V-1개로 구성됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⚖️ Kruskal과의 차이</h3>
+        <ul>
+          <li>Kruskal: 간선 중심, 전체 간선을 정렬한 뒤 사이클을 만들지 않는 선에서 그리디하게 선택 (Union-Find로 판별)</li>
+          <li>Prim: 정점 중심, 하나의 시작 정점에서 트리를 한 정점씩 확장 (우선순위 큐로 최소 간선 판별)</li>
+          <li>정당화 논리는 다르지만(Kruskal은 사이클 방지, Prim은 컷 기준 최소 선택) 둘 다 <strong>Cut Property</strong>에 근거해 정당화됨</li>
+          <li>Cut Property: 임의의 컷을 가로지르는 최소 간선은 반드시 어떤 MST에 포함된다</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">🐢 Lazy vs Eager Prim</div>
+
+      <div class="note-card">
+        <h3>🐢 Lazy Prim (현재 구현)</h3>
+        <ul>
+          <li>정점을 방문 처리할 때, 그 정점과 연결된 모든 간선을 조건 없이 우선순위 큐에 추가</li>
+          <li>큐에서 꺼낼 때(poll) 반대쪽 정점이 이미 방문 상태면 그냥 버림(continue)</li>
+          <li>같은 목적지를 향한 중복 간선이 큐 안에 여러 개 공존할 수 있음</li>
+          <li>구현이 단순한 대신, 최악의 경우 큐 크기가 간선 수(E)까지 불어날 수 있음 -&gt; <strong>O(E log E)</strong></li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🐇 Eager Prim (decrease-key, 심화)</h3>
+        <ul>
+          <li>정점마다 지금까지 알려진 최소 연결 비용(dist[v])을 관리</li>
+          <li>더 싼 간선을 발견하면 큐에 새로 넣지 않고, 큐 안의 해당 정점 항목 자체를 갱신(decrease-key)</li>
+          <li>자바 표준 PriorityQueue는 임의 원소의 우선순위를 낮추는 연산을 지원하지 않아 인덱스 기반 힙을 직접 구현해야 함</li>
+          <li>큐 크기가 항상 정점 수(V) 이하로 고정 -&gt; O(E log V), E&lt;=V² 이므로 Big-O상 Lazy와 오더는 사실상 동일</li>
+          <li>실질적 이득은 메모리와 약간의 상수 배수 정도, 그래프가 매우 커야 체감됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🗺 그래프 표현 - 인접 행렬 vs 인접 리스트</h3>
+        <ul>
+          <li>인접 행렬(int[v][v]): 간선 없음은 Integer.MAX_VALUE로 표현, 특정 정점의 인접 간선을 찾으려면 항상 <strong>O(V) 순회</strong> 필요,
+            공간 O(V²)
+          </li>
+          <li>인접 리스트: 특정 정점의 인접 간선만 바로 조회 가능(연결된 만큼만 순회), 무방향 그래프이므로 간선 하나당 양쪽 정점의 리스트에 각각 추가해야 함(한쪽만 넣으면 탐색 누락)</li>
+          <li>Prim은 정점별 인접 간선 조회가 반복되는 알고리즘이라 인접 리스트가 구조적으로 더 잘 맞음</li>
+          <li>단, 그래프가 조밀함(E ≈ V²에 가까움)인 경우엔 인접 행렬 기반 O(V²)가 Kruskal의 O(E log E)보다 오히려 유리할 수 있음</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">🛡 방어 로직 & ⏱ 복잡도</div>
+
+      <div class="note-card">
+        <h3>🛡 방어 로직</h3>
+        <ul>
+          <li>큐가 빈 상태로 루프가 끝났는데 result.size() != v-1 이면 그래프가 연결되어 있지 않다는 의미</li>
+          <li>이 체크를 하지 않으면, 컴포넌트가 나뉜 그래프에서도 조용히 불완전한 MST가 반환됨 (예외 처리 필요)</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>⏱ 복잡도 & 활용</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>방식</th>
+            <th>시간복잡도</th>
+            <th>비고</th>
+          </tr>
+          <tr>
+            <td>Lazy Prim (인접 리스트 + PQ)</td>
+            <td class="good">O(E log E)</td>
+            <td>간선을 조건 없이 큐에 추가, 중복 가능</td>
+          </tr>
+          <tr>
+            <td>Eager Prim (decrease-key)</td>
+            <td class="good">O(E log V)</td>
+            <td>인덱스 힙 직접 구현 필요, 큐 크기 &lt;= V</td>
+          </tr>
+          <tr>
+            <td>인접 행렬 + 선형 탐색</td>
+            <td class="warn">O(V²)</td>
+            <td>밀집 그래프에서는 오히려 유리할 수 있음</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">활용: 그래프가 인접 리스트/행렬 형태로 자연스럽게 주어지는 경우(지도, 네트워크
+          토폴로지처럼 이 지점에서 어디로 갈 수 있나가 자연스러운 질문인 도메인), 시작점이 고정되어 있고 거기서부터 점진적으로 확장하는 그림이 문제 상황과 잘 맞을 때</p>
+      </div>
+
+    </div>
+  </details>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>표현 방식</label>
+      <select id="repSelect">
+        <option value="list">인접 리스트</option>
+        <option value="matrix">인접 행렬</option>
+      </select>
+    </div>
+    <div class="ctrl-group">
+      <label>시작 정점</label>
+      <select id="startSelect"></select>
+    </div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnReset">🔄 초기화</button>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <div class="info-chip">정점 수 = <strong id="infoV">12</strong></div>
+    <div class="info-chip">간선 수 = <strong id="infoE">20</strong></div>
+    <div class="info-chip">방문 수 = <strong id="infoVisited">0</strong></div>
+    <div class="info-chip">총 가중치 = <strong id="infoWeight">0</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <!-- Visualization Panel -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Graph (Prim - MST 확장 과정)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+
+    <div class="tree-scroll">
+      <div class="graph-canvas-wrap" id="graphCanvasWrap">
+        <div class="graph-canvas" id="graphCanvas">
+          <svg class="graph-edges" id="graphEdgesSvg"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-row-strip" id="matrixRowStrip" style="display:none;"></div>
+
+    <div class="output-strip" id="queueStrip"></div>
+    <div class="output-strip" id="resultStrip"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        미방문 정점 / 미탐색 간선
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        방문 완료 정점 (MST에 편입)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        poll() 한 간선의 출발 정점 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        poll() 한 간선의 도착 정점 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8;"></div>
+        큐에 대기 중인 후보 간선
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#16a34a;"></div>
+        MST에 채택된 간선
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#fca5a5;"></div>
+        이미 방문한 정점이라 버려진 간선
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">표현 방식과 시작 정점을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.</div>
+  </div>
+
+  <!-- Code Blocks -->
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+
+    <div class="code-panel" style="margin-bottom: 1rem;">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        공통부분 · Edge 클래스
+      </div>
+      <pre><span class="kw">static</span> <span class="kw">class</span> <span class="ty">Edge</span> <span
+          class="kw">implements</span> <span class="ty">Comparable</span>&lt;<span
+          class="ty">Edge</span>&gt; {
+
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">from</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">to</span>;
+  <span class="kw">private</span> <span class="ty">int</span> <span class="nm">weight</span>;
+
+  <span class="kw">public</span> <span class="ty">Edge</span>(<span class="ty">int</span> <span
+          class="nm">from</span>, <span class="ty">int</span> <span class="nm">to</span>, <span
+          class="ty">int</span> <span class="nm">weight</span>) {
+    <span class="kw">this</span>.<span class="nm">from</span> = <span class="nm">from</span>;
+    <span class="kw">this</span>.<span class="nm">to</span> = <span class="nm">to</span>;
+    <span class="kw">this</span>.<span class="nm">weight</span> = <span class="nm">weight</span>;
+  }
+
+  <span class="ck">// 가중치 오름차순 비교 -&gt; PriorityQueue가 최소 힙 기준으로 정렬하는 근거</span>
+  <span class="kw">@Override</span>
+  <span class="kw">public</span> <span class="ty">int</span> <span class="fn">compareTo</span>(<span
+          class="ty">Edge</span> <span class="nm">o</span>) {
+    <span class="kw">return</span> <span class="ty">Integer</span>.<span class="fn">compare</span>(<span
+          class="kw">this</span>.<span class="nm">weight</span>, <span class="nm">o</span>.<span
+          class="nm">weight</span>);
+  }
+
+  <span class="kw">@Override</span>
+  <span class="kw">public</span> <span class="ty">String</span> <span class="fn">toString</span>() {
+    <span class="kw">return</span> <span class="st">&quot;\nEdge [from=&quot;</span> + <span
+          class="nm">from</span> + <span class="st">&quot;, to=&quot;</span> + <span
+          class="nm">to</span> + <span class="st">&quot;, weight=&quot;</span> + <span
+          class="nm">weight</span> + <span class="st">&quot;]&quot;</span>;
+  }
+}</pre>
+    </div>
+
+    <div class="code-grid">
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#fcd34d"></div>
+          인접 리스트 기반 Prim
+        </div>
+        <pre><span class="kw">private</span> <span class="kw">static</span> <span
+            class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="fn">doAdjacencyListBasedPrimsAlgorithm</span>(
+    <span class="ty">ArrayList</span>&lt;<span class="ty">ArrayList</span>&lt;<span
+            class="ty">Edge</span>&gt;&gt; <span class="nm">graph</span>, <span
+            class="ty">int</span> <span class="nm">start</span>, <span class="ty">int</span> <span
+            class="nm">v</span>) {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">result</span> = <span class="kw">new</span> <span
+            class="ty">ArrayList</span>&lt;&gt;();
+  <span class="ty">boolean</span>[] <span class="nm">visited</span> = <span class="kw">new</span> <span
+            class="ty">boolean</span>[<span class="nm">v</span>];
+
+  <span class="ty">PriorityQueue</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">queue</span> = <span class="kw">new</span> <span
+            class="ty">PriorityQueue</span>&lt;&gt;(<span class="nm">v</span>);
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+
+  <span class="nm">queue</span>.<span class="fn">addAll</span>(<span class="nm">graph</span>.<span
+            class="fn">get</span>(<span class="nm">start</span>));
+
+  <span class="ty">int</span> <span class="nm">totalWeight</span> = <span class="nu">0</span>;
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">Edge</span> <span class="nm">curEdge</span> = <span class="nm">queue</span>.<span
+            class="fn">poll</span>();
+
+    <span class="ck">// Lazy Prim 삭제, poll()을 이용한 삭제</span>
+    <span class="ck">// 큐에 쌓였다가 visited 체크로 버려지는 방식 -> 구현은 단순하나 불필요한 간선까지 큐에 쌓임</span>
+    <span class="kw">if</span> (<span class="nm">visited</span>[<span class="nm">curEdge</span>.<span
+            class="nm">to</span>]) {<span class="kw">continue</span>;}
+
+    <span class="nm">visited</span>[<span class="nm">curEdge</span>.<span class="nm">to</span>] = <span
+            class="kw">true</span>;
+    <span class="nm">queue</span>.<span class="fn">addAll</span>(<span
+            class="fn">connectedVertexListFromList</span>(<span class="nm">graph</span>, <span
+            class="nm">visited</span>, <span class="nm">curEdge</span>.<span class="nm">to</span>));
+
+    <span class="nm">totalWeight</span> += <span class="nm">curEdge</span>.<span class="nm">weight</span>;
+    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curEdge</span>);
+  }
+
+  <span class="kw">if</span> (<span class="nm">result</span>.<span class="fn">size</span>() != <span
+            class="nm">v</span> - <span class="nu">1</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+            class="ty">IllegalStateException</span>(<span class="st">&quot;그래프가 연결되어 있지 않음&quot;</span>);
+  }
+
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="ck">// 방문하지 않은 인접 정점으로 향하는 간선만 걸러서 반환 -> 연결된 만큼만 순회 (O(degree))</span>
+<span class="kw">private</span> <span class="kw">static</span> <span
+            class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="fn">connectedVertexListFromList</span>(
+    <span class="ty">ArrayList</span>&lt;<span class="ty">ArrayList</span>&lt;<span
+            class="ty">Edge</span>&gt;&gt; <span class="nm">graph</span>, <span
+            class="ty">boolean</span>[] <span class="nm">visited</span>, <span
+            class="ty">int</span> <span class="nm">start</span>) {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">list</span> = <span class="kw">new</span> <span
+            class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="ty">Edge</span> <span class="nm">edge</span> : <span
+            class="nm">graph</span>.<span class="fn">get</span>(<span class="nm">start</span>)) {
+    <span class="kw">if</span> (!<span class="nm">visited</span>[<span class="nm">edge</span>.<span
+            class="nm">to</span>]) {
+      <span class="nm">list</span>.<span class="fn">add</span>(<span class="nm">edge</span>);
+    }
+  }
+
+  <span class="kw">return</span> <span class="nm">list</span>;
+}</pre>
+      </div>
+      <div class="code-panel">
+        <div class="code-panel-header">
+          <div class="dot" style="background:#93c5fd"></div>
+          인접 행렬 기반 Prim
+        </div>
+        <pre><span class="kw">private</span> <span class="kw">static</span> <span
+            class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="fn">doAdjacencyMatrixBasedPrimsAlgorithm</span>(
+    <span class="ty">int</span>[][] <span class="nm">graph</span>, <span class="ty">int</span> <span
+            class="nm">start</span>, <span class="ty">int</span> <span class="nm">v</span>) {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">result</span> = <span class="kw">new</span> <span
+            class="ty">ArrayList</span>&lt;&gt;();
+  <span class="ty">boolean</span>[] <span class="nm">visited</span> = <span class="kw">new</span> <span
+            class="ty">boolean</span>[<span class="nm">v</span>];
+
+  <span class="ty">PriorityQueue</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">queue</span> = <span class="kw">new</span> <span
+            class="ty">PriorityQueue</span>&lt;&gt;(<span class="nm">v</span>);
+
+  <span class="nm">visited</span>[<span class="nm">start</span>] = <span class="kw">true</span>;
+  <span class="nm">queue</span>.<span class="fn">addAll</span>(<span
+            class="fn">connectedVertexListFromMatrix</span>(<span class="nm">graph</span>, <span
+            class="nm">visited</span>, <span class="nm">start</span>));
+
+  <span class="ty">int</span> <span class="nm">totalWeight</span> = <span class="nu">0</span>;
+
+  <span class="kw">while</span> (!<span class="nm">queue</span>.<span class="fn">isEmpty</span>()) {
+    <span class="ty">Edge</span> <span class="nm">curEdge</span> = <span class="nm">queue</span>.<span
+            class="fn">poll</span>();
+
+    <span class="kw">if</span> (<span class="nm">visited</span>[<span class="nm">curEdge</span>.<span
+            class="nm">to</span>]) {<span class="kw">continue</span>;}
+
+    <span class="nm">visited</span>[<span class="nm">curEdge</span>.<span class="nm">to</span>] = <span
+            class="kw">true</span>;
+
+    <span class="nm">queue</span>.<span class="fn">addAll</span>(<span
+            class="fn">connectedVertexListFromMatrix</span>(<span class="nm">graph</span>, <span
+            class="nm">visited</span>, <span class="nm">curEdge</span>.<span class="nm">to</span>));
+    <span class="nm">totalWeight</span> += <span class="nm">curEdge</span>.<span class="nm">weight</span>;
+    <span class="nm">result</span>.<span class="fn">add</span>(<span class="nm">curEdge</span>);
+  }
+
+  <span class="kw">if</span> (<span class="nm">result</span>.<span class="fn">size</span>() != <span
+            class="nm">v</span> - <span class="nu">1</span>) {
+    <span class="kw">throw</span> <span class="kw">new</span> <span
+            class="ty">IllegalStateException</span>(<span class="st">&quot;그래프가 연결되어 있지 않음&quot;</span>);
+  }
+
+  <span class="kw">return</span> <span class="nm">result</span>;
+}
+
+<span class="ck">// 간선 없음(MAX_VALUE)이거나 이미 방문한 정점이면 스킵 -> 행(row) 전체를 매번 순회 (O(V))</span>
+<span class="kw">private</span> <span class="kw">static</span> <span
+            class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="fn">connectedVertexListFromMatrix</span>(
+    <span class="ty">int</span>[][] <span class="nm">graph</span>, <span class="ty">boolean</span>[] <span
+            class="nm">visited</span>, <span class="ty">int</span> <span class="nm">start</span>) {
+  <span class="ty">ArrayList</span>&lt;<span class="ty">Edge</span>&gt; <span
+            class="nm">list</span> = <span class="kw">new</span> <span
+            class="ty">ArrayList</span>&lt;&gt;();
+
+  <span class="kw">for</span> (<span class="ty">int</span> <span class="nm">i</span> = <span
+            class="nu">0</span>; <span class="nm">i</span> &lt; <span class="nm">graph</span>[<span
+            class="nm">start</span>].<span class="nm">length</span>; <span class="nm">i</span>++) {
+    <span class="kw">if</span> (<span class="nm">graph</span>[<span class="nm">start</span>][<span
+            class="nm">i</span>] == <span class="ty">Integer</span>.<span
+            class="nm">MAX_VALUE</span> || <span class="nm">visited</span>[<span
+            class="nm">i</span>]) {<span class="kw">continue</span>;}
+    <span class="nm">list</span>.<span class="fn">add</span>(<span class="kw">new</span> <span
+            class="ty">Edge</span>(<span class="nm">start</span>, <span class="nm">i</span>, <span
+            class="nm">graph</span>[<span class="nm">start</span>][<span class="nm">i</span>]));
+  }
+
+  <span class="kw">return</span> <span class="nm">list</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</div><!-- /page -->
+</body>
+<script>
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+
+  function getSpeed() { return parseInt(document.getElementById('speedSlider').value); }
+
+  // ── 고정 그래프 정의 (정점 12개, 간선 20개) ──
+  const NODE_COUNT = 12;
+  const EDGES = [
+    [0, 1, 4], [0, 2, 4], [1, 2, 2], [1, 3, 5], [2, 3, 8], [2, 4, 10], [3, 4, 2], [3, 5, 6],
+    [4, 5, 3], [4, 6, 1], [5, 6, 7], [5, 7, 9], [6, 7, 4], [6, 8, 11], [7, 8, 3], [7, 9, 6],
+    [8, 9, 2], [8, 10, 5], [9, 10, 8], [10, 11, 3]
+  ];
+  const NODE_SIZE = 44;
+
+  function buildAdjList() {
+    const adj = Array.from({length: NODE_COUNT}, () => []);
+    EDGES.forEach(([a, b, w]) => {
+      adj[a].push({to: b, weight: w});
+      adj[b].push({to: a, weight: w});
+    });
+    return adj;
+  }
+
+  function buildMatrix() {
+    const m = Array.from({length: NODE_COUNT}, () => new Array(NODE_COUNT).fill(Infinity));
+    EDGES.forEach(([a, b, w]) => { m[a][b] = w; m[b][a] = w; });
+    return m;
+  }
+
+  const ADJ = buildAdjList();
+  const MATRIX = buildMatrix();
+
+  function edgeKey(a, b) { return a < b ? `${a}_${b}` : `${b}_${a}`; }
+
+  function computeLayout() {
+    const positions = {};
+    let maxX = 0, maxY = 0;
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const col = Math.floor(i / 2), row = i % 2;
+      const x = 40 + col * 110 + row * 55;
+      const y = row === 0 ? 40 : 150;
+      positions[i] = {x, y};
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+    }
+    const width = maxX + 40 + NODE_SIZE / 2;
+    const height = maxY + 40 + NODE_SIZE / 2;
+    return {positions, width, height};
+  }
+
+  const LAYOUT = computeLayout();
+
+  let currentRep = 'list';
+  let currentStart = 0;
+  let steps = [];
+  let stepIdx = -1;
+  let playing = false;
+  let timer = null;
+  let needsNewRun = true;
+
+  // ── planner: Lazy Prim 시뮬레이션 ──
+  function planPrim(representation, start) {
+    const steps = [];
+    const visited = new Array(NODE_COUNT).fill(false);
+    const edgeState = {};
+    const result = [];
+    let totalWeight = 0;
+    let queue = [];
+
+    function snapshot(msg, tag, extra) {
+      return {
+        visited: visited.slice(),
+        edgeState: {...edgeState},
+        queue: queue.map(e => ({...e})),
+        result: result.map(e => ({...e})),
+        totalWeight,
+        msg, tag,
+        matrixScan: extra && extra.matrixScan,
+        current: extra && extra.current
+      };
+    }
+
+    function scanAndEnqueue(vertex) {
+      if (representation === 'list') {
+        steps.push(snapshot(`정점 ${vertex}의 인접 리스트 조회 -> 연결된 간선만 바로 순회 (O(degree))`, 'traverse'));
+        ADJ[vertex].forEach(({to, weight}) => {
+          const key = edgeKey(vertex, to);
+          if (visited[to]) {
+            steps.push(snapshot(`간선(${vertex}-${to}, w=${weight}) 확인 -> 이미 방문한 정점 -> 스킵`, 'traverse'));
+            return;
+          }
+          queue.push({from: vertex, to, weight});
+          edgeState[key] = 'candidate';
+          steps.push(snapshot(`간선(${vertex}-${to}, w=${weight}) 확인 -> 미방문 -> 큐에 추가`, 'insert'));
+        });
+      } else {
+        steps.push(snapshot(`정점 ${vertex}의 인접 행렬 행(row) 전체 스캔 시작 (O(V) 순회)`, 'traverse',
+            {matrixScan: {vertex, idx: -1}}));
+        for (let i = 0; i < NODE_COUNT; i++) {
+          const w = MATRIX[vertex][i];
+          if (w === Infinity) {
+            steps.push(snapshot(`matrix[${vertex}][${i}] 확인 -> 간선 없음(MAX_VALUE) -> 스킵`, 'traverse',
+                {matrixScan: {vertex, idx: i, state: 'none'}}));
+            continue;
+          }
+          if (visited[i]) {
+            steps.push(snapshot(`matrix[${vertex}][${i}] 확인 -> 값(${w}) 존재하지만 이미 방문 -> 스킵`, 'traverse',
+                {matrixScan: {vertex, idx: i, state: 'visited'}}));
+            continue;
+          }
+          const key = edgeKey(vertex, i);
+          queue.push({from: vertex, to: i, weight: w});
+          edgeState[key] = 'candidate';
+          steps.push(snapshot(`matrix[${vertex}][${i}] 확인 -> 값(${w}) 존재 & 미방문 -> 큐에 추가`, 'insert',
+              {matrixScan: {vertex, idx: i, state: 'added'}}));
+        }
+      }
+    }
+
+    visited[start] = true;
+    steps.push(snapshot(`시작 정점 ${start} 방문 처리`, 'insert'));
+    scanAndEnqueue(start);
+
+    while (queue.length > 0) {
+      queue.sort((a, b) => a.weight - b.weight);
+      const cur = queue.shift();
+      const key = edgeKey(cur.from, cur.to);
+      steps.push(snapshot(`poll() -> 최소 간선(${cur.from}-${cur.to}, w=${cur.weight}) 추출`, 'traverse',
+          {current: cur}));
+
+      if (visited[cur.to]) {
+        edgeState[key] = 'discard';
+        steps.push(
+            snapshot(`정점 ${cur.to}는 이미 방문 상태 -> 이 간선은 버림(continue), 중복 간선이 큐에 쌓였던 흔적`, 'remove',
+                {current: cur}));
+        continue;
+      }
+
+      visited[cur.to] = true;
+      edgeState[key] = 'mst';
+      result.push(cur);
+      totalWeight += cur.weight;
+      steps.push(snapshot(`정점 ${cur.to} 방문 처리 & MST에 간선(${cur.from}-${cur.to}, w=${cur.weight}) 추가`, 'insert',
+          {current: cur}));
+
+      scanAndEnqueue(cur.to);
+    }
+
+    if (result.length !== NODE_COUNT - 1) {
+      steps.push(snapshot('그래프가 연결되어 있지 않음 -> IllegalStateException', 'error'));
+    } else {
+      steps.push(snapshot(`Prim 알고리즘 완료 -> 총 간선 ${result.length}개, 총 가중치 합계: ${totalWeight}`, 'done'));
+    }
+
+    return {steps, result, totalWeight};
+  }
+
+  // ── 렌더 ──
+  function renderGraph(step) {
+    const wrap = document.getElementById('graphCanvasWrap');
+    const canvas = document.getElementById('graphCanvas');
+    const svg = document.getElementById('graphEdgesSvg');
+    const layer = document.getElementById('nodesLayer');
+
+    const {positions, width, height} = LAYOUT;
+    const scrollEl = document.querySelector('.tree-scroll');
+    const available = scrollEl.clientWidth - 4;
+    const scale = available > 0 ? Math.min(1, available / width) : 1;
+
+    wrap.style.width = (width * scale) + 'px';
+    wrap.style.height = (height * scale) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.style.transform = `scale(${scale})`;
+
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    let edgeSvg = '';
+    EDGES.forEach(([a, b]) => {
+      const key = edgeKey(a, b);
+      const p = positions[a], c = positions[b];
+      let cls = 'graph-edge';
+      const st = step.edgeState[key];
+      if (st) { cls += ' ' + st; }
+      if (step.current && edgeKey(step.current.from, step.current.to) === key && st !== 'mst'
+          && st !== 'discard') { cls += ' current'; }
+      edgeSvg += `<line x1="${p.x}" y1="${p.y}" x2="${c.x}" y2="${c.y}" class="${cls}" />`;
+    });
+    svg.innerHTML = edgeSvg;
+
+    let html = '';
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const pos = positions[i];
+      let cls = 'gnode';
+      if (step.visited[i]) { cls += ' state-visited'; }
+      if (step.current && step.current.from === i) { cls += ' state-current'; }
+      if (step.current && step.current.to === i) { cls += ' state-target'; }
+      const isStart = i === currentStart;
+      html += `<div class="gnode-wrap" style="left:${pos.x - NODE_SIZE / 2}px; top:${pos.y - NODE_SIZE / 2}px;">
+          ${isStart ? '<div class="pos-tag start">시작</div>' : ''}
+          <div class="${cls}">${i}</div>
+        </div>`;
+    }
+    layer.innerHTML = html;
+  }
+
+  function renderMatrixStrip(step) {
+    const el = document.getElementById('matrixRowStrip');
+    if (currentRep !== 'matrix' || !step.matrixScan) {
+      el.style.display = 'none';
+      el.innerHTML = '';
+      return;
+    }
+    el.style.display = 'flex';
+    const {vertex, idx, state} = step.matrixScan;
+    let html = `<span class="output-label">matrix[${vertex}][ ] 스캔</span>`;
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const w = MATRIX[vertex][i];
+      let cls = 'matrix-cell';
+      if (i === idx) { cls += state === 'added' ? ' active added' : ' active'; } else if (idx > -1
+          && i < idx) { cls += ' passed'; }
+      const val = w === Infinity ? '∞' : w;
+      html += `<div class="${cls}"><span class="matrix-idx">${i}</span><span class="matrix-val">${val}</span></div>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function renderQueueStrip(step) {
+    const el = document.getElementById('queueStrip');
+    let html = '<span class="output-label">우선순위 큐 (오름차순)</span>';
+    const sorted = step.queue.slice().sort((a, b) => a.weight - b.weight);
+    if (sorted.length === 0) { html += '<span class="output-chip">-</span>'; } else {
+      sorted.forEach(e => { html += `<div class="queue-chip">${e.from}-${e.to} (w=${e.weight})</div>`; });
+    }
+    el.innerHTML = html;
+  }
+
+  function renderResultStrip(step) {
+    const el = document.getElementById('resultStrip');
+    let html = '<span class="output-label">MST 간선</span>';
+    if (step.result.length === 0) { html += '<span class="output-chip">-</span>'; } else {
+      step.result.forEach(
+          e => { html += `<div class="output-chip active">${e.from}-${e.to}(${e.weight})</div>`; });
+    }
+    el.innerHTML = html;
+  }
+
+  const tagMap = {
+    'traverse': '<span class="phase-tag phase-traverse">탐색</span>',
+    'insert': '<span class="phase-tag phase-insert">배치</span>',
+    'remove': '<span class="phase-tag phase-remove">버림</span>',
+    'done': '<span class="phase-tag phase-done">완료 ✓</span>',
+    'error': '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(step) {
+    renderGraph(step);
+    renderMatrixStrip(step);
+    renderQueueStrip(step);
+    renderResultStrip(step);
+    document.getElementById('logBox').innerHTML = (tagMap[step.tag] || '') + step.msg;
+    document.getElementById('infoVisited').textContent = step.visited.filter(Boolean).length;
+    document.getElementById('infoWeight').textContent = step.totalWeight;
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    document.getElementById('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    document.getElementById('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    document.getElementById('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    currentRep = document.getElementById('repSelect').value;
+    currentStart = parseInt(document.getElementById('startSelect').value);
+    const plan = planPrim(currentRep, currentStart);
+    steps = plan.steps;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  document.getElementById('repSelect').addEventListener('change', markDirty);
+  document.getElementById('startSelect').addEventListener('change', markDirty);
+
+  document.getElementById('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    document.getElementById('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  document.getElementById('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    stopPlay();
+    markDirty();
+    ensurePlanReady();
+    showFrame(0);
+  });
+
+  document.getElementById('speedSlider').addEventListener('input', e => {
+    document.getElementById('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  // ── 초기화 ──
+  (function initStartSelect() {
+    const sel = document.getElementById('startSelect');
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `정점 ${i}`;
+      sel.appendChild(opt);
+    }
+  })();
+
+  needsNewRun = true;
+  ensurePlanReady();
+  showFrame(0);
+</script>
+</html>
