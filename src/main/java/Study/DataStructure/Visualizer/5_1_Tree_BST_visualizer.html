@@ -130,7 +130,7 @@
         <ul>
           <li>배열/연결리스트 같은 <strong>선형 구조</strong>와 다른 <strong>비선형 구조</strong></li>
           <li>정렬 안 된 배열: 탐색 O(n) / 연결리스트: 탐색 O(n) / 정렬된 배열: 탐색 O(log n)이지만 삽입·삭제 O(n)</li>
-          <li>탐색 빠르면 삽입·삭제 느리고, 삽입·삭제 빠르면 탐색이 느린 트레이드오프를 완화하려는 구조 → 균형 트리(BST/AVL/Red-Black)는 셋 다
+          <li>탐색 빠르면 삽입·삭제 느리고, 삽입·삭제 빠르면 탐색이 느린 트레이드오프를 완화하려는 구조 -> 균형 트리(BST/AVL/Red-Black)는 셋 다
             O(log n)을 노림
           </li>
         </ul>
@@ -140,8 +140,8 @@
         <h3>🔤 용어</h3>
         <ul>
           <li><strong>root</strong>: 부모가 없는 최상위 노드 / <strong>leaf</strong>: 자식이 없는 노드</li>
-          <li><strong>depth</strong>: root → 해당 노드까지의 간선 수 (root의 depth = 0)</li>
-          <li><strong>height</strong>: 노드 → 가장 먼 leaf까지의 간선 수 (leaf의 height = 0)</li>
+          <li><strong>depth</strong>: root -> 해당 노드까지의 간선 수 (root의 depth = 0)</li>
+          <li><strong>height</strong>: 노드 -> 가장 먼 leaf까지의 간선 수 (leaf의 height = 0)</li>
           <li><strong>degree</strong>: 노드가 가진 자식의 수, 이진트리는 모든 노드의 degree가 최대 2</li>
         </ul>
       </div>
@@ -149,13 +149,13 @@
       <div class="note-card" style="flex-basis: 100%;">
         <h3>🧭 순회(Traversal) 4가지</h3>
         <ul>
-          <li><strong>preOrder</strong>: 노드 진입하자마자(자식 보기 전) 저장 → root가 항상 맨 먼저</li>
-          <li><strong>inOrder</strong>: 왼쪽 서브트리 끝나고 돌아온 직후, 오른쪽 가기 직전 저장 → <strong>BST에서는 이 순서가 곧
+          <li><strong>preOrder</strong>: 노드 진입하자마자(자식 보기 전) 저장 -> root가 항상 맨 먼저</li>
+          <li><strong>inOrder</strong>: 왼쪽 서브트리 끝나고 돌아온 직후, 오른쪽 가기 직전 저장 -> <strong>BST에서는 이 순서가 곧
             정렬된 순서</strong></li>
-          <li><strong>postOrder</strong>: 왼쪽/오른쪽 다 처리하고 나서야 저장 → 자식 결과가 먼저 필요한 계산(디렉토리 용량 합산, 트리
+          <li><strong>postOrder</strong>: 왼쪽/오른쪽 다 처리하고 나서야 저장 -> 자식 결과가 먼저 필요한 계산(디렉토리 용량 합산, 트리
             삭제)에 사용
           </li>
-          <li><strong>levelOrder</strong>: Queue를 이용한 BFS → 같은 depth끼리 좌→우로 방문, poll 하면서 자식을 다시 add
+          <li><strong>levelOrder</strong>: Queue를 이용한 BFS -> 같은 depth끼리 좌->우로 방문, poll 하면서 자식을 다시 add
           </li>
           <li>pre/in/post는 <strong>동일한 재귀 뼈대</strong>에서 저장(add)하는 위치만 다름</li>
         </ul>
@@ -190,7 +190,7 @@
         <h3>🔍 BST 규칙</h3>
         <ul>
           <li>모든 노드에 대해 <strong>왼쪽 서브트리 값 &lt; 노드 값 &lt; 오른쪽 서브트리 값</strong></li>
-          <li>탐색: 찾는 값이 크면 오른쪽, 작으면 왼쪽으로만 이동 → 매 단계 후보가 절반씩 줄어듦(이분탐색과 동일 원리)</li>
+          <li>탐색: 찾는 값이 크면 오른쪽, 작으면 왼쪽으로만 이동 -> 매 단계 후보가 절반씩 줄어듦(이분탐색과 동일 원리)</li>
           <li>삽입/삭제도 탐색과 같은 방식으로 위치를 찾고 링크만 변경</li>
           <li>inOrder 순회 = 오름차순 정렬 결과 (BST의 핵심 성질, 정합성 검증 수단으로도 사용)</li>
         </ul>
@@ -227,7 +227,7 @@
         <h3>🗑 delete(e) - 재귀 + "서브트리의 새 루트를 리턴" 패턴</h3>
         <ul>
           <li>doDelete(node, e)가 이 서브트리의 (바뀌었을 수도 있는) 루트를 리턴하고, 호출부는 <strong>node.left =
-            doDelete(...)</strong> 형태로 그 결과를 자기 자식 자리에 그대로 대입 → 이 패턴 하나로 모든 링크 갱신이 자동 처리됨
+            doDelete(...)</strong> 형태로 그 결과를 자기 자식 자리에 그대로 대입 -> 이 패턴 하나로 모든 링크 갱신이 자동 처리됨
           </li>
           <li>delete(e) 호출부에서도 <strong>root = doDelete(root, e)</strong>로 재대입 필요 (내부 변화는 지역 변수의 변화일
             뿐, 명시적 대입이 있어야 실제 링크가 갱신됨)
@@ -235,8 +235,8 @@
         </ul>
         <div class="cols">
           <ul>
-            <li><strong>자식 없음(leaf)</strong>: node=null 리턴 → 부모→이 노드로의 링크가 끊어짐 (실제 삭제)</li>
-            <li><strong>자식 하나</strong>: 있는 자식을 그대로 리턴 → 그 자식이 삭제된 노드의 자리를 대신 차지</li>
+            <li><strong>자식 없음(leaf)</strong>: node=null 리턴 -> 부모->이 노드로의 링크가 끊어짐 (실제 삭제)</li>
+            <li><strong>자식 하나</strong>: 있는 자식을 그대로 리턴 -> 그 자식이 삭제된 노드의 자리를 대신 차지</li>
           </ul>
           <ul>
             <li><strong>자식 둘 다 있음</strong>: successor(오른쪽 서브트리의 최솟값)를 찾아 값만 복사 후, 오른쪽 서브트리에서 진짜

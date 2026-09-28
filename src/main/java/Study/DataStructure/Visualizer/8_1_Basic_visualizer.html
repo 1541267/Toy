@@ -149,7 +149,7 @@
   </div>
 
   <!-- Study Notes -->
-  <details class="notes-toggle" open>
+  <details class="notes-toggle">
     <summary>📖 그래프 학습 노트 (클릭해서 펼치기)</summary>
     <div class="notes-body">
       <div class="note-card" style="flex-basis: 100%;">
@@ -160,8 +160,8 @@
               <li>
                 부모가 하나뿐 -> 경로 유일 -> 사이클 없음, 그리고 root에서 모든 노드로 도달 가능 -> connected
               </li>
-              <li> Connected: root -> 모든 노드로 가는 경로가 "존재"</li>
-              <li> Acyclic: root -> 모든 노드로 가는 경로가 유일 (대안 경로가 없어 되돌아올 길이 없음)
+              <li>Connected: root -> 모든 노드로 가는 경로가 존재</li>
+              <li>Acyclic: root -> 모든 노드로 가는 경로가 유일 (대안 경로가 없어 되돌아올 길이 없음)
               </li>
             </ul>
           </li>
@@ -193,7 +193,7 @@
           </li>
           <li><strong>Edge</strong>: 두 Vertex 사이의 연결 (u, v)</li>
           <li><strong>무방향(Undirected)</strong>: (u, v) = (v, u), 양쪽 다 서로를 알고 있음</li>
-          <li><strong>방향(Directed)</strong>: (u, v) != (v, u), u → v만 성립, u가 v를 가리킴</li>
+          <li><strong>방향(Directed)</strong>: (u, v) != (v, u), u -> v만 성립, u가 v를 가리킴</li>
           <li><strong>가중치(Weighted)</strong>: (u, v, weight), 연결 비용/거리가 있음 (도로 길이, 항공료 등)</li>
         </ul>
       </div>
@@ -238,13 +238,13 @@
         <h3>🌐 연결(Connected)</h3>
         <ul>
           <li><strong>Connected (두 정점 사이)</strong>: 두 Vertex 사이에 Path가 하나라도 존재하면 Connected</li>
-          <li><strong>Connected Graph (그래프 전체)</strong>: 모든 Vertex 쌍이 서로 Connected한 그래프 → 그래프 전체가
+          <li><strong>Connected Graph (그래프 전체)</strong>: 모든 Vertex 쌍이 서로 Connected한 그래프 -> 그래프 전체가
             하나로 이어져 있음
           </li>
           <li>그래프가 여러 조각으로 나뉘어 있으면 각 조각을 <strong>Connected Component(연결 요소)</strong>라고 부름 (ex: SNS
             그래프에서 친구 관계로 전혀 안 이어진 별개의 그룹이 여러 개 있으면 각각이 Connected Component)
           </li>
-          <li>방향 그래프에서는 두 가지로 세분화 → <strong>Weakly Connected</strong>: 방향을 무시했을 때 연결 / <strong>Strongly
+          <li>방향 그래프에서는 두 가지로 세분화 -> <strong>Weakly Connected</strong>: 방향을 무시했을 때 연결 / <strong>Strongly
             Connected</strong>: 방향을 그대로 뒀을 때도 양방향으로 서로 도달 가능
           </li>
         </ul>
@@ -482,7 +482,7 @@
         steps.push({
           highlight: {[v]: 'target', [e.b]: 'current'},
           edgeHighlight: {[e.id]: 'current'},
-          msg: `out-edge ${v} → ${e.b} 발견 -> out-degree = ${o}`,
+          msg: `out-edge ${v} -> ${e.b} 발견 -> out-degree = ${o}`,
           tag: 'check',
           output: [`out-degree=${o}`]
         });
@@ -492,7 +492,7 @@
         steps.push({
           highlight: {[v]: 'target', [e.a]: 'current'},
           edgeHighlight: {[e.id]: 'current'},
-          msg: `in-edge ${e.a} → ${v} 발견 -> in-degree = ${i}`,
+          msg: `in-edge ${e.a} -> ${v} 발견 -> in-degree = ${i}`,
           tag: 'check',
           output: [`out-degree=${o}`, `in-degree=${i}`]
         });
@@ -524,7 +524,7 @@
       const hl = {};
       path.slice(0, i).forEach(id => { hl[id] = 'visited'; });
       hl[cur] = 'current';
-      const arrow = directed ? `${prev} → ${cur}` : `(${prev}, ${cur})`;
+      const arrow = directed ? `${prev} -> ${cur}` : `(${prev}, ${cur})`;
       output.push(cur);
       steps.push({
         tree: null, highlight: hl, edgeHighlight: {[e.id]: 'current'},
@@ -537,7 +537,7 @@
       highlight: hlFinal,
       msg: `Path 완성: ${path.join(' - ')} (길이 = ${path.length - 1})`,
       tag: 'done',
-      output: [path.join(' → ')]
+      output: [path.join(' -> ')]
     });
     return steps;
   }
@@ -551,7 +551,7 @@
       const hl = {};
       cycle.slice(0, i).forEach(id => { hl[id] = 'visited'; });
       hl[cur] = 'current';
-      const arrow = directed ? `${prev} → ${cur}` : `(${prev}, ${cur})`;
+      const arrow = directed ? `${prev} -> ${cur}` : `(${prev}, ${cur})`;
       steps.push({
         highlight: hl, edgeHighlight: {[cycleEdges[i - 1]]: 'current'},
         msg: `간선 ${arrow} 이동`, tag: 'check', output: []
@@ -565,7 +565,7 @@
       highlight: {A: 'new', B: 'new', C: 'new', F: 'current', G: 'current'},
       edgeHighlight: {e1: 'new', e2: 'new', e3: 'new', e6: 'current'},
       msg: directed
-          ? 'F→G 부분에는 되돌아오는 간선이 없음 -> 비순환(Acyclic), 방향 그래프이므로 DAG의 예시'
+          ? 'F->G 부분에는 되돌아오는 간선이 없음 -> 비순환(Acyclic), 방향 그래프이므로 DAG의 예시'
           : 'F-G 부분에는 사이클이 없음 -> 비순환(Acyclic Graph)의 예시',
       tag: 'done', output: ['사이클: A-B-C-A', 'F-G: Acyclic']
     });
@@ -597,7 +597,7 @@
     } else {
       steps.push({
         highlight: {A: 'target', B: 'target', C: 'target'},
-        msg: '강하게 연결(Strongly Connected): A→B→C→A 사이클로 서로 양방향 도달 가능',
+        msg: '강하게 연결(Strongly Connected): A->B->C->A 사이클로 서로 양방향 도달 가능',
         tag: 'check',
         output: ['Strongly Connected: {A,B,C}']
       });
@@ -616,7 +616,7 @@
           F: 'successor',
           G: 'successor'
         },
-        msg: 'F→G는 별도의 컴포넌트: 방향을 무시해야만 연결됨(Weakly Connected), Strongly Connected는 아님',
+        msg: 'F->G는 별도의 컴포넌트: 방향을 무시해야만 연결됨(Weakly Connected), Strongly Connected는 아님',
         tag: 'done',
         output: ['Strongly Connected: {A,B,C}', 'Weakly only: {D,E}', 'Weak component: {F,G}']
       });
