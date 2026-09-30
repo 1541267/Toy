@@ -1,4 +1,4 @@
-package Study.DataStructure.Code;
+package Study.Algorithm.Graph;
 
 import Study.DataStructure.Code._8_3_Adjacency_List.AdjacencyList;
 import java.util.ArrayDeque;
@@ -48,7 +48,7 @@ import java.util.List;
 
 */
 
-public class _8_4_Depth_First_Search_Algorithm {
+public class Depth_First_Search_Algorithm {
 
   static AdjacencyList graph = new AdjacencyList();
   static boolean[] visited;

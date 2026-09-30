@@ -5,7 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /*
-- Union-Find (Disjoint Set, 서로소 집합 자료 구조): 원소들을 서로 겹치지 않는 그룹(집합)으로 나누고, 그룹 소속 여부를 빠르게 판단/병합하는 자료구조
+- Union-Find (Disjoint Set Union(DSU), 서로소 집합 자료 구조): 원소들을 서로 겹치지 않는 그룹(집합)으로 나누고, 그룹 소속 여부를 빠르게 판단/병합하는 자료구조
   - 그래프의 간선(연결 정보) 자체를 저장하는 자료구조가 아님 (인접리스트/인접행렬과 다른 역할)
     -> parent 배열은 원본 간선 순서/모양을 보존하지 않음, path compression 이후엔 원래 어떤 간선으로 연결됐는지 알 수 없음
     -> 오직 각 원소가 최종적으로 어느 그룹(루트)에 속하는지만 표현
@@ -68,7 +68,7 @@ import java.util.List;
     -> 원본 그래프(간선 리스트 등)는 별도로 존재하고, Union-Find는 그 위에서 그룹 소속 판단만 빠르게 처리하는 보조 도구로 사용됨
 */
 
-public class _8_7_Union_Find_Algorithm {
+public class _8_4_Union_Find {
 
   static class Edge {
 

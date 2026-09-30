@@ -1,4 +1,4 @@
-package Study.DataStructure.Code;
+package Study.Algorithm.Graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,7 +108,7 @@ import org.jetbrains.annotations.NotNull;
      버티고 사이클 존재 여부까지 검증 가능
 */
 
-public class _8_6_Dijkstra_BellmanFord_Algorithm {
+public class Dijkstra_BellmanFord_Algorithm {
 
   static class Edge {
 

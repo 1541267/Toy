@@ -1,4 +1,4 @@
-package Study.DataStructure.Code;
+package Study.Algorithm.Graph;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ import java.util.List;
        바깥 루프에서 다시 마주쳐도 스킵됨 -> 결과적으로 컴포넌트 개수만큼만 BFS가 실행됨
 */
 
-public class _8_5_Breadth_First_Search_Algorithm {
+public class Breadth_First_Search_Algorithm {
 
   static boolean[] visited;
 

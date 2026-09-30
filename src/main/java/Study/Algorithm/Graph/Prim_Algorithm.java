@@ -1,4 +1,4 @@
-package Study.DataStructure.Code;
+package Study.Algorithm.Graph;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +59,7 @@ import org.jetbrains.annotations.NotNull;
 */
 
 
-public class _8_9_Prim_Algorithm {
+public class Prim_Algorithm {
 
   static class Edge implements Comparable<Edge> {
 

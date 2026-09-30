@@ -1,4 +1,4 @@
-package Study.DataStructure.Code;
+package Study.Algorithm.Graph;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -108,7 +108,7 @@ import java.util.Set;
     -> 여러 컴포넌트를 점진적으로 합치는 과정 자체가 필요한 경우 (Union-Find가 다른 목적으로도 필요할 때)
 */
 
-public class _8_8_Kruskal_Algorithm {
+public class Kruskal_Algorithm {
 
   static class Edge {
 
