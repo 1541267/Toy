@@ -48,9 +48,9 @@ import java.util.Set;
 
 public class _8_3_Adjacency_List {
 
-  static class AdjacencyList {
+  public static class AdjacencyList {
 
-    Map<Integer, LinkedHashSet<Integer>> adjacencyMap;
+    public Map<Integer, LinkedHashSet<Integer>> adjacencyMap;
     Set<Integer> vertexFlag = new HashSet<>();
 
     private int vertexCount = 0;
