@@ -1,0 +1,1089 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>세그먼트 트리(Segment Tree) 시각화</title>
+  <link rel="stylesheet" href="/Toy/src/main/resources/css/common_code_page_style.css">
+  <style>
+    :root {
+      --controls-mb: 1rem;
+      --controls-gap: 0.7rem 1rem;
+      --phasetag-mr: 7px;
+    }
+
+    .btn-row {
+      margin-left: 0;
+    }
+
+    .ctrl-group {
+      & select,
+      & input[type=number] {
+        width: 72px;
+        padding: 5px 8px;
+      }
+
+      & select {
+        width: auto;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .ctrl-group input[type=number] {
+        width: 60px;
+      }
+    }
+
+    .note-card {
+      flex: 1 1 320px;
+    }
+
+    .log-box {
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      min-height: 2.6rem;
+      line-height: 1.6;
+      display: flex;
+      align-items: center;
+    }
+
+    .tree-scroll {
+      padding: 1.2rem 0.5rem 0.5rem;
+    }
+
+    .pos-tag {
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+
+      &.root {
+        background: var(--tag-green-bg);
+        color: var(--tag-green-text);
+        border: 1px solid var(--tag-green2-bg);
+      }
+    }
+
+    .idx-tag {
+      position: absolute;
+      bottom: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.58rem;
+      color: var(--text-dim);
+      font-family: "Consolas", monospace;
+    }
+
+    /* 세그먼트 트리 노드: 공용 .tnode 베이스를 구간 합 표시용 사각형으로 변형 */
+    .tnode {
+      width: 66px;
+      height: 46px;
+      border-radius: 10px;
+      flex-direction: column;
+      gap: 1px;
+
+      & .nv {
+        font-size: 0.92rem;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+
+      & .nr {
+        font-size: 0.58rem;
+        font-weight: 600;
+        line-height: 1.1;
+        color: var(--text-muted);
+        font-family: "Consolas", monospace;
+      }
+
+      &[class*='state-'] .nr {
+        color: inherit;
+        opacity: 0.8;
+      }
+
+      &.unset {
+        border-style: dashed;
+        opacity: 0.6;
+      }
+
+      &.is-cur {
+        box-shadow: 0 0 0 3px rgba(248, 250, 252, 0.4);
+      }
+
+      &.state-visited {
+        background: var(--tag-teal-bg);
+        border-color: var(--state-compare);
+        color: var(--tag-teal-text);
+      }
+
+      &.state-current {
+        background: var(--state-compare);
+        border-color: var(--tag-teal-text);
+        color: #ecfeff;
+        transform: scale(1.1);
+      }
+
+      &.state-target {
+        background: var(--state-swap);
+        border-color: var(--warn-text);
+        color: #fff7ed;
+        transform: scale(1.05);
+      }
+
+      &.state-new {
+        background: var(--good-border);
+        border-color: #34d399;
+        color: #ecfdf5;
+        animation: pop 0.35s ease;
+      }
+
+      &.state-merge {
+        background: var(--state-alt2);
+        border-color: var(--tag-purple-text);
+        color: #f5f3ff;
+        transform: scale(1.1);
+      }
+
+      &.state-hit {
+        background: var(--state-mark);
+        border-color: #93c5fd;
+        color: #eff6ff;
+      }
+
+      &.state-miss {
+        background: var(--bad-bg);
+        border-color: var(--bad-border);
+        color: var(--bad-text);
+        opacity: 0.55;
+      }
+    }
+
+    .arr-strip {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      margin: 0.9rem 0 0.6rem;
+    }
+
+    .arr-cell {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 4px 9px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: "Consolas", monospace;
+      min-width: 34px;
+
+      &.unused {
+        opacity: 0.3;
+        border-style: dashed;
+      }
+
+      &.unset {
+        opacity: 0.6;
+        border-style: dashed;
+      }
+
+      &.is-cur {
+        box-shadow: 0 0 0 2px rgba(248, 250, 252, 0.4);
+      }
+
+      &.state-visited {
+        border-color: var(--state-compare);
+        background: #0c3a37;
+        opacity: 0.7;
+      }
+
+      &.state-current {
+        border-color: var(--state-compare);
+        background: #0c3a37;
+      }
+
+      &.state-target {
+        border-color: var(--warn-border);
+        background: var(--warn-bg);
+      }
+
+      &.state-new {
+        border-color: var(--good-border);
+        background: var(--good-bg);
+      }
+
+      &.state-merge {
+        border-color: var(--tag-purple-text);
+        background: #2e1065;
+      }
+
+      &.state-hit {
+        border-color: #93c5fd;
+        background: #172554;
+      }
+
+      &.state-miss {
+        border-color: var(--bad-border);
+        background: var(--bad-bg);
+        opacity: 0.6;
+      }
+    }
+
+    .arr-idx {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+    }
+
+    .arr-val {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1 onclick="location.href = '/Toy'">세그먼트 트리(Segment Tree)</h1>
+    <p>합 세그먼트 트리 + build/query/update 시각화</p>
+  </div>
+
+  <details class="notes-toggle">
+    <summary>📖 세그먼트 트리 학습 노트 (클릭해서 펼치기)</summary>
+    <div class="notes-body">
+      <div class="note-card">
+        <h3>🌲 세그먼트 트리란</h3>
+        <ul>
+          <li>노드마다 <strong>구간 집계값</strong>(합, min, max 등)을 저장하는 이진 트리</li>
+          <li>루트는 [0, n-1], 자식은 [start, mid]와 [mid+1, end], 리프는 원소 하나짜리 구간</li>
+          <li>부모 = 왼쪽 자식 + 오른쪽 자식, mid = start + (end - start) / 2 (오버플로 방지)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🤔 필요한 이유</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>방식</th>
+            <th>query</th>
+            <th>update</th>
+          </tr>
+          <tr>
+            <td>배열 순회</td>
+            <td class="warn">O(n)</td>
+            <td class="good">O(1)</td>
+          </tr>
+          <tr>
+            <td>누적합 배열</td>
+            <td class="good">O(1)</td>
+            <td class="warn">O(n)</td>
+          </tr>
+          <tr>
+            <td>세그먼트 트리</td>
+            <td class="good">O(log n)</td>
+            <td class="good">O(log n)</td>
+          </tr>
+        </table>
+        <p style="font-size:0.78rem; color:#94a3b8; margin:0.6rem 0 0;">값 변경과 구간 조회가 둘 다 많을 때 사용, 값이
+          안 바뀌면 누적합으로 충분</p>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>📦 배열 표현과 4n</h3>
+        <ul>
+          <li>루트를 1번으로 잡으면 자식은 <strong>node * 2, node * 2 + 1</strong></li>
+          <li>마지막 레벨이 빈틈없이 채워지지 않을 수 있어, 힙과 달리 인덱스가 0~n-1에 딱 맞지 않음</li>
+          <li>높이는 ceil(log2 n), 가장 깊은 리프 인덱스는 최대 2^(높이+1) - 1 -> n이 2의 거듭제곱보다 조금만 커도 4n에 근접</li>
+          <li>3n으로 잡으면 n=36에서 마지막 인덱스 113, 배열 길이 108 -> ArrayIndexOutOfBounds, 안전한 4n이 관례</li>
+          <li>입력이 int여도 합은 long 배열에 저장해서 오버플로 방지</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">⚙️ 핵심 연산</div>
+
+      <div class="note-card">
+        <h3>🏗 build -> O(n)</h3>
+        <ul>
+          <li>리프는 arr[start]를 저장하고 return</li>
+          <li>왼쪽, 오른쪽 자식을 먼저 재귀로 채운 뒤(후위 순서) 부모를 계산</li>
+          <li>노드마다 한 번씩만 방문, arr 구간을 다시 합산하면 O(n log n)이 됨</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔍 query(left, right) -> O(log n)</h3>
+        <ul>
+          <li><strong>분기 1</strong> 겹치지 않음 (<code>left &gt; end || right &lt; start</code>) -> 항등원
+            반환
+          </li>
+          <li><strong>분기 2</strong> 완전 포함 (<code>left &lt;= start &amp;&amp; end &lt;= right</code>)
+            -> tree[node] 반환
+          </li>
+          <li><strong>분기 3</strong> 일부만 겹침 -> 양쪽 자식을 같은 (left, right)로 호출해 합침</li>
+          <li>겹침 검사를 먼저, 포함 검사를 나중에, 리프는 분기 1 또는 2로 반드시 끝남</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>✏️ update(idx, v) -> O(log n)</h3>
+        <ul>
+          <li><code>idx &lt;= mid</code>면 왼쪽, 아니면 오른쪽 한쪽 자식으로만 내려감 (경로가 한 줄)</li>
+          <li>리프(start == end)에 도달하면 그 원소가 idx이므로 값만 교체</li>
+          <li>복귀하며 경로 위 노드만 두 자식의 합으로 재계산</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🔎 방문 노드가 레벨당 상수인 이유</h3>
+        <ul>
+          <li>분기 3은 질의 경계(left 또는 right)를 노드 구간이 가로지를 때만 발생</li>
+          <li>같은 레벨의 구간은 서로 겹치지 않아 경계마다 최대 1개 -> 레벨당 분기 3은 최대 2개, 방문은 최대 4개</li>
+          <li>예시 [2, 5, 1, 4, 3, 6]의 query(1, 4) = [1..1]=5 + [2..2]=1 + [3..4]=7 = 13</li>
+        </ul>
+      </div>
+
+      <div class="note-card" style="flex-basis: 100%;">
+        <h3>🎯 차이를 더하지 않고 두 자식으로 재계산하는 이유</h3>
+        <ul>
+          <li>합은 역연산(뺄셈)이 있어 -old +new로 한 원소의 기여분만 갈아끼울 수 있음</li>
+          <li>min은 역연산이 없고 노드가 결과만 들고 있어 어느 원소가 그 값을 만들었는지 알 수 없음</li>
+          <li>예시: [2, 5] 노드의 min = 2, arr[0]을 9로 바꾸면 차이 +7을 더해 9가 되지만 실제는 min(9, 5) = 5</li>
+          <li>핵심은 순서가 아니라 집계 결과에서 한 원소의 영향을 되돌릴 수 있는가 (재계산 방식은 결합법칙만 있으면 성립)</li>
+          <li>펜윅 트리는 += delta 방식이라 합, XOR에 자연스럽고 min, max에는 제약이 붙음</li>
+        </ul>
+      </div>
+
+      <div class="section-divider">🧩 확장과 선택</div>
+
+      <div class="note-card">
+        <h3>🔄 연산 확장</h3>
+        <ul>
+          <li>현재 구현은 합 전용, 연산이 고정된 곳은 합치는 식 3곳(build, doUpdate, doQuery 분기 3)과 항등원 1곳(분기 1)</li>
+          <li>합 0 / 곱 1 / min Long.MAX_VALUE / max Long.MIN_VALUE / gcd 0 / XOR 0</li>
+          <li>일반화: 생성자에서 LongBinaryOperator op, long identity 주입</li>
+          <li>중앙값은 결합법칙이 성립하지 않아 불가, 행렬 곱은 왼쪽, 오른쪽 순서를 지켜야 함</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>📊 누적합과의 선택 기준</h3>
+        <ul>
+          <li>n = 10만, 쿼리 1만 + 업데이트 1만이면 누적합은 업데이트만 약 10억 연산, 세그먼트 트리는 1만 x 약 17</li>
+          <li>업데이트가 없다면 누적합이 더 빠르고 가벼움 (n칸 vs 4n칸)</li>
+          <li>실무 백엔드에서 직접 구현할 일은 드묾 (DB 인덱스, 집계 쿼리, Redis가 담당), 코딩테스트 구간 쿼리의 핵심 도구</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>🛡 범위 검증</h3>
+        <ul>
+          <li>update는 0 &lt;= idx &lt;= n-1이 아니면 예외 (idx == n은 마지막, 음수는 첫 원소를 조용히 덮어씀)</li>
+          <li>query는 음수, left &gt; right, 배열 범위 초과를 예외 처리 (없으면 분기 1, 2가 걸러서 일부만 계산된 값이 반환됨)</li>
+        </ul>
+      </div>
+
+      <div class="note-card">
+        <h3>⏱ 복잡도</h3>
+        <table class="complexity-table">
+          <tr>
+            <th>연산</th>
+            <th>시간복잡도</th>
+            <th>비고</th>
+          </tr>
+          <tr>
+            <td>build</td>
+            <td class="good">O(n)</td>
+            <td>노드마다 한 번</td>
+          </tr>
+          <tr>
+            <td>query</td>
+            <td class="good">O(log n)</td>
+            <td>레벨당 상수 개 방문</td>
+          </tr>
+          <tr>
+            <td>update</td>
+            <td class="good">O(log n)</td>
+            <td>루트-리프 경로 한 줄</td>
+          </tr>
+          <tr>
+            <td>공간</td>
+            <td class="warn">O(n)</td>
+            <td>실제 배열은 4n</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <div class="controls-bar">
+    <div class="ctrl-group">
+      <label>연산</label>
+      <select id="opSelect">
+        <option value="query">query(left, right) - 구간 합</option>
+        <option value="update">update(idx, v) - 값 변경</option>
+        <option value="build">build(arr) - 트리 구성</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="leftGroup"><label>left</label><input type="number" id="leftInput"
+                                                                     value="1"></div>
+    <div class="ctrl-group" id="rightGroup"><label>right</label><input type="number" id="rightInput"
+                                                                       value="4"></div>
+    <div class="ctrl-group" id="idxGroup"><label>idx</label><input type="number" id="idxInput"
+                                                                   value="3"></div>
+    <div class="ctrl-group" id="valGroup"><label>값</label><input type="number" id="valInput"
+                                                                 value="10"></div>
+    <div class="ctrl-group"><label>크기 n</label><input type="number" id="nInput" value="6" min="1"
+                                                      max="12"></div>
+    <div class="divider-v"></div>
+    <div class="ctrl-group">
+      <label>속도</label>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="val" id="speedLabel">보통</span>
+    </div>
+    <div class="btn-row right">
+      <button class="btn primary" id="btnPlay">▶ 재생</button>
+      <button class="btn" id="btnStep">한 단계씩</button>
+      <button class="btn" id="btnNewArr">🔄 새 배열</button>
+    </div>
+  </div>
+
+  <div class="info-strip">
+    <div class="info-chip">n = <strong id="infoN">0</strong></div>
+    <div class="info-chip">tree 크기(4n) = <strong id="infoCap">0</strong></div>
+    <div class="info-chip">사용한 최대 인덱스 = <strong id="infoMax">0</strong></div>
+    <div class="info-chip">높이 = <strong id="infoH">0</strong></div>
+    <div class="info-chip">tree[1] (전체 합) = <strong id="infoRoot">?</strong></div>
+    <div class="info-chip">진행 단계 = <strong id="infoStep">-</strong></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Segment Tree (구간 합)</div>
+      <div class="panel-step" id="stepCounter">-</div>
+    </div>
+    <div class="panel-sub">노드 안: 구간 합 / [start..end], 노드 아래 작은 숫자: tree 배열 인덱스</div>
+
+    <div class="tree-scroll">
+      <div class="tree-canvas-wrap" id="treeCanvasWrap">
+        <div class="tree-canvas" id="treeCanvas">
+          <svg class="tree-edges" id="treeEdges"></svg>
+          <div class="nodes-layer" id="nodesLayer"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arr-strip" id="arrStrip"></div>
+    <div class="arr-strip" id="treeStrip"></div>
+    <div class="output-strip" id="outStrip" style="display:none;"></div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px solid #334155;"></div>
+        기본
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f766e;"></div>
+        현재 방문 / 내려가는 중 (current)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#b45309;"></div>
+        분기 3 일부 겹침 / 합산에 참조하는 자식 (target)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1d4ed8;"></div>
+        분기 2 완전 포함, 값 반환 / 질의 구간 (hit)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#7f1d1d;"></div>
+        분기 1 겹치지 않음, 0 반환 (miss)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#065f46;"></div>
+        값 확정 / 갱신 (new)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#6d28d9;"></div>
+        자식 값 합산 중 (merge)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#0f3d3a;"></div>
+        지나온 경로 (visited)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#1e2433;border:1px dashed #64748b;"></div>
+        아직 계산 전
+      </div>
+    </div>
+
+    <div class="log-box" id="logBox">연산을 선택하고 [재생]을 눌러보세요.</div>
+  </div>
+
+  <div class="code-section">
+    <div class="code-section-title">📄 소스 코드</div>
+    <div class="code-panel">
+      <div class="code-panel-header">
+        <div class="dot" style="background:#67e8f9"></div>
+        SegmentTree
+      </div>
+      <pre id="srcPre"></pre>
+    </div>
+  </div>
+</div><!-- /page -->
+
+<script type="text/plain" id="javaSrc">
+  static class SegmentTree {
+
+    private final long[] tree;
+    private final int originalArrSize;
+
+    public SegmentTree(long[] arr) {
+      if (arr == null || arr.length < 1) {throw new IllegalArgumentException("build할 데이터의 배열 크기가 적음");}
+      this.originalArrSize = arr.length;
+      this.tree = new long[originalArrSize * 4];
+
+      build(arr, 1, 0, arr.length - 1);
+    }
+
+    private void build(long[] arr, int node, int start, int end) {
+      // 리프
+      if (start == end) {
+        tree[node] = arr[start];
+        return;
+      }
+
+      int mid = start + (end - start) / 2;
+      build(arr, node * 2, start, mid);
+      build(arr, node * 2 + 1, mid + 1, end);
+      tree[node] = tree[node * 2] + tree[node * 2 + 1];
+    }
+
+    public long query(int left, int right) {
+      checkQueryRange(left, right);
+
+      return doQuery(1, 0, originalArrSize - 1, left, right);
+    }
+
+    private long doQuery(int node, int start, int end, int left, int right) {
+      // 첫 분기, 쿼리(질의)의 범위가 각 노드 구간과 겹치지 않는 경우
+      // 왼쪽이 end 보다 크다 = 쿼리 범위가 오른쪽에, 오른쪽이 start 보다 = 반대
+      // 항등원(값을 변환하지 않는 요소, 덧셈 = 0, 곱셈 = 1, 최솟값 = MAX_VALUE, 최댓값 = MIN_VALUE)을 반환
+      if (left > end || right < start) {return 0;}
+
+      // 두 번째 분기, 질의 범위가 노드 구간에 포함될 경우
+      if (left <= start && right >= end) {return tree[node];}
+
+      // 그 외
+      int mid = start + (end - start) / 2;
+      return doQuery(node * 2, start, mid, left, right) + doQuery(node * 2 + 1, mid + 1, end, left, right);
+    }
+
+    public void update(int idx, long value) {
+      if (idx > originalArrSize - 1 || idx < 0) {
+        throw new IllegalArgumentException("범위를 벗어난 idx 수정 시도, idx: " + idx);
+      }
+
+      doUpdate(1, 0, originalArrSize - 1, idx, value);
+    }
+
+    private void doUpdate(int node, int start, int end, int idx, long value) {
+      // 리프
+      if (start == end) {
+        tree[node] = value;
+        return;
+      }
+
+      int mid = start + (end - start) / 2;
+
+      // idx가 왼쪽 범위에 있는 경우
+      if (idx <= mid) {
+        doUpdate(node * 2, start, mid, idx, value);
+      } else {
+        // 오른쪽
+        doUpdate(node * 2 + 1, mid + 1, end, idx, value);
+      }
+
+      // 결과 업데이트
+      tree[node] = tree[node * 2] + tree[node * 2 + 1];
+    }
+
+    private void checkQueryRange(int left, int right) {
+      if (left < 0 || right < 0) {
+        throw new IllegalArgumentException("검사 하려는 범위가 음수, left: " + left + ", right: " + right);
+      }
+      if (left > right) {
+        throw new IllegalArgumentException("검사 하려는 왼쪽의 범위가 오른쪽보다 큼,  left: " + left + ", right: " + right);
+      }
+      if (left > originalArrSize - 1 || right > originalArrSize - 1) {
+        throw new IllegalArgumentException("검색 하려는 범위가 기존 배열을 벗어남");
+      }
+    }
+  }
+</script>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const speedMap = {1: 1100, 2: 800, 3: 550, 4: 380, 5: 260, 6: 170, 7: 110, 8: 70, 9: 35, 10: 5};
+  const speedNames = {
+    1: '매우 느림', 2: '매우 느림', 3: '느림', 4: '느림', 5: '보통',
+    6: '보통', 7: '빠름', 8: '빠름', 9: '매우 빠름', 10: '최대한 빠르게'
+  };
+  const getSpeed = () => parseInt($('speedSlider').value);
+
+  // ── 소스 코드 문법 강조 (원문 그대로 넣고 실행 시 토큰에 클래스만 입힘) ──
+  const KW = new Set(
+      ['static', 'class', 'private', 'final', 'public', 'if', 'else', 'return', 'new', 'throw',
+        'this', 'null']);
+  const TY = new Set(['long', 'int', 'void', 'SegmentTree', 'IllegalArgumentException']);
+
+  function highlightJava(code) {
+    const re = /(\/\/.*)|("(?:[^"\\]|\\.)*")|(\b\d+\b)|(\b[A-Za-z_]\w*\b)/g;
+    const esc = x => x.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let out = '', last = 0, m;
+    while ((m = re.exec(code))) {
+      out += esc(code.slice(last, m.index));
+      const t = m[0];
+      let c;
+      if (m[1]) { c = 'ck'; } else if (m[2]) { c = 'st'; } else if (m[3]) { c = 'nu'; } else if (KW.has(
+          t)) { c = 'kw'; } else if (TY.has(t)) { c = 'ty'; } else if (code[re.lastIndex]
+          === '(') { c = 'fn'; } else { c = 'nm'; }
+      out += `<span class="${c}">${esc(t)}</span>`;
+      last = re.lastIndex;
+    }
+    return out + esc(code.slice(last));
+  }
+
+  $('srcPre').innerHTML = highlightJava($('javaSrc').textContent.trim());
+
+  // ── 상태 ──
+  let arr = [], vals = {}, S = null;
+  let steps = [], stepIdx = -1, playing = false, timer = null, needsNewRun = true;
+
+  // 노드 구조: build()의 재귀 분할과 동일하게 생성, 리프 순서대로 x 슬롯 배정
+  function buildStruct(n) {
+    const nodes = {};
+    let leaf = 0, maxIdx = 0, maxDepth = 0;
+
+    function rec(idx, start, end, depth) {
+      const nd = {idx, start, end, depth, x: 0, left: null, right: null};
+      nodes[idx] = nd;
+      maxIdx = Math.max(maxIdx, idx);
+      maxDepth = Math.max(maxDepth, depth);
+      if (start === end) {
+        nd.x = leaf++;
+        return nd;
+      }
+      const mid = start + Math.floor((end - start) / 2);
+      nd.left = rec(idx * 2, start, mid, depth + 1);
+      nd.right = rec(idx * 2 + 1, mid + 1, end, depth + 1);
+      nd.x = (nd.left.x + nd.right.x) / 2;
+      return nd;
+    }
+
+    rec(1, 0, n - 1, 0);
+    return {nodes, maxIdx, maxDepth, n};
+  }
+
+  function fullVals(a) {
+    const v = {};
+    (function r(nd) {
+      if (nd.start === nd.end) {
+        v[nd.idx] = a[nd.start];
+        return;
+      }
+      r(nd.left);
+      r(nd.right);
+      v[nd.idx] = v[nd.left.idx] + v[nd.right.idx];
+    })(S.nodes[1]);
+    return v;
+  }
+
+  function setArr(a) {
+    arr = a;
+    S = buildStruct(a.length);
+    vals = fullVals(a);
+  }
+
+  function snap(a, v, hl, ahl, msg, tag, cur, out) {
+    return {arr: a.slice(), vals: {...v}, hl: hl || {}, ahl: ahl || {}, msg, tag, cur, out};
+  }
+
+  const midOf = (s, e) => s + Math.floor((e - s) / 2);
+
+  // ── planner: build ──
+  function planBuild(a) {
+    const st = [], vv = {}, stack = [];
+    st.push(snap(a, vv, {}, {},
+        `build(arr, 1, 0, ${a.length - 1}) 호출 -> tree 배열은 길이 4n = ${a.length * 4}로 초기화`, 'visit',
+        1));
+    const path = () => {
+      const h = {};
+      stack.forEach(s => { h[s] = 'visited'; });
+      return h;
+    };
+
+    function rec(nd) {
+      const i = nd.idx;
+      if (nd.start === nd.end) {
+        vv[i] = a[nd.start];
+        st.push(snap(a, vv, {...path(), [i]: 'new'}, {[nd.start]: 'current'},
+            `리프 node=${i} [${nd.start}..${nd.end}] -> tree[${i}] = arr[${nd.start}] = ${a[nd.start]}`,
+            'set', i));
+        return;
+      }
+      const mid = midOf(nd.start, nd.end);
+      st.push(snap(a, vv, {...path(), [i]: 'current'}, {},
+          `build(node=${i}, [${nd.start}..${nd.end}]) -> mid=${mid}, 왼쪽 [${nd.start}..${mid}] 먼저, 오른쪽 [${mid
+          + 1}..${nd.end}] 나중에 재귀`, 'visit', i));
+      stack.push(i);
+      rec(nd.left);
+      rec(nd.right);
+      stack.pop();
+      const l = nd.left.idx, r = nd.right.idx;
+      vv[i] = vv[l] + vv[r];
+      st.push(snap(a, vv, {...path(), [l]: 'target', [r]: 'target', [i]: 'merge'}, {},
+          `재귀 복귀 -> tree[${i}] = tree[${l}](${vv[l]}) + tree[${r}](${vv[r]}) = ${vv[i]}`, 'merge',
+          i));
+    }
+
+    rec(S.nodes[1]);
+    st.push(
+        snap(a, vv, {1: 'new'}, {}, `build 완료 -> tree[1] = ${vv[1]} (전체 합), 사용한 최대 인덱스 ${S.maxIdx}`,
+            'done', null));
+    return {steps: st, arr: a.slice(), vals: {...vv}};
+  }
+
+  // ── planner: query ──
+  function planQuery(a, v, l, r) {
+    const st = [], n = a.length;
+    const err = m => {
+      st.push(snap(a, v, {}, {}, m, 'error'));
+      return {steps: st, arr: a, vals: v};
+    };
+    if (isNaN(l) || isNaN(r)) { return err('값이 올바른 숫자가 아닙니다'); }
+    if (l < 0 || r < 0) {
+      return err(`IllegalArgumentException: 검사 하려는 범위가 음수, left: ${l}, right: ${r}`);
+    }
+    if (l > r) {
+      return err(`IllegalArgumentException: 검사 하려는 왼쪽의 범위가 오른쪽보다 큼, left: ${l}, right: ${r}`);
+    }
+    if (l > n - 1 || r > n - 1) { return err('IllegalArgumentException: 검색 하려는 범위가 기존 배열을 벗어남'); }
+
+    const ahl = {}, states = {}, chips = [], parts = [];
+    for (let i = l; i <= r; i++) { ahl[i] = 'hit'; }
+    const push = (extra, msg, tag, cur, total) => st.push(
+        snap(a, v, {...states, ...extra}, ahl, msg, tag, cur, {chips: chips.slice(), total}));
+
+    push({}, `checkQueryRange 통과 -> doQuery(1, 0, ${n - 1}, ${l}, ${r}) 호출`, 'visit', 1, null);
+
+    function rec(nd) {
+      const i = nd.idx, rng = `node=${i}, [${nd.start}..${nd.end}]`;
+      if (l > nd.end || r < nd.start) {
+        states[i] = 'miss';
+        push({}, `doQuery(${rng}) -> 질의 [${l}..${r}]와 겹치지 않음 (분기 1) -> 항등원 0 반환`, 'skip', i, null);
+        return 0;
+      }
+      if (l <= nd.start && r >= nd.end) {
+        states[i] = 'hit';
+        chips.push(`[${nd.start}..${nd.end}]=${v[i]}`);
+        parts.push(v[i]);
+        push({}, `doQuery(${rng}) -> 질의 구간에 완전히 포함 (분기 2) -> tree[${i}] = ${v[i]} 그대로 반환`, 'take',
+            i, null);
+        return v[i];
+      }
+      const mid = midOf(nd.start, nd.end);
+      states[i] = 'target';
+      push({}, `doQuery(${rng}) -> 일부만 겹침 (분기 3) -> mid=${mid}, 왼쪽 [${nd.start}..${mid}]와 오른쪽 [${mid
+      + 1}..${nd.end}]를 같은 (${l}, ${r})로 호출`, 'visit', i, null);
+      const x = rec(nd.left), y = rec(nd.right);
+      push({[i]: 'merge'}, `node=${i} 합산 -> ${x} + ${y} = ${x + y} 반환`, 'merge', i, null);
+      return x + y;
+    }
+
+    const total = rec(S.nodes[1]);
+    push({}, `query(${l}, ${r}) 완료 -> 분기 2에서 반환된 값 ${parts.join(' + ')} = ${total}`, 'done', null,
+        total);
+    return {steps: st, arr: a, vals: v};
+  }
+
+  // ── planner: update ──
+  function planUpdate(a, v, idx, val) {
+    const st = [], n = a.length, w = a.slice(), vv = {...v};
+    const err = m => {
+      st.push(snap(a, v, {}, {}, m, 'error'));
+      return {steps: st, arr: a, vals: v};
+    };
+    if (isNaN(idx) || isNaN(val)) { return err('값이 올바른 숫자가 아닙니다'); }
+    if (idx < 0 || idx > n - 1) {
+      return err(`IllegalArgumentException: 범위를 벗어난 idx 수정 시도, idx: ${idx}`);
+    }
+
+    const path = [];
+    const visited = () => {
+      const h = {};
+      path.forEach(p => { h[p.idx] = 'visited'; });
+      return h;
+    };
+    st.push(snap(w, vv, {}, {[idx]: 'current'},
+        `update(${idx}, ${val}) 범위 검증 통과 -> doUpdate(1, 0, ${n - 1}, ${idx}, ${val}) 호출`, 'visit',
+        1));
+
+    let nd = S.nodes[1];
+    while (true) {
+      path.push(nd);
+      if (nd.start === nd.end) {
+        const old = vv[nd.idx];
+        w[idx] = val;
+        vv[nd.idx] = val;
+        st.push(snap(w, vv, {...visited(), [nd.idx]: 'new'}, {[idx]: 'new'},
+            `리프 도달 node=${nd.idx} [${nd.start}..${nd.end}] -> tree[${nd.idx}] = ${old} -> ${val}`,
+            'set', nd.idx));
+        break;
+      }
+      const mid = midOf(nd.start, nd.end), goLeft = idx <= mid;
+      st.push(snap(w, vv, {...visited(), [nd.idx]: 'current'}, {[idx]: 'current'},
+          `doUpdate(node=${nd.idx}, [${nd.start}..${nd.end}]) -> mid=${mid}, idx(${idx}) ${goLeft
+              ? '<=' : '>'} mid -> ${goLeft ? '왼쪽' : '오른쪽'} 자식으로만 내려감`, 'visit', nd.idx));
+      nd = goLeft ? nd.left : nd.right;
+    }
+
+    for (let k = path.length - 2; k >= 0; k--) {
+      const p = path[k], l = p.left.idx, r = p.right.idx;
+      vv[p.idx] = vv[l] + vv[r];
+      const h = {};
+      for (let j = 0; j < k; j++) { h[path[j].idx] = 'visited'; }
+      for (let j = k + 1; j < path.length; j++) { h[path[j].idx] = 'new'; }
+      h[l] = 'target';
+      h[r] = 'target';
+      h[p.idx] = 'merge';
+      st.push(snap(w, vv, h, {[idx]: 'new'},
+          `재귀 복귀 -> tree[${p.idx}] = tree[${l}](${vv[l]}) + tree[${r}](${vv[r]}) = ${vv[p.idx]}`,
+          'merge', p.idx));
+    }
+
+    const h = {};
+    path.forEach(p => { h[p.idx] = 'new'; });
+    st.push(snap(w, vv, h, {[idx]: 'new'},
+        `update(${idx}, ${val}) 완료 -> 경로의 ${path.length}개 노드만 재계산 (O(log n)), tree[1] = ${vv[1]}`,
+        'done', null));
+    return {steps: st, arr: w, vals: vv};
+  }
+
+  // ── 렌더 ──
+  function renderTree(v, hl, cur) {
+    const wrap = $('treeCanvasWrap'), canvas = $('treeCanvas'), svg = $('treeEdges'),
+        layer = $('nodesLayer');
+    const slotW = 76, nw = 66, nh = 46, padTop = 30, gy = 84, inner = S.n * slotW;
+    const W = Math.max(inner + 48, 320), H = padTop + S.maxDepth * gy + nh + 28,
+        ox = (W - inner) / 2;
+    const avail = document.querySelector('.tree-scroll').clientWidth - 4;
+    const sc = avail > 0 ? Math.min(1, avail / W) : 1;
+
+    wrap.style.width = (W * sc) + 'px';
+    wrap.style.height = (H * sc) + 'px';
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.style.transform = `scale(${sc})`;
+    svg.setAttribute('width', W);
+    svg.setAttribute('height', H);
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+    const P = i => ({
+      x: ox + (S.nodes[i].x + 0.5) * slotW,
+      y: padTop + S.nodes[i].depth * gy + nh / 2
+    });
+    let edges = '', html = '';
+    Object.values(S.nodes).forEach(n => {
+      const p = P(n.idx);
+      [n.left, n.right].forEach(c => {
+        if (c) {
+          const q = P(c.idx);
+          edges += `<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" class="tree-edge" />`;
+        }
+      });
+      const st = hl[n.idx], unset = v[n.idx] === undefined;
+      html += `<div class="tnode-wrap" style="left:${p.x - nw / 2}px; top:${p.y - nh / 2}px;">
+          ${n.idx === 1 ? '<div class="pos-tag root">ROOT</div>' : ''}
+          <div class="tnode${st ? ' state-' + st : ''}${unset ? ' unset' : ''}${cur === n.idx
+          ? ' is-cur' : ''}"><span class="nv">${unset ? '?'
+          : v[n.idx]}</span><span class="nr">[${n.start}..${n.end}]</span></div>
+          <div class="idx-tag">${n.idx}</div>
+        </div>`;
+    });
+    svg.innerHTML = edges;
+    layer.innerHTML = html;
+  }
+
+  function renderStrips(s) {
+    let h = '<span class="output-label">원본 배열 arr (참고용)</span>';
+    s.arr.forEach((x, i) => {
+      h += `<div class="arr-cell${s.ahl[i] ? ' state-' + s.ahl[i]
+          : ''}"><span class="arr-idx">${i}</span><span class="arr-val">${x}</span></div>`;
+    });
+    $('arrStrip').innerHTML = h;
+
+    h = '<span class="output-label">배열 tree[]</span>';
+    for (let i = 0; i <= S.maxIdx; i++) {
+      const used = !!S.nodes[i], unset = used && s.vals[i] === undefined;
+      const st = used && s.hl[i] ? ' state-' + s.hl[i] : '';
+      h += `<div class="arr-cell${used ? '' : ' unused'}${unset ? ' unset' : ''}${st}${s.cur === i
+          ? ' is-cur' : ''}"><span class="arr-idx">${i}</span><span class="arr-val">${used ? (unset
+          ? '?' : s.vals[i]) : '-'}</span></div>`;
+    }
+    $('treeStrip').innerHTML = h;
+
+    const o = $('outStrip');
+    if (s.out) {
+      let t = '<span class="output-label">합산에 쓰인 노드</span>';
+      t += s.out.chips.length ? s.out.chips.map(
+              c => `<span class="output-chip active">${c}</span>`).join('')
+          : '<span class="output-chip">-</span>';
+      if (s.out.total
+          !== null) { t += `<span class="output-label">결과</span><span class="queue-chip">${s.out.total}</span>`; }
+      o.innerHTML = t;
+      o.style.display = 'flex';
+    } else {
+      o.style.display = 'none';
+    }
+  }
+
+  const tagMap = {
+    visit: '<span class="phase-tag phase-traverse">방문</span>',
+    skip: '<span class="phase-tag phase-remove">제외</span>',
+    take: '<span class="phase-tag phase-count">반환</span>',
+    merge: '<span class="phase-tag phase-place">합산</span>',
+    set: '<span class="phase-tag phase-insert">저장</span>',
+    done: '<span class="phase-tag phase-done">완료 ✓</span>',
+    error: '<span class="phase-tag phase-error">오류</span>',
+  };
+
+  function renderStep(s) {
+    renderTree(s.vals, s.hl, s.cur);
+    renderStrips(s);
+    $('logBox').innerHTML = (tagMap[s.tag] || '') + s.msg;
+    $('infoN').textContent = s.arr.length;
+    $('infoCap').textContent = s.arr.length * 4;
+    $('infoMax').textContent = S.maxIdx;
+    $('infoH').textContent = S.maxDepth;
+    $('infoRoot').textContent = s.vals[1] === undefined ? '?' : s.vals[1];
+  }
+
+  function stopPlay() {
+    playing = false;
+    clearInterval(timer);
+    $('btnPlay').textContent = '▶ 재생';
+  }
+
+  function showFrame(idx) {
+    if (idx < 0 || idx >= steps.length) { return; }
+    renderStep(steps[idx]);
+    $('stepCounter').textContent = `${idx + 1} / ${steps.length}`;
+    $('infoStep').textContent = `${idx + 1} / ${steps.length}`;
+  }
+
+  function tick() {
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      return;
+    }
+    stepIdx++;
+    showFrame(stepIdx);
+    if (stepIdx >= steps.length - 1) {
+      stopPlay();
+      needsNewRun = true;
+    }
+  }
+
+  function ensurePlanReady() {
+    if (!needsNewRun) { return; }
+    const op = $('opSelect').value, g = id => parseInt($(id).value);
+    let p;
+    if (op === 'query') { p = planQuery(arr, vals, g('leftInput'), g('rightInput')); } else if (op
+        === 'update') {
+      p = planUpdate(arr, vals, g('idxInput'), g('valInput'));
+    } else { p = planBuild(arr); }
+    steps = p.steps;
+    arr = p.arr;
+    vals = p.vals;
+    stepIdx = -1;
+    needsNewRun = false;
+  }
+
+  function updateOpUI() {
+    const op = $('opSelect').value;
+    $('leftGroup').style.display = $('rightGroup').style.display = op === 'query' ? 'flex' : 'none';
+    $('idxGroup').style.display = $('valGroup').style.display = op === 'update' ? 'flex' : 'none';
+  }
+
+  function markDirty() {
+    stopPlay();
+    needsNewRun = true;
+  }
+
+  function showInitial(msg) {
+    steps = [{arr: arr.slice(), vals: {...vals}, hl: {}, ahl: {}, msg, tag: ''}];
+    stepIdx = 0;
+    needsNewRun = true;
+    showFrame(0);
+  }
+
+  function newArray() {
+    stopPlay();
+    const n = Math.min(12, Math.max(1, parseInt($('nInput').value) || 6));
+    $('nInput').value = n;
+    setArr(Array.from({length: n}, () => Math.floor(Math.random() * 20) + 1));
+    showInitial('새 배열을 만들고 build까지 마쳤습니다. build 연산으로 구성 과정을 다시 볼 수 있습니다.');
+  }
+
+  $('opSelect').addEventListener('change', () => {
+    updateOpUI();
+    markDirty();
+  });
+  ['leftInput', 'rightInput', 'idxInput', 'valInput'].forEach(
+      id => $(id).addEventListener('input', markDirty));
+  $('nInput').addEventListener('change', newArray);
+
+  $('btnPlay').addEventListener('click', () => {
+    if (playing) {
+      stopPlay();
+      return;
+    }
+    ensurePlanReady();
+    if (steps.length === 0 || stepIdx >= steps.length - 1) { return; }
+    playing = true;
+    $('btnPlay').textContent = '⏸ 일시정지';
+    tick();
+    if (playing) { timer = setInterval(tick, speedMap[getSpeed()]); }
+  });
+
+  $('btnStep').addEventListener('click', () => {
+    stopPlay();
+    ensurePlanReady();
+    tick();
+  });
+
+  $('btnNewArr').addEventListener('click', newArray);
+
+  $('speedSlider').addEventListener('input', e => {
+    $('speedLabel').textContent = speedNames[e.target.value];
+    if (playing) {
+      clearInterval(timer);
+      timer = setInterval(tick, speedMap[getSpeed()]);
+    }
+  });
+
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (stepIdx >= 0 && stepIdx < steps.length) { showFrame(stepIdx); }
+    }, 120);
+  });
+
+  updateOpUI();
+  setArr([2, 5, 1, 4, 3, 6]);
+  showInitial('연산을 선택하고 [재생] 또는 [한 단계씩]을 눌러보세요.');
+</script>
+</body>
+</html>
