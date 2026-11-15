@@ -313,7 +313,7 @@ public class _2_LinkedList<E> {
 //   }
 //
 //   public void checkInsertBounds(int i) {
-//     if (i < 0 || i > size) {ㄴ
+//     if (i < 0 || i > size) {
 //       throw new IndexOutOfBoundsException("Index: " + i + ", Size: " + size);
 //     }
 //   }
