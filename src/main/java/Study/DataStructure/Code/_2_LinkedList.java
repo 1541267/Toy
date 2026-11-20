@@ -163,6 +163,7 @@ public class _2_LinkedList<E> {
       prevNode.next = nextNode;
       nextNode.prev = prevNode;
     }
+
     size--;
   }
 

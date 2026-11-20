@@ -11,7 +11,7 @@ public class DataStructureTestCodes {
 
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-    System.out.println("1: Array, 2: Singly LinkedList, 3: Doubly LinkedList, 4: Stack");
+    System.out.println("1: Array, 2: Singly LinkedList, 3: Doubly LinkedList, 4: Array Based Stack\n5: LinkedList Based Stack");
 
     switch (br.readLine()) {
       case "1":
@@ -603,7 +603,7 @@ public class DataStructureTestCodes {
       case "3": {
         System.out.println("""
               static final Class<? extends RuntimeException> NULL_EXCEPTION = IllegalArgumentException.class;
-            
+                        
               public static void main(String[] args) {
                 testEmpty();               // 빈 리스트
                 testNullPolicy();          // null 입력 거부 + 거부 후 상태 유지
@@ -1143,6 +1143,1007 @@ public class DataStructureTestCodes {
         break;
       }
 
+      case "4": {
+        System.out.println("""
+              static final Class<? extends RuntimeException> NULL_EXCEPTION = NullPointerException.class;
+              static final Class<? extends RuntimeException> EMPTY_EXCEPTION = EmptyStackException.class;
+              static final Class<? extends RuntimeException> CAPACITY_EXCEPTION = IllegalArgumentException.class;
+
+              public static void main(String[] args) {
+                testConstructor();          // 생성자 용량 검증 (1 미만 거부)
+                testEmpty();                // 빈 스택
+                testNullPolicy();           // null 입력 거부 + 거부 후 상태 유지
+                testRegression();           // 구현 중 나오기 쉬운 버그 재현 시나리오
+                testExhaustiveSmall();      // 작은 용량·크기에서 모든 상태의 push/pop/peek (전수 검사)
+                testExhaustiveSequences();  // push/pop 모든 조합 (연쇄 버그 확인)
+                testRandom();               // ArrayList 와 비교하는 랜덤 테스트
+                testLarge();                // 대량 데이터 + 성능(용량 증가 정책)
+                System.out.println("ALL PASSED");
+              }
+
+              // ---------- 시나리오 테스트 ----------
+
+              // 용량 1 미만은 거부, 1 이상은 허용 (허용된 용량보다 많이 넣어도 정상 증가)
+              static void testConstructor() {
+                int[] invalid = {0, -1, -2, -100, Integer.MIN_VALUE};
+                for (int cap : invalid) {
+                  expectThrows(CAPACITY_EXCEPTION, () -> new ArrayBasedStack<Integer>(cap), "생성자 capacity=" + cap);
+                }
+
+                for (int cap = 1; cap <= 20; cap++) {
+                  ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
+                  checkEmpty(s, "생성자 cap=" + cap);
+                  List<Integer> ref = new ArrayList<>();
+                  for (int i = 0; i < 50; i++) {
+                    s.push(i + 10);
+                    ref.add(i + 10);
+                  }
+                  verifyAll(s, ref, "생성자 cap=" + cap + " 용량보다 많이 push");
+                }
+              }
+
+              static void testEmpty() {
+                for (int cap = 1; cap <= 4; cap++) {
+                  ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
+                  checkEmpty(s, "empty cap=" + cap);
+                }
+              }
+
+              // 모든 용량 / 크기 (용량이 꽉 찬 상태 포함) 에서 null 입력이 거부되고, 거부된 push 가 상태를 바꾸지 않는지 확인
+              static void testNullPolicy() {
+                for (int cap = 1; cap <= 4; cap++) {
+                  for (int n = 0; n <= 10; n++) {
+                    String base = "cap=" + cap + ", n=" + n;
+                    List<Integer> ref = new ArrayList<>();
+                    ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+
+                    expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null)");
+                    expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null) 두 번째");
+                    verifyAll(mine, ref, base + " null 거부 후");
+
+                    mine.push(1);                           // 거부 이후에도 정상 동작하는지
+                    ref.add(1);
+                    verifyAll(mine, ref, base + " null 거부 후 push(1)");
+                    mine.push(2);
+                    ref.add(2);
+                    verifyAll(mine, ref, base + " null 거부 후 push(2)");
+                  }
+                }
+              }
+
+              // 구현 중 실제로 나오기 쉬운 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
+              static void testRegression() {
+                // LIFO 순서
+                ArrayBasedStack<Integer> a = new ArrayBasedStack<>(4);
+                a.push(1);
+                a.push(2);
+                a.push(3);
+                expectStack(a, "regression: push 1,2,3", 1, 2, 3);
+                check(Objects.equals(a.pop(), 3), "regression: pop 반환값 3");
+                check(Objects.equals(a.pop(), 2), "regression: pop 반환값 2");
+                check(Objects.equals(a.pop(), 1), "regression: pop 반환값 1");
+                checkEmpty(a, "regression: 전부 pop 후");
+
+                // peek 은 상태를 바꾸지 않음
+                ArrayBasedStack<Integer> b = new ArrayBasedStack<>(2);
+                b.push(5);
+                check(Objects.equals(b.peek(), 5), "regression: peek 1회");
+                check(Objects.equals(b.peek(), 5), "regression: peek 2회 (peek 이 top 을 움직임)");
+                check(b.getSize() == 1, "regression: peek 후 size");
+                expectStack(b, "regression: peek 반복 후", 5);
+
+                // 용량이 꽉 찬 상태에서 push -> 증가 후 기존 원소 보존 (1 -> 3 -> 7)
+                ArrayBasedStack<Integer> c = new ArrayBasedStack<>(1);
+                c.push(1);                                  // 용량이 꽉 참
+                c.push(2);                                  // 여기서 증가: 기존 원소가 유지되어야 함
+                expectStack(c, "regression: 용량 1 에서 증가", 1, 2);
+                c.push(3);
+                c.push(4);                                  // 두 번째 증가
+                c.push(5);
+                expectStack(c, "regression: 두 번째 증가 후", 1, 2, 3, 4, 5);
+
+                // 꽉 찬 상태에서 pop 후 push: 증가 없이 빈 자리 재사용
+                ArrayBasedStack<Integer> d = new ArrayBasedStack<>(2);
+                d.push(1);
+                d.push(2);
+                check(Objects.equals(d.pop(), 2), "regression: 꽉 찬 상태 pop 반환값");
+                d.push(3);
+                expectStack(d, "regression: 꽉 찬 상태에서 pop 후 push", 1, 3);
+                d.pop();
+                d.pop();
+                d.push(4);
+                expectStack(d, "regression: 비운 뒤 push", 4);
+
+                // 빈 스택에서 pop / peek 이 여러 번 실패해도 top 이 음수로 내려가지 않음
+                ArrayBasedStack<Integer> e = new ArrayBasedStack<>(2);
+                e.push(1);
+                e.pop();
+                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 1회");
+                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 2회");
+                expectThrows(EMPTY_EXCEPTION, () -> e.peek(), "regression: 빈 스택 peek");
+                check(e.getSize() == 0, "regression: 빈 스택 pop 실패 후 size (음수가 되면 안 됨)");
+                check(e.isEmpty(), "regression: 빈 스택 pop 실패 후 isEmpty");
+                e.push(2);
+                check(e.getSize() == 1, "regression: 실패 후 push 의 size");
+                expectStack(e, "regression: 빈 스택 pop 실패 후 push", 2);
+
+                // 꽉 찬 상태에서 null 이 거부된 뒤에도 정상 동작
+                ArrayBasedStack<Integer> f = new ArrayBasedStack<>(1);
+                f.push(1);
+                expectThrows(NULL_EXCEPTION, () -> f.push(null), "regression: 꽉 찬 상태 push(null)");
+                expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후", 1);
+                f.push(2);
+                expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후 push(2)", 1, 2);
+
+                // 넣은 객체 그대로 (같은 인스턴스) 돌려줘야 함
+                ArrayBasedStack<String> g = new ArrayBasedStack<>(1);
+                String x = new String("x");
+                String y = new String("y");
+                g.push(x);
+                g.push(y);
+                check(g.peek() == y, "regression: peek 은 같은 인스턴스여야 함");
+                check(g.pop() == y, "regression: pop 은 같은 인스턴스여야 함 (y)");
+                check(g.pop() == x, "regression: pop 은 같은 인스턴스여야 함 (x)");
+                check(g.isEmpty(), "regression: 객체 스택 비움");
+
+                // 중복 값 / Integer 캐시 범위를 넘는 값 (== 비교 버그 확인)
+                ArrayBasedStack<Integer> h = new ArrayBasedStack<>(1);
+                h.push(1000);
+                h.push(1000);
+                h.push(1000);
+                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 1");
+                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 2");
+                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 3");
+                checkEmpty(h, "regression: 중복 큰 값 전부 pop 후");
+              }
+
+              // cap 1~8, n 0~20 의 모든 조합에서 모든 상태에 대해 연산을 검사한다.
+              // (용량이 꽉 찬 상태 / 한 칸 남은 상태 / 여유 있는 상태 / 증가 직후 상태가 모두 포함됨)
+              static void testExhaustiveSmall() {
+                for (int cap = 1; cap <= 8; cap++) {
+                  for (int n = 0; n <= 20; n++) {
+                    String base = "cap=" + cap + ", n=" + n;
+
+                    // 채운 직후 + peek 반복 + 추가로 0~25개 더 push (증가가 여러 번 일어나는 구간 포함)
+                    for (int extra = 0; extra <= 25; extra++) {
+                      List<Integer> ref = new ArrayList<>();
+                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+                      verifyAll(mine, ref, base + " 채운 직후");
+                      verify(mine, ref, base + " peek 반복 1");
+                      verify(mine, ref, base + " peek 반복 2");
+                      for (int i = 0; i < extra; i++) {
+                        mine.push(100 + i);
+                        ref.add(100 + i);
+                      }
+                      verifyAll(mine, ref, base + " 추가 push " + extra + "개 후");
+                    }
+
+                    // k 번 pop 한 뒤 (k = 0 ~ n) 상태 확인 + 이어서 push
+                    for (int k = 0; k <= n; k++) {
+                      List<Integer> ref = new ArrayList<>();
+                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+                      for (int i = 0; i < k; i++) {
+                        Integer expected = ref.remove(ref.size() - 1);
+                        Integer actual = mine.pop();
+                        check(Objects.equals(expected, actual), base + " pop " + k + "번 중 " + i + "번째 반환값: 기대=" + expected + ", 실제=" + actual);
+                      }
+                      verifyAll(mine, ref, base + " pop " + k + "번 후");
+                      mine.push(97);                        // pop 으로 비워진 칸에 정상적으로 쓰는지
+                      ref.add(97);
+                      verifyAll(mine, ref, base + " pop " + k + "번 후 push(97)");
+                      mine.push(98);
+                      ref.add(98);
+                      verifyAll(mine, ref, base + " pop " + k + "번 후 push(98)");
+                    }
+
+                    // 전부 pop -> 빈 스택 -> 재사용 (3회 반복)
+                    {
+                      List<Integer> ref = new ArrayList<>();
+                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+                      for (int round = 0; round < 3; round++) {
+                        while (!ref.isEmpty()) {
+                          Integer expected = ref.remove(ref.size() - 1);
+                          Integer actual = mine.pop();
+                          check(Objects.equals(expected, actual), base + " 전부 pop round=" + round + " 반환값: 기대=" + expected + ", 실제=" + actual);
+                          verify(mine, ref, base + " 전부 pop round=" + round);
+                        }
+                        checkEmpty(mine, base + " 전부 pop 후 round=" + round);
+                        for (int i = 0; i < n + round; i++) {   // 비워진 뒤 재사용
+                          mine.push(i + 30 * round);
+                          ref.add(i + 30 * round);
+                        }
+                        verifyAll(mine, ref, base + " 재사용 후 round=" + round);
+                      }
+                    }
+
+                    // 현재 크기(경계)에서 push / pop 번갈아: 용량 경계에서 증가가 반복되거나 값이 밀리지 않는지
+                    {
+                      List<Integer> ref = new ArrayList<>();
+                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+                      for (int i = 0; i < 6; i++) {
+                        mine.push(90 + i);                  // push -> pop
+                        ref.add(90 + i);
+                        verifyAll(mine, ref, base + " 경계 push(" + (90 + i) + ")");
+                        Integer expected = ref.remove(ref.size() - 1);
+                        check(Objects.equals(mine.pop(), expected), base + " 경계 pop 반환값 " + i);
+                        verifyAll(mine, ref, base + " 경계 pop " + i);
+                      }
+                      for (int i = 0; i < 6; i++) {
+                        mine.push(80 + i);                  // push, push -> pop
+                        ref.add(80 + i);
+                        mine.push(70 + i);
+                        ref.add(70 + i);
+                        Integer expected = ref.remove(ref.size() - 1);
+                        check(Objects.equals(mine.pop(), expected), base + " 경계 push,push,pop 반환값 " + i);
+                        verifyAll(mine, ref, base + " 경계 push,push,pop " + i);
+                      }
+                    }
+                  }
+                }
+              }
+
+              // cap 1~4 에서 push / pop 길이 11 의 모든 조합 (2^11 가지). 빈 스택에서의 pop 도 포함.
+              // (앞 연산이 남긴 잘못된 내부 상태가 뒤 연산에서 드러나는 버그 확인)
+              static void testExhaustiveSequences() {
+                int len = 11;
+
+                for (int cap = 1; cap <= 4; cap++) {
+                  for (int mask = 0; mask < (1 << len); mask++) {
+                    ArrayBasedStack<Integer> mine = new ArrayBasedStack<>(cap);
+                    List<Integer> ref = new ArrayList<>();
+                    StringBuilder ops = new StringBuilder();
+
+                    for (int step = 0; step < len; step++) {
+                      boolean isPush = ((mask >> step) & 1) == 1;
+                      ops.append(isPush ? "push " : "pop ");
+                      String where = "cap=" + cap + ", 연산 순서: " + ops;
+
+                      if (isPush) {
+                        mine.push(step + 10);
+                        ref.add(step + 10);
+                      } else if (ref.isEmpty()) {
+                        expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                      } else {
+                        Integer expected = ref.remove(ref.size() - 1);
+                        Integer actual = mine.pop();
+                        check(Objects.equals(expected, actual), where + ": pop 반환값 기대=" + expected + ", 실제=" + actual);
+                      }
+                      verifyAll(mine, ref, where);
+                    }
+                  }
+                }
+              }
+
+              // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+              static void testRandom() {
+                Random r = new Random(1);
+                int[] caps = {1, 2, 3, 5, 16};
+
+                for (int t = 0; t < 1000; t++) {
+                  int cap = caps[t % caps.length];
+                  ArrayBasedStack<Integer> mine = new ArrayBasedStack<>(cap);
+                  List<Integer> ref = new ArrayList<>();
+                  List<String> log = new ArrayList<>();
+
+                  try {
+                    for (int step = 0; step < 300; step++) {
+                      boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 push 위주 <-> pop 위주 (빈 스택 / 재확장 유도)
+                      int v = r.nextInt(100);
+                      int op = r.nextInt(8);
+                      if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
+                        op = r.nextInt(3);
+                      }
+                      if (!growing && op <= 2 && r.nextInt(3) != 0) {
+                        op = 4 + r.nextInt(3);
+                      }
+
+                      switch (op) {
+                        case 0, 1, 2 -> {                        // push
+                          log.add("push(" + v + ")");
+                          mine.push(v);
+                          ref.add(v);
+                        }
+                        case 3 -> {                              // peek (빈 스택이면 예외)
+                          log.add("peek");
+                          if (ref.isEmpty()) {
+                            expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), "peek: 빈 스택");
+                          } else {
+                            Integer expected = ref.get(ref.size() - 1);
+                            Integer actual = mine.peek();
+                            check(Objects.equals(expected, actual), "peek 값: 기대=" + expected + ", 실제=" + actual);
+                          }
+                        }
+                        case 4, 5, 6 -> {                        // pop (빈 스택이면 예외)
+                          log.add("pop");
+                          if (ref.isEmpty()) {
+                            expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), "pop: 빈 스택");
+                          } else {
+                            Integer expected = ref.remove(ref.size() - 1);  // int → 인덱스 기준 삭제
+                            Integer actual = mine.pop();
+                            check(Objects.equals(expected, actual), "pop 반환값: 기대=" + expected + ", 실제=" + actual);
+                          }
+                        }
+                        case 7 -> {                              // null 입력은 거부, 상태는 그대로
+                          log.add("push(null)");
+                          expectThrows(NULL_EXCEPTION, () -> mine.push(null), "push(null)");
+                        }
+                      }
+
+                      verify(mine, ref, "step " + step);
+                      if (step % 10 == 0) {
+                        verifyAll(mine, ref, "step " + step + " (전체 확인)");
+                      }
+                    }
+                  } catch (AssertionError | RuntimeException e) {
+                    throw new AssertionError("[trial=" + t + ", cap=" + cap + ", 연산 " + log.size() + "개 실행] 원인: " + e
+                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
+                  }
+                }
+              }
+
+              static void testLarge() {
+                int n = 300_000;
+                ArrayBasedStack<Integer> a = new ArrayBasedStack<>(1);
+
+                long start = System.nanoTime();
+                for (int i = 0; i < n; i++) {
+                  a.push(i);
+                }
+                long ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 1000, "push " + n + "번에 " + ms + "ms: 용량 증가가 2배 방식(amortized O(1))이 아닐 수 있음");
+                check(a.getSize() == n, "large: size");
+                check(!a.isEmpty(), "large: isEmpty");
+                check(Objects.equals(a.peek(), n - 1), "large: peek");
+
+                for (int i = n - 1; i >= 0; i--) {          // 뒤에서부터 전부 pop: 반환 순서 확인
+                  check(Objects.equals(a.peek(), i), "large: peek 순서 " + i);
+                  Integer got = a.pop();
+                  check(Objects.equals(got, i), "large: pop 순서 " + i);
+                }
+                check(a.getSize() == 0, "large: 전부 pop 후 size");
+                checkEmpty(a, "large 전부 pop 후");
+
+                for (int i = 0; i < 1_000; i++) {           // 비워진 뒤 재사용
+                  a.push(i * 2);
+                }
+                for (int i = 999; i >= 0; i--) {
+                  check(Objects.equals(a.pop(), i * 2), "large: 재사용 후 pop 순서 " + i);
+                }
+                checkEmpty(a, "large 재사용 후 전부 pop");
+
+                // 같은 크기 근처에서 push / pop 반복: 매번 증가하거나 복사하면 매우 느려짐
+                ArrayBasedStack<Integer> b = new ArrayBasedStack<>(1);
+                for (int i = 0; i < 1_000; i++) {
+                  b.push(i);
+                }
+                start = System.nanoTime();
+                for (int i = 0; i < 1_000_000; i++) {
+                  b.push(i);
+                  Integer got = b.pop();
+                  if (!Objects.equals(got, i)) {
+                    check(false, "large: push/pop 반복 반환값 " + i);
+                  }
+                }
+                ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 1000, "push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
+                check(b.getSize() == 1_000, "large: push/pop 반복 후 size");
+                check(Objects.equals(b.peek(), 999), "large: push/pop 반복 후 peek");
+
+                // 빈 스택 <-> 1개 상태 반복 (용량 1)
+                ArrayBasedStack<Integer> c = new ArrayBasedStack<>(1);
+                start = System.nanoTime();
+                for (int i = 0; i < 1_000_000; i++) {
+                  c.push(i);
+                  Integer got = c.pop();
+                  if (!Objects.equals(got, i)) {
+                    check(false, "large: 용량 1 push/pop 반복 반환값 " + i);
+                  }
+                }
+                ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 1000, "용량 1 push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
+                checkEmpty(c, "large 용량 1 push/pop 반복 후");
+              }
+
+              // ---------- 검증 도구 ----------
+
+              static ArrayBasedStack<Integer> newFilled(int cap, int n, List<Integer> ref) {
+                ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
+                for (int i = 0; i < n; i++) {
+                  s.push(i + 10);                          // 서로 다른 값 → 밀림/덮어쓰기 버그가 드러남
+                  ref.add(i + 10);                         // ref 의 마지막 원소 = 스택의 top
+                }
+                return s;
+              }
+
+              static void expectStack(ArrayBasedStack<Integer> mine, String where, Integer... bottomToTop) {
+                verifyAll(mine, new ArrayList<>(Arrays.asList(bottomToTop)), where);
+              }
+
+              // size, isEmpty, peek(또는 빈 스택의 예외) 를 빠르게 비교 (큰 데이터에서도 사용 가능)
+              static void verify(ArrayBasedStack<Integer> mine, List<Integer> ref, String where) {
+                check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
+                check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
+                if (ref.isEmpty()) {
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                  check(mine.getSize() == 0, where + ": 빈 스택 예외 후 size");
+                } else {
+                  Integer expected = ref.get(ref.size() - 1);
+                  Integer actual = mine.peek();
+                  check(Objects.equals(expected, actual), where + ": peek 기대=" + expected + ", 실제=" + actual);
+                }
+              }
+
+              // verify + 내부 원소 전부 확인: 전부 pop 해서 ref 와 비교한 뒤 같은 순서로 다시 push 해서 복원 (작은 크기에서만 사용)
+              static void verifyAll(ArrayBasedStack<Integer> mine, List<Integer> ref, String where) {
+                verify(mine, ref, where);
+                try {
+                  List<Integer> popped = new ArrayList<>();
+                  for (int i = ref.size() - 1; i >= 0; i--) {
+                    Integer got = mine.pop();
+                    popped.add(got);
+                    check(Objects.equals(got, ref.get(i)), where + ": 전체 확인 pop (index " + i + ") 기대=" + ref.get(i) + ", 실제=" + got);
+                  }
+                  check(mine.isEmpty() && mine.getSize() == 0, where + ": 전체 pop 후 비어 있어야 함");
+                  for (int i = popped.size() - 1; i >= 0; i--) {
+                    mine.push(popped.get(i));
+                  }
+                } catch (RuntimeException e) {
+                  throw new AssertionError(where + ": 전체 확인 중 예외 " + e, e);
+                }
+                verify(mine, ref, where + " (전체 확인 후 복원)");
+              }
+
+              // 빈 스택은 pop / peek 이 모두 예외여야 하고, 실패한 연산이 상태를 바꾸면 안 됨 (여러 번 반복)
+              static void checkEmpty(ArrayBasedStack<Integer> mine, String where) {
+                check(mine.isEmpty(), where + ": isEmpty");
+                check(mine.getSize() == 0, where + ": size");
+                for (int i = 0; i < 3; i++) {
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
+                }
+                check(mine.isEmpty(), where + ": 예외 발생 후 isEmpty");
+                check(mine.getSize() == 0, where + ": 예외 발생 후 size 가 변함");
+              }
+
+              static String recent(List<String> log) {
+                return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
+              }
+
+              static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
+                try {
+                  action.run();
+                } catch (RuntimeException e) {
+                  if (type.isInstance(e)) {
+                    return;
+                  }
+                  throw new AssertionError(msg + ": 기대 예외=" + type.getSimpleName() + ", 실제=" + e, e);
+                }
+                throw new AssertionError(msg + ": 예외가 발생하지 않음");
+              }
+
+              static void check(boolean cond, String msg) {
+                if (!cond) {throw new AssertionError(msg);}
+              }
+            """);
+        break;
+      }
+
+      case "5": {
+        System.out.println("""
+              static final Class<? extends RuntimeException> NULL_EXCEPTION = NullPointerException.class;
+              static final Class<? extends RuntimeException> EMPTY_EXCEPTION = EmptyStackException.class;
+
+              public static void main(String[] args) {
+                testEmpty();                // 빈 스택
+                testNullPolicy();           // null 입력 거부 + 거부 후 상태 유지
+                testRegression();           // 구현 중 실제로 나왔던 버그 재현 시나리오
+                testExhaustiveSmall();      // 작은 크기에서 모든 상태의 push/pop/peek (전수 검사)
+                testExhaustiveSequences();  // push/pop 모든 조합 (연쇄 버그 확인)
+                // testRemovedNodeDetached();  // (선택) pop 한 노드의 next 를 끊도록 구현했다면 주석 해제
+                testRandom();               // ArrayList 와 비교하는 랜덤 테스트
+                testLarge();                // 대량 데이터 + 성능(O(1) push/pop)
+                System.out.println("ALL PASSED");
+              }
+
+              // ---------- 시나리오 테스트 ----------
+
+              static void testEmpty() {
+                LinkedListBasedStack<Integer> s = new LinkedListBasedStack<>();
+                check(s.top == null, "empty: top 은 null 이어야 함");
+                checkEmpty(s, "empty");
+                checkStructure(s, "empty");
+              }
+
+              // n 0~10 에서 null 입력이 거부되고, 거부된 push 가 size / top 을 바꾸지 않는지 확인
+              static void testNullPolicy() {
+                for (int n = 0; n <= 10; n++) {
+                  String base = "n=" + n;
+                  List<Integer> ref = new ArrayList<>();
+                  LinkedListBasedStack<Integer> mine = newFilled(n, ref);
+
+                  expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null)");
+                  expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null) 두 번째");
+                  verify(mine, ref, base + " null 거부 후");
+
+                  mine.push(1);                             // 거부 이후에도 정상 동작하는지
+                  ref.add(1);
+                  verify(mine, ref, base + " null 거부 후 push(1)");
+                  mine.push(2);
+                  ref.add(2);
+                  verify(mine, ref, base + " null 거부 후 push(2)");
+                }
+              }
+
+              // 구현 중 실제로 나왔던 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
+              static void testRegression() {
+                // push 마다 top 이 새 노드로 이동해야 함 + LIFO 순서
+                LinkedListBasedStack<Integer> a = new LinkedListBasedStack<>();
+                a.push(1);
+                check(Objects.equals(a.peek(), 1), "regression: push(1) 후 peek");
+                a.push(2);
+                check(Objects.equals(a.peek(), 2), "regression: push(2) 후 peek: top 이 새 노드로 이동하지 않음");
+                a.push(3);
+                check(Objects.equals(a.peek(), 3), "regression: push(3) 후 peek: top 이 새 노드로 이동하지 않음");
+                expectStack(a, "regression: push 1,2,3", 1, 2, 3);
+                check(Objects.equals(a.pop(), 3), "regression: pop 반환값 3");
+                check(Objects.equals(a.pop(), 2), "regression: pop 반환값 2");
+                check(Objects.equals(a.pop(), 1), "regression: pop 반환값 1");
+                checkEmpty(a, "regression: 전부 pop 후");
+
+                // 새 노드가 기존 top 을 가리켜야 함 (top.next 방향이 반대로 되면 노드가 유실됨)
+                LinkedListBasedStack<Integer> b = new LinkedListBasedStack<>();
+                b.push(10);
+                b.push(20);
+                check(b.top != null, "regression: push 후 top 이 null");
+                check(Objects.equals(b.top.data, 20), "regression: top 이 마지막 push 한 노드가 아님");
+                check(b.top.next != null, "regression: 두 번째 push 후 top.next 가 null (새 노드가 기존 top 을 가리켜야 함)");
+                check(Objects.equals(b.top.next.data, 10), "regression: top.next 가 이전 top 이 아님");
+                check(b.top.next.next == null, "regression: 바닥 노드의 next 가 null 이 아님");
+
+                // pop 은 top 을 다음 노드로 옮겨야 함 (옮기지 않으면 같은 값이 계속 반환됨)
+                LinkedListBasedStack<Integer> c = new LinkedListBasedStack<>();
+                c.push(1);
+                c.push(2);
+                c.push(3);
+                check(Objects.equals(c.pop(), 3), "regression: pop 첫 반환값");
+                check(c.getSize() == 2, "regression: pop 후 size");
+                check(Objects.equals(c.peek(), 2), "regression: pop 후 peek: top 이 다음 노드로 이동하지 않음");
+                check(Objects.equals(c.pop(), 2), "regression: pop 두 번째 반환값 (같은 값이 반복되면 top 미이동)");
+                check(Objects.equals(c.pop(), 1), "regression: pop 세 번째 반환값");
+                checkEmpty(c, "regression: pop 3회 후 (size 0 인데 top 이 남아 있으면 안 됨)");
+
+                // peek 은 상태를 바꾸지 않음
+                LinkedListBasedStack<Integer> d = new LinkedListBasedStack<>();
+                d.push(5);
+                check(Objects.equals(d.peek(), 5), "regression: peek 1회");
+                check(Objects.equals(d.peek(), 5), "regression: peek 2회 (peek 이 top 을 움직임)");
+                check(d.getSize() == 1, "regression: peek 후 size");
+                expectStack(d, "regression: peek 반복 후", 5);
+
+                // 빈 스택에서 pop / peek 이 여러 번 실패해도 size 가 음수로 내려가지 않음
+                LinkedListBasedStack<Integer> e = new LinkedListBasedStack<>();
+                e.push(1);
+                e.pop();
+                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 1회");
+                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 2회");
+                expectThrows(EMPTY_EXCEPTION, () -> e.peek(), "regression: 빈 스택 peek");
+                check(e.getSize() == 0, "regression: 빈 스택 pop 실패 후 size (음수가 되면 안 됨)");
+                check(e.isEmpty(), "regression: 빈 스택 pop 실패 후 isEmpty");
+                e.push(2);
+                check(e.getSize() == 1, "regression: 실패 후 push 의 size");
+                check(e.top.next == null, "regression: 비운 뒤 push 한 노드의 next 가 null 이 아님 (이전 노드가 남아 있음)");
+                expectStack(e, "regression: 빈 스택 pop 실패 후 push", 2);
+
+                // pop 후 push: 이전 노드가 아니라 현재 top 아래에 연결되어야 함
+                LinkedListBasedStack<Integer> f = new LinkedListBasedStack<>();
+                f.push(1);
+                f.push(2);
+                check(Objects.equals(f.pop(), 2), "regression: pop 반환값");
+                f.push(3);
+                expectStack(f, "regression: pop 후 push", 1, 3);
+                check(f.top.next != null && Objects.equals(f.top.next.data, 1), "regression: pop 후 push 한 노드가 바닥 노드를 가리켜야 함");
+
+                // 빈 스택에서 null 거부 + 거부 후 size / top 유지
+                LinkedListBasedStack<Integer> g = new LinkedListBasedStack<>();
+                expectThrows(NULL_EXCEPTION, () -> g.push(null), "regression: 빈 스택 push(null)");
+                check(g.getSize() == 0, "regression: 빈 스택 push(null) 거부 후 size 가 증가함");
+                check(g.top == null, "regression: 빈 스택 push(null) 거부 후 top 이 null 이 아님");
+                checkEmpty(g, "regression: 빈 스택 null 거부 후");
+                g.push(1);
+                expectThrows(NULL_EXCEPTION, () -> g.push(null), "regression: size 1 에서 push(null)");
+                check(g.getSize() == 1, "regression: push(null) 거부 후 size 가 증가함");
+                expectStack(g, "regression: null 거부 후", 1);
+                g.push(2);
+                expectStack(g, "regression: null 거부 후 push(2)", 1, 2);
+
+                // 넣은 객체 그대로 (같은 인스턴스) 돌려줘야 함
+                LinkedListBasedStack<String> h = new LinkedListBasedStack<>();
+                String x = new String("x");
+                String y = new String("y");
+                h.push(x);
+                h.push(y);
+                check(h.peek() == y, "regression: peek 은 같은 인스턴스여야 함");
+                check(h.pop() == y, "regression: pop 은 같은 인스턴스여야 함 (y)");
+                check(h.pop() == x, "regression: pop 은 같은 인스턴스여야 함 (x)");
+                check(h.isEmpty(), "regression: 객체 스택 비움");
+
+                // 중복 값 / Integer 캐시 범위를 넘는 값 (== 비교 버그 확인)
+                LinkedListBasedStack<Integer> big = new LinkedListBasedStack<>();
+                big.push(1000);
+                big.push(1000);
+                big.push(1000);
+                check(Objects.equals(big.pop(), 1000), "regression: 중복 큰 값 pop 1");
+                check(Objects.equals(big.pop(), 1000), "regression: 중복 큰 값 pop 2");
+                check(Objects.equals(big.pop(), 1000), "regression: 중복 큰 값 pop 3");
+                checkEmpty(big, "regression: 중복 큰 값 전부 pop 후");
+              }
+
+              // n 0~20 에서 모든 상태에 대해 연산을 검사한다.
+              // (빈 스택 / 노드 1개 / 여러 개 / pop 으로 비워진 뒤 재사용 경계가 모두 포함됨)
+              static void testExhaustiveSmall() {
+                for (int n = 0; n <= 20; n++) {
+                  String base = "n=" + n;
+
+                  // 채운 직후 + peek 반복 + 추가로 0~25개 더 push
+                  for (int extra = 0; extra <= 25; extra++) {
+                    List<Integer> ref = new ArrayList<>();
+                    LinkedListBasedStack<Integer> mine = newFilled(n, ref);
+                    verify(mine, ref, base + " 채운 직후");
+                    verify(mine, ref, base + " peek 반복 1");   // verify 안에서 peek 을 호출하므로 반복 호출이 상태를 바꾸지 않는지 확인됨
+                    verify(mine, ref, base + " peek 반복 2");
+                    for (int i = 0; i < extra; i++) {
+                      mine.push(100 + i);
+                      ref.add(100 + i);
+                    }
+                    verify(mine, ref, base + " 추가 push " + extra + "개 후");
+                  }
+
+                  // k 번 pop 한 뒤 (k = 0 ~ n) 상태 확인 + 이어서 push
+                  for (int k = 0; k <= n; k++) {
+                    List<Integer> ref = new ArrayList<>();
+                    LinkedListBasedStack<Integer> mine = newFilled(n, ref);
+                    for (int i = 0; i < k; i++) {
+                      Integer expected = ref.remove(ref.size() - 1);
+                      Integer actual = mine.pop();
+                      check(Objects.equals(expected, actual), base + " pop " + k + "번 중 " + i + "번째 반환값: 기대=" + expected + ", 실제=" + actual);
+                    }
+                    verify(mine, ref, base + " pop " + k + "번 후");
+                    mine.push(97);                            // pop 으로 비워진 뒤 정상적으로 연결되는지
+                    ref.add(97);
+                    verify(mine, ref, base + " pop " + k + "번 후 push(97)");
+                    mine.push(98);
+                    ref.add(98);
+                    verify(mine, ref, base + " pop " + k + "번 후 push(98)");
+                  }
+
+                  // 전부 pop -> 빈 스택 -> 재사용 (3회 반복)
+                  {
+                    List<Integer> ref = new ArrayList<>();
+                    LinkedListBasedStack<Integer> mine = newFilled(n, ref);
+                    for (int round = 0; round < 3; round++) {
+                      while (!ref.isEmpty()) {
+                        Integer expected = ref.remove(ref.size() - 1);
+                        Integer actual = mine.pop();
+                        check(Objects.equals(expected, actual), base + " 전부 pop round=" + round + " 반환값: 기대=" + expected + ", 실제=" + actual);
+                        verify(mine, ref, base + " 전부 pop round=" + round);
+                      }
+                      checkEmpty(mine, base + " 전부 pop 후 round=" + round);
+                      for (int i = 0; i < n + round; i++) {   // 비워진 뒤 재사용 (stale top 확인)
+                        mine.push(i + 30 * round);
+                        ref.add(i + 30 * round);
+                      }
+                      verify(mine, ref, base + " 재사용 후 round=" + round);
+                    }
+                  }
+
+                  // 현재 크기에서 push / pop 번갈아: 노드 연결이 밀리거나 유실되지 않는지
+                  {
+                    List<Integer> ref = new ArrayList<>();
+                    LinkedListBasedStack<Integer> mine = newFilled(n, ref);
+                    for (int i = 0; i < 6; i++) {
+                      mine.push(90 + i);                      // push -> pop
+                      ref.add(90 + i);
+                      verify(mine, ref, base + " 경계 push(" + (90 + i) + ")");
+                      Integer expected = ref.remove(ref.size() - 1);
+                      check(Objects.equals(mine.pop(), expected), base + " 경계 pop 반환값 " + i);
+                      verify(mine, ref, base + " 경계 pop " + i);
+                    }
+                    for (int i = 0; i < 6; i++) {
+                      mine.push(80 + i);                      // push, push -> pop
+                      ref.add(80 + i);
+                      mine.push(70 + i);
+                      ref.add(70 + i);
+                      Integer expected = ref.remove(ref.size() - 1);
+                      check(Objects.equals(mine.pop(), expected), base + " 경계 push,push,pop 반환값 " + i);
+                      verify(mine, ref, base + " 경계 push,push,pop " + i);
+                    }
+                  }
+                }
+              }
+
+              // push / pop 길이 12 의 모든 조합 (2^12 가지). 빈 스택에서의 pop 도 포함.
+              // (앞 연산이 남긴 잘못된 top / size 상태가 뒤 연산에서 드러나는 버그 확인)
+              static void testExhaustiveSequences() {
+                int len = 12;
+
+                for (int mask = 0; mask < (1 << len); mask++) {
+                  LinkedListBasedStack<Integer> mine = new LinkedListBasedStack<>();
+                  List<Integer> ref = new ArrayList<>();
+                  StringBuilder ops = new StringBuilder();
+
+                  for (int step = 0; step < len; step++) {
+                    boolean isPush = ((mask >> step) & 1) == 1;
+                    ops.append(isPush ? "push " : "pop ");
+                    String where = "연산 순서: " + ops;
+
+                    if (isPush) {
+                      mine.push(step + 10);
+                      ref.add(step + 10);
+                    } else if (ref.isEmpty()) {
+                      expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                    } else {
+                      Integer expected = ref.remove(ref.size() - 1);
+                      Integer actual = mine.pop();
+                      check(Objects.equals(expected, actual), where + ": pop 반환값 기대=" + expected + ", 실제=" + actual);
+                    }
+                    verify(mine, ref, where);
+                  }
+                }
+              }
+
+              // (선택) pop 된 노드는 next 가 null 이어야 함 (정책 테스트: pop 시 poped.next = null 로 끊도록 구현했다면 사용)
+              static void testRemovedNodeDetached() {
+                for (int n = 1; n <= 6; n++) {
+                  LinkedListBasedStack<Integer> mine = newFilled(n, new ArrayList<>());
+                  List<Node<Integer>> nodes = new ArrayList<>();   // top -> 바닥 순서
+                  for (Node<Integer> cur = mine.top; cur != null; cur = cur.next) {
+                    nodes.add(cur);
+                  }
+
+                  for (int i = 0; i < n; i++) {
+                    mine.pop();
+                    check(nodes.get(i).next == null, "n=" + n + " pop " + (i + 1) + "번째: 제거된 노드의 next 가 정리되지 않음");
+                  }
+                }
+              }
+
+              // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+              static void testRandom() {
+                Random r = new Random(1);
+
+                for (int t = 0; t < 1000; t++) {
+                  LinkedListBasedStack<Integer> mine = new LinkedListBasedStack<>();
+                  List<Integer> ref = new ArrayList<>();
+                  List<String> log = new ArrayList<>();
+
+                  try {
+                    for (int step = 0; step < 300; step++) {
+                      boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 push 위주 <-> pop 위주 (빈 스택 / 재확장 유도)
+                      int v = r.nextInt(100);
+                      int op = r.nextInt(8);
+                      if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
+                        op = r.nextInt(3);
+                      }
+                      if (!growing && op <= 2 && r.nextInt(3) != 0) {
+                        op = 4 + r.nextInt(3);
+                      }
+
+                      switch (op) {
+                        case 0, 1, 2 -> {                        // push
+                          log.add("push(" + v + ")");
+                          mine.push(v);
+                          ref.add(v);
+                        }
+                        case 3 -> {                              // peek (빈 스택이면 예외)
+                          log.add("peek");
+                          if (ref.isEmpty()) {
+                            expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), "peek: 빈 스택");
+                          } else {
+                            Integer expected = ref.get(ref.size() - 1);
+                            Integer actual = mine.peek();
+                            check(Objects.equals(expected, actual), "peek 값: 기대=" + expected + ", 실제=" + actual);
+                          }
+                        }
+                        case 4, 5, 6 -> {                        // pop (빈 스택이면 예외)
+                          log.add("pop");
+                          if (ref.isEmpty()) {
+                            expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), "pop: 빈 스택");
+                          } else {
+                            Integer expected = ref.remove(ref.size() - 1);  // int → 인덱스 기준 삭제
+                            Integer actual = mine.pop();
+                            check(Objects.equals(expected, actual), "pop 반환값: 기대=" + expected + ", 실제=" + actual);
+                          }
+                        }
+                        case 7 -> {                              // null 입력은 거부, 상태는 그대로
+                          log.add("push(null)");
+                          expectThrows(NULL_EXCEPTION, () -> mine.push(null), "push(null)");
+                        }
+                      }
+
+                      verify(mine, ref, "step " + step);
+                    }
+                  } catch (AssertionError | RuntimeException e) {
+                    throw new AssertionError("[trial=" + t + ", 연산 " + log.size() + "개 실행] 원인: " + e
+                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
+                  }
+                }
+              }
+
+              static void testLarge() {
+                int n = 300_000;
+                LinkedListBasedStack<Integer> a = new LinkedListBasedStack<>();
+
+                long start = System.nanoTime();
+                for (int i = 0; i < n; i++) {
+                  a.push(i);
+                }
+                long ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 2000, "push " + n + "번에 " + ms + "ms: O(1) 이어야 함 (맨 끝까지 탐색하거나 복사하는지 확인)");
+                check(a.getSize() == n, "large: size");
+                check(!a.isEmpty(), "large: isEmpty");
+                check(Objects.equals(a.peek(), n - 1), "large: peek");
+                checkStructure(a, "large push");
+
+                start = System.nanoTime();
+                for (int i = n - 1; i >= 0; i--) {              // 뒤에서부터 전부 pop: 반환 순서 확인
+                  if (!Objects.equals(a.peek(), i)) {
+                    check(false, "large: peek 순서 " + i);
+                  }
+                  Integer got = a.pop();
+                  if (!Objects.equals(got, i)) {
+                    check(false, "large: pop 순서 " + i);
+                  }
+                }
+                ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 2000, "pop " + n + "번에 " + ms + "ms: O(1) 이어야 함");
+                check(a.getSize() == 0, "large: 전부 pop 후 size");
+                checkEmpty(a, "large 전부 pop 후");
+                checkStructure(a, "large drain");
+
+                for (int i = 0; i < 1_000; i++) {               // 비워진 뒤 재사용
+                  a.push(i * 2);
+                }
+                checkStructure(a, "large 재사용 push 후");
+                for (int i = 999; i >= 0; i--) {
+                  check(Objects.equals(a.pop(), i * 2), "large: 재사용 후 pop 순서 " + i);
+                }
+                checkEmpty(a, "large 재사용 후 전부 pop");
+
+                // 같은 크기 근처에서 push / pop 반복: 매번 순회하거나 복사하면 매우 느려짐
+                LinkedListBasedStack<Integer> b = new LinkedListBasedStack<>();
+                for (int i = 0; i < 1_000; i++) {
+                  b.push(i);
+                }
+                start = System.nanoTime();
+                for (int i = 0; i < 1_000_000; i++) {
+                  b.push(i);
+                  Integer got = b.pop();
+                  if (!Objects.equals(got, i)) {
+                    check(false, "large: push/pop 반복 반환값 " + i);
+                  }
+                }
+                ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 2000, "push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
+                check(b.getSize() == 1_000, "large: push/pop 반복 후 size");
+                check(Objects.equals(b.peek(), 999), "large: push/pop 반복 후 peek");
+                checkStructure(b, "large push/pop 반복 후");
+
+                // 빈 스택 <-> 1개 상태 반복
+                LinkedListBasedStack<Integer> c = new LinkedListBasedStack<>();
+                start = System.nanoTime();
+                for (int i = 0; i < 1_000_000; i++) {
+                  c.push(i);
+                  Integer got = c.pop();
+                  if (!Objects.equals(got, i)) {
+                    check(false, "large: 빈 스택 push/pop 반복 반환값 " + i);
+                  }
+                }
+                ms = (System.nanoTime() - start) / 1_000_000;
+                check(ms < 2000, "빈 스택 push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
+                checkEmpty(c, "large 빈 스택 push/pop 반복 후");
+              }
+
+              // ---------- 검증 도구 ----------
+
+              static LinkedListBasedStack<Integer> newFilled(int n, List<Integer> ref) {
+                LinkedListBasedStack<Integer> s = new LinkedListBasedStack<>();
+                for (int i = 0; i < n; i++) {
+                  s.push(i + 10);                            // 서로 다른 값 → 순서/연결 버그가 드러남
+                  ref.add(i + 10);                           // ref 의 마지막 원소 = 스택의 top
+                }
+                return s;
+              }
+
+              static void expectStack(LinkedListBasedStack<Integer> mine, String where, Integer... bottomToTop) {
+                verify(mine, Arrays.asList(bottomToTop), where);
+              }
+
+              // size, isEmpty, peek(또는 빈 스택의 예외), 내부 연결 구조와 모든 노드 값(top → 바닥)을 한 번에 비교
+              static void verify(LinkedListBasedStack<Integer> mine, List<Integer> ref, String where) {
+                check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
+                check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
+                checkStructure(mine, where);                 // 노드 수가 size 와 같음이 보장된 뒤에 값 순회
+
+                if (ref.isEmpty()) {
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                  check(mine.getSize() == 0, where + ": 빈 스택 예외 후 size");
+                  check(mine.top == null, where + ": 빈 스택 예외 후 top 이 null 이 아님");
+                } else {
+                  Integer expected = ref.get(ref.size() - 1);
+                  Integer actual = mine.peek();
+                  check(Objects.equals(expected, actual), where + ": peek 기대=" + expected + ", 실제=" + actual);
+                }
+
+                int k = ref.size() - 1;
+                for (Node<Integer> cur = mine.top; cur != null; cur = cur.next) {
+                  check(Objects.equals(cur.data, ref.get(k)), where + ": top 부터 순회한 값 (" + k + ")");
+                  k--;
+                }
+              }
+
+              // top ~ 바닥 연결 구조 검증 (size 와 top 이 항상 일치하는지, 노드 유실/순환이 없는지)
+              static void checkStructure(LinkedListBasedStack<Integer> s, String where) {
+                int size = s.getSize();
+
+                check(size >= 0, where + ": size 가 음수 (" + size + ")");
+                if (size == 0) {
+                  check(s.top == null, where + ": size 가 0 인데 top 이 null 이 아님");
+                  check(s.isEmpty(), where + ": size 가 0 인데 isEmpty 가 false");
+                  return;
+                }
+
+                check(s.top != null, where + ": size > 0 인데 top 이 null");
+                check(!s.isEmpty(), where + ": size > 0 인데 isEmpty 가 true");
+
+                int count = 0;
+                Node<Integer> cur = s.top;
+
+                while (cur != null) {
+                  cur = cur.next;
+                  count++;
+                  check(count <= size, where + ": 노드 수가 size 보다 많음 (순환 의심)");
+                }
+                check(count == size, where + ": top 부터 센 노드 수(" + count + ") != size(" + size + ") (노드 유실 의심)");
+              }
+
+              // 빈 스택은 pop / peek 이 모두 예외여야 하고, 실패한 연산이 상태를 바꾸면 안 됨 (여러 번 반복)
+              static void checkEmpty(LinkedListBasedStack<Integer> mine, String where) {
+                check(mine.isEmpty(), where + ": isEmpty");
+                check(mine.getSize() == 0, where + ": size");
+                check(mine.top == null, where + ": top 은 null 이어야 함");
+                for (int i = 0; i < 3; i++) {
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
+                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
+                }
+                check(mine.isEmpty(), where + ": 예외 발생 후 isEmpty");
+                check(mine.getSize() == 0, where + ": 예외 발생 후 size 가 변함");
+                check(mine.top == null, where + ": 예외 발생 후 top 이 변함");
+              }
+
+              static String recent(List<String> log) {
+                return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
+              }
+
+              static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
+                try {
+                  action.run();
+                } catch (RuntimeException e) {
+                  if (type.isInstance(e)) {
+                    return;
+                  }
+                  throw new AssertionError(msg + ": 기대 예외=" + type.getSimpleName() + ", 실제=" + e, e);
+                }
+                throw new AssertionError(msg + ": 예외가 발생하지 않음");
+              }
+
+              static void check(boolean cond, String msg) {
+                if (!cond) {throw new AssertionError(msg);}
+              }
+            """);
+        break;
+      }
       default:
         break;
     }
