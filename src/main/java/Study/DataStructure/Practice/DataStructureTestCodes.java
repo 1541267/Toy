@@ -26,7 +26,7 @@ public class DataStructureTestCodes {
                 System.out.println("ALL PASSED");
               }
 
-              // ---------- 시나리오 테스트 ----------
+            // ---------- 시나리오 테스트 ----------
 
               static void testEmpty() {
                 for (int cap = 1; cap <= 4; cap++) {
@@ -38,6 +38,7 @@ public class DataStructureTestCodes {
                 }
               }
 
+              @SuppressWarnings("all")
               static void testDuplicates() {
                 DynamicArray<Integer> a = new DynamicArray<>(1);
                 List<Integer> ref = new ArrayList<>();
@@ -61,6 +62,7 @@ public class DataStructureTestCodes {
               }
 
               // (선택) 용량 0 으로 만들어도 증가가 되어야 함 (0 * 2 = 0 이 되는 증가 버그 확인)
+              @SuppressWarnings("all")
               static void testZeroCapacity() {
                 DynamicArray<Integer> a = new DynamicArray<>(0);
                 List<Integer> ref = new ArrayList<>();
@@ -77,6 +79,7 @@ public class DataStructureTestCodes {
 
               // cap 1~8, n 0~20 의 모든 조합에서 모든 위치에 대해 연산을 검사한다.
               // (용량이 꽉 찬 상태 / 한 칸 남은 상태 / 여유 있는 상태가 모두 포함됨)
+              @SuppressWarnings("all")
               static void testExhaustiveSmall() {
                 for (int cap = 1; cap <= 8; cap++) {
                   for (int n = 0; n <= 20; n++) {
@@ -141,6 +144,7 @@ public class DataStructureTestCodes {
               }
 
               // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+              @SuppressWarnings("all")
               static void testRandom() {
                 Random r = new Random(1);
                 int[] caps = {1, 2, 3, 5, 16};
@@ -208,8 +212,9 @@ public class DataStructureTestCodes {
                       verify(mine, ref, "step " + step);
                     }
                   } catch (AssertionError | RuntimeException e) {
-                    throw new AssertionError("[trial=" + t + ", cap=" + cap + ", 연산 " + log.size() + "개 실행] 원인: " + e
-                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
+                    throw new AssertionError(
+                        "[trial=" + t + ", cap=" + cap + ", 연산 " + log.size() + "개 실행] 원인: " + e + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref,
+                        e);
                   }
                 }
               }
@@ -250,7 +255,7 @@ public class DataStructureTestCodes {
                 check(b.getSize() == 0, "large: remove(0) 반복 후 size");
               }
 
-              // ---------- 검증 도구 ----------
+            // ---------- 검증 도구 ----------
 
               static DynamicArray<Integer> newFilled(int cap, int n, List<Integer> ref) {
                 DynamicArray<Integer> a = new DynamicArray<>(cap);
@@ -322,1315 +327,978 @@ public class DataStructureTestCodes {
 
       case "2": {
         System.out.println("""
-              public static void main(String[] args) {
-                testEmpty();            // 빈 리스트
-                testExhaustiveSmall();  // 작은 크기에서 모든 위치의 삽입/삭제/수정 (전수 검사)
-                testRandom();           // ArrayList 와 비교하는 랜덤 테스트
-                testLarge();            // 대량 데이터 + 성능(tail 활용)
-                System.out.println("ALL PASSED");
-              }
+            public static void main(String[] args) {
+              testEmpty();            // 빈 리스트
+              testExhaustiveSmall();  // 작은 크기에서 모든 위치의 삽입/삭제/수정 (전수 검사)
+              testRandom();           // ArrayList 와 비교하는 랜덤 테스트
+              testLarge();            // 대량 데이터 + 성능(tail 활용)
+              System.out.println("ALL PASSED");
+            }
 
-              // ---------- 시나리오 테스트 ----------
+            // ---------- 시나리오 테스트 ----------
 
-              static void testEmpty() {
-                SinglyLinkedList<Integer> list = new SinglyLinkedList<>();
-                check(list.isEmpty(), "empty: isEmpty");
-                check(list.getSize() == 0, "empty: size");
-                check(list.head == null && list.tail == null, "empty: head/tail 은 null 이어야 함");
-                checkBounds(list, 0, "empty");
-                checkStructure(list, "empty");
-              }
+            static void testEmpty() {
+              _2_SinglyLinkedList.SinglyLinkedList<Integer> list = new SinglyLinkedList<>();
+              check(list.isEmpty(), "empty: isEmpty");
+              check(list.getSize() == 0, "empty: size");
+              check(list.head == null && list.tail == null, "empty: head/tail 은 null 이어야 함");
+              checkBounds(list, 0, "empty");
+              checkStructure(list, "empty");
+            }
 
-              // n 0~12 에서 모든 위치에 대해 연산을 검사한다.
-              // head 삭제 / tail 삭제 / 마지막 1개 삭제 / 빈 리스트에 삽입 / 맨 뒤 삽입 등 경계가 전부 포함됨
-              static void testExhaustiveSmall() {
-                for (int n = 0; n <= 12; n++) {
-                  String base = "n=" + n;
+            // n 0~12 에서 모든 위치에 대해 연산을 검사한다.
+            // head 삭제 / tail 삭제 / 마지막 1개 삭제 / 빈 리스트에 삽입 / 맨 뒤 삽입 등 경계가 전부 포함됨
+            @SuppressWarnings("all")
+            static void testExhaustiveSmall() {
+              for (int n = 0; n <= 12; n++) {
+                String base = "n=" + n;
 
-                  // 모든 위치에 삽입 (맨 앞, 중간, 맨 뒤)
-                  for (int idx = 0; idx <= n; idx++) {
-                    List<Integer> ref = new ArrayList<>();
-                    SinglyLinkedList<Integer> mine = newFilled(n, ref);
-                    mine.add(idx, 99);
-                    ref.add(idx, 99);
-                    verify(mine, ref, base + " add(" + idx + ",99)");
-                    mine.add(98);                   // 삽입 직후 tail 이 올바른지 (맨 뒤 삽입 후 add 로 확인)
-                    ref.add(98);
-                    verify(mine, ref, base + " add(" + idx + ",99) 후 add(98)");
-                    mine.add(0, 97);
-                    ref.add(0, 97);
-                    verify(mine, ref, base + " add(" + idx + ",99) 후 add(0,97)");
-                  }
+                // 모든 위치에 삽입 (맨 앞, 중간, 맨 뒤)
+                for (int idx = 0; idx <= n; idx++) {
+                  List<Integer> ref = new ArrayList<>();
+                  SinglyLinkedList<Integer> mine = newFilled(n, ref);
+                  mine.add(idx, 99);
+                  ref.add(idx, 99);
+                  verify(mine, ref, base + " add(" + idx + ",99)");
+                  mine.add(98);                   // 삽입 직후 tail 이 올바른지 (맨 뒤 삽입 후 add 로 확인)
+                  ref.add(98);
+                  verify(mine, ref, base + " add(" + idx + ",99) 후 add(98)");
+                  mine.add(0, 97);
+                  ref.add(0, 97);
+                  verify(mine, ref, base + " add(" + idx + ",99) 후 add(0,97)");
+                }
 
-                  // 모든 위치 삭제 / 수정
-                  for (int idx = 0; idx < n; idx++) {
-                    List<Integer> ref = new ArrayList<>();
-                    SinglyLinkedList<Integer> mine = newFilled(n, ref);
+                // 모든 위치 삭제 / 수정
+                for (int idx = 0; idx < n; idx++) {
+                  List<Integer> ref = new ArrayList<>();
+                  SinglyLinkedList<Integer> mine = newFilled(n, ref);
+                  Integer expected = ref.remove(idx);
+                  Integer actual = mine.remove(idx);
+                  check(Objects.equals(expected, actual), base + " remove(" + idx + ") 반환값: 기대=" + expected + ", 실제=" + actual);
+                  verify(mine, ref, base + " remove(" + idx + ")");
+                  mine.add(97);                   // tail 을 지운 뒤에도 add 가 정상인지
+                  ref.add(97);
+                  verify(mine, ref, base + " remove(" + idx + ") 후 add(97)");
+                  mine.add(0, 96);
+                  ref.add(0, 96);
+                  verify(mine, ref, base + " remove(" + idx + ") 후 add(0,96)");
+                  checkBounds(mine, ref.size(), base + " remove(" + idx + ") 후");
+
+                  ref = new ArrayList<>();
+                  mine = newFilled(n, ref);
+                  mine.set(idx, 95);
+                  ref.set(idx, 95);
+                  verify(mine, ref, base + " set(" + idx + ",95)");
+                  mine.add(94);                   // set 이 구조를 건드리지 않았는지
+                  ref.add(94);
+                  verify(mine, ref, base + " set(" + idx + ") 후 add(94)");
+                }
+
+                // 앞 / 뒤 / 중간에서부터 전부 삭제 → 빈 리스트 → 재사용
+                for (int mode = 0; mode < 3; mode++) {
+                  List<Integer> ref = new ArrayList<>();
+                  SinglyLinkedList<Integer> mine = newFilled(n, ref);
+                  while (!ref.isEmpty()) {
+                    int idx = (mode == 0) ? 0 : (mode == 1 ? ref.size() - 1 : ref.size() / 2);
                     Integer expected = ref.remove(idx);
                     Integer actual = mine.remove(idx);
-                    check(Objects.equals(expected, actual), base + " remove(" + idx + ") 반환값: 기대=" + expected + ", 실제=" + actual);
-                    verify(mine, ref, base + " remove(" + idx + ")");
-                    mine.add(97);                   // tail 을 지운 뒤에도 add 가 정상인지
-                    ref.add(97);
-                    verify(mine, ref, base + " remove(" + idx + ") 후 add(97)");
-                    mine.add(0, 96);
-                    ref.add(0, 96);
-                    verify(mine, ref, base + " remove(" + idx + ") 후 add(0,96)");
-                    checkBounds(mine, ref.size(), base + " remove(" + idx + ") 후");
-
-                    ref = new ArrayList<>();
-                    mine = newFilled(n, ref);
-                    mine.set(idx, 95);
-                    ref.set(idx, 95);
-                    verify(mine, ref, base + " set(" + idx + ",95)");
-                    mine.add(94);                   // set 이 구조를 건드리지 않았는지
-                    ref.add(94);
-                    verify(mine, ref, base + " set(" + idx + ") 후 add(94)");
+                    check(Objects.equals(expected, actual), base + " 전부 삭제 mode=" + mode + " remove(" + idx + ") 반환값");
+                    verify(mine, ref, base + " 전부 삭제 mode=" + mode + " idx=" + idx);
                   }
-
-                  // 앞 / 뒤 / 중간에서부터 전부 삭제 → 빈 리스트 → 재사용
-                  for (int mode = 0; mode < 3; mode++) {
-                    List<Integer> ref = new ArrayList<>();
-                    SinglyLinkedList<Integer> mine = newFilled(n, ref);
-                    while (!ref.isEmpty()) {
-                      int idx = (mode == 0) ? 0 : (mode == 1 ? ref.size() - 1 : ref.size() / 2);
-                      Integer expected = ref.remove(idx);
-                      Integer actual = mine.remove(idx);
-                      check(Objects.equals(expected, actual), base + " 전부 삭제 mode=" + mode + " remove(" + idx + ") 반환값");
-                      verify(mine, ref, base + " 전부 삭제 mode=" + mode + " idx=" + idx);
-                    }
-                    checkBounds(mine, 0, base + " 전부 삭제 후 mode=" + mode);
-                    mine.add(1);                    // 비워진 뒤 재사용 (stale head/tail 확인)
-                    ref.add(1);
-                    verify(mine, ref, base + " 전부 삭제 후 add(1) mode=" + mode);
-                    mine.add(0, 2);
-                    ref.add(0, 2);
-                    verify(mine, ref, base + " 전부 삭제 후 add(0,2) mode=" + mode);
-                    mine.add(3);
-                    ref.add(3);
-                    verify(mine, ref, base + " 전부 삭제 후 add(3) mode=" + mode);
-                  }
-
-                  checkBounds(newFilled(n, new ArrayList<>()), n, base);
+                  checkBounds(mine, 0, base + " 전부 삭제 후 mode=" + mode);
+                  mine.add(1);                    // 비워진 뒤 재사용 (stale head/tail 확인)
+                  ref.add(1);
+                  verify(mine, ref, base + " 전부 삭제 후 add(1) mode=" + mode);
+                  mine.add(0, 2);
+                  ref.add(0, 2);
+                  verify(mine, ref, base + " 전부 삭제 후 add(0,2) mode=" + mode);
+                  mine.add(3);
+                  ref.add(3);
+                  verify(mine, ref, base + " 전부 삭제 후 add(3) mode=" + mode);
                 }
+
+                checkBounds(newFilled(n, new ArrayList<>()), n, base);
               }
+            }
 
-              // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
-              static void testRandom() {
-                Random r = new Random(1);
+            // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+            @SuppressWarnings("all")
+            static void testRandom() {
+              Random r = new Random(1);
 
-                for (int t = 0; t < 1000; t++) {
-                  SinglyLinkedList<Integer> mine = new SinglyLinkedList<>();
-                  List<Integer> ref = new ArrayList<>();
-                  List<String> log = new ArrayList<>();
-
-                  try {
-                    for (int step = 0; step < 300; step++) {
-                      boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 추가 위주 <-> 삭제 위주 (빈 리스트 자주 발생)
-                      int v = r.nextInt(5);
-                      int op = r.nextInt(8);
-                      if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
-                        op = r.nextInt(3);
-                      }
-                      if (!growing && op <= 2 && r.nextInt(3) != 0) {
-                        op = 4 + r.nextInt(3);
-                      }
-
-                      switch (op) {
-                        case 0 -> {                              // add(v)
-                          log.add("add(" + v + ")");
-                          mine.add(v);
-                          ref.add(v);
-                        }
-                        case 1 -> {                              // add(idx, v) : 0 ~ size 전체 (맨 뒤 삽입 포함)
-                          int idx = r.nextInt(ref.size() + 1);
-                          log.add("add(" + idx + "," + v + ")");
-                          mine.add(idx, v);
-                          ref.add(idx, v);
-                        }
-                        case 2 -> {                              // add(0, v) : 맨 앞 삽입
-                          log.add("add(0," + v + ")");
-                          mine.add(0, v);
-                          ref.add(0, v);
-                        }
-                        case 3 -> {                              // set
-                          if (!ref.isEmpty()) {
-                            int idx = r.nextInt(ref.size());
-                            log.add("set(" + idx + "," + v + ")");
-                            mine.set(idx, v);
-                            ref.set(idx, v);
-                          }
-                        }
-                        case 4, 5, 6 -> {                        // remove : 임의 위치 / head / tail
-                          if (!ref.isEmpty()) {
-                            int idx = (op == 4) ? r.nextInt(ref.size()) : (op == 5 ? 0 : ref.size() - 1);
-                            log.add("remove(" + idx + ")");
-                            Integer expected = ref.remove(idx);  // int → 인덱스 기준 삭제
-                            Integer actual = mine.remove(idx);
-                            check(Objects.equals(expected, actual), "remove 반환값: 기대=" + expected + ", 실제=" + actual);
-                          }
-                        }
-                        case 7 -> {                              // 범위 밖 index 는 예외, 상태는 그대로
-                          log.add("bounds");
-                          checkBounds(mine, ref.size(), "bounds");
-                        }
-                      }
-
-                      verify(mine, ref, "step " + step);
-                    }
-                  } catch (AssertionError | RuntimeException e) {
-                    throw new AssertionError("[trial=" + t + ", 연산 " + log.size() + "개 실행] 원인: " + e
-                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
-                  }
-                }
-              }
-
-              static void testLarge() {
-                int n = 100_000;
+              for (int t = 0; t < 1000; t++) {
                 SinglyLinkedList<Integer> mine = new SinglyLinkedList<>();
+                List<Integer> ref = new ArrayList<>();
+                List<String> log = new ArrayList<>();
 
-                long start = System.nanoTime();
-                for (int i = 0; i < n; i++) {
-                  mine.add(i);
-                }
-                long ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 2000, "add(v) " + n + "번에 " + ms + "ms: O(1) 이어야 함 (tail 활용 확인)");
-                check(mine.getSize() == n, "large: size");
-                check(Objects.equals(mine.getData(0), 0), "large: getData(0)");
-                check(Objects.equals(mine.getData(n / 2), n / 2), "large: getData(n/2)");
-                check(Objects.equals(mine.getData(n - 1), n - 1), "large: getData(n-1)");
-                checkStructure(mine, "large add");
-
-                for (int i = 0; i < n; i++) {              // 앞에서부터 전부 삭제: 반환 순서 확인
-                  Integer got = mine.remove(0);
-                  check(Objects.equals(got, i), "large: remove(0) 순서 " + i);
-                }
-                check(mine.isEmpty(), "large: 전부 삭제 후 isEmpty");
-                checkStructure(mine, "large drain");
-
-                start = System.nanoTime();
-                for (int i = 0; i < n; i++) {
-                  mine.add(0, i);
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 2000, "add(0, v) " + n + "번에 " + ms + "ms: O(1) 이어야 함");
-                check(Objects.equals(mine.getData(0), n - 1), "large: add(0,v) getData(0)");
-                check(Objects.equals(mine.getData(n - 1), 0), "large: add(0,v) getData(n-1)");
-                checkStructure(mine, "large add(0,v)");
-
-                for (int i = 0; i < 300; i++) {            // 뒤에서 삭제는 O(n) 이라 개수를 줄임
-                  Integer got = mine.remove(mine.getSize() - 1);
-                  check(Objects.equals(got, i), "large: 마지막 노드 remove 순서 " + i);
-                }
-                check(mine.getSize() == n - 300, "large: 마지막 노드 삭제 후 size");
-                checkStructure(mine, "large 마지막 노드 삭제 후");
-              }
-
-              // ---------- 검증 도구 ----------
-
-              static SinglyLinkedList<Integer> newFilled(int n, List<Integer> ref) {
-                SinglyLinkedList<Integer> list = new SinglyLinkedList<>();
-                for (int i = 0; i < n; i++) {
-                  list.add(i + 10);                        // 서로 다른 값 → 순서/연결 버그가 드러남
-                  ref.add(i + 10);
-                }
-                return list;
-              }
-
-              // size, isEmpty, 모든 getData, 내부 연결 구조까지 한 번에 비교
-              static void verify(SinglyLinkedList<Integer> mine, List<Integer> ref, String where) {
-                check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
-                check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
-                for (int i = 0; i < ref.size(); i++) {
-                  check(Objects.equals(mine.getData(i), ref.get(i)), where + ": getData(" + i + ")");
-                }
-                checkStructure(mine, where);
-              }
-
-              // head ~ tail 연결 구조 검증 (값만 비교해서는 잡히지 않는 tail 버그 확인용)
-              static void checkStructure(SinglyLinkedList<Integer> list, String where) {
-                int count = 0;
-                Node<Integer> cur = list.head;
-                Node<Integer> last = null;
-
-                while (cur != null) {
-                  last = cur;
-                  cur = cur.next;
-                  count++;
-                  check(count <= list.getSize(), where + ": 노드 수가 size 보다 많음 (유실/순환 의심)");
-                }
-
-                check(count == list.getSize(), where + ": head 부터 센 노드 수(" + count + ") != size(" + list.getSize() + ")");
-                check(last == list.tail, where + ": 마지막 노드 != tail");
-                check(list.tail == null || list.tail.next == null, where + ": tail.next != null");
-              }
-
-              // 범위 밖 index 는 모두 예외여야 하고, 실패한 연산이 size / 구조를 바꾸면 안 됨
-              static void checkBounds(SinglyLinkedList<Integer> mine, int size, String where) {
-                expectIOOBE(() -> mine.getData(-1), where + ": getData(-1)");
-                expectIOOBE(() -> mine.getData(size), where + ": getData(size)");
-                expectIOOBE(() -> mine.getData(Integer.MAX_VALUE), where + ": getData(MAX)");
-                expectIOOBE(() -> mine.set(-1, 0), where + ": set(-1)");
-                expectIOOBE(() -> mine.set(size, 0), where + ": set(size)");
-                expectIOOBE(() -> mine.remove(-1), where + ": remove(-1)");
-                expectIOOBE(() -> mine.remove(size), where + ": remove(size)");
-                expectIOOBE(() -> mine.add(-1, 0), where + ": add(-1)");
-                expectIOOBE(() -> mine.add(size + 1, 0), where + ": add(size+1)");
-                expectIOOBE(() -> mine.add(Integer.MAX_VALUE, 0), where + ": add(MAX)");
-                check(mine.getSize() == size, where + ": 예외 발생 후 size 가 변함");
-                checkStructure(mine, where + " (예외 발생 후)");
-              }
-
-              static String recent(List<String> log) {
-                return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
-              }
-
-              static void expectIOOBE(Runnable action, String msg) {
                 try {
-                  action.run();
-                } catch (IndexOutOfBoundsException e) {
-                  return;
+                  for (int step = 0; step < 300; step++) {
+                    boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 추가 위주 <-> 삭제 위주 (빈 리스트 자주 발생)
+                    int v = r.nextInt(5);
+                    int op = r.nextInt(8);
+                    if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
+                      op = r.nextInt(3);
+                    }
+                    if (!growing && op <= 2 && r.nextInt(3) != 0) {
+                      op = 4 + r.nextInt(3);
+                    }
+
+                    switch (op) {
+                      case 0 -> {                              // add(v)
+                        log.add("add(" + v + ")");
+                        mine.add(v);
+                        ref.add(v);
+                      }
+                      case 1 -> {                              // add(idx, v) : 0 ~ size 전체 (맨 뒤 삽입 포함)
+                        int idx = r.nextInt(ref.size() + 1);
+                        log.add("add(" + idx + "," + v + ")");
+                        mine.add(idx, v);
+                        ref.add(idx, v);
+                      }
+                      case 2 -> {                              // add(0, v) : 맨 앞 삽입
+                        log.add("add(0," + v + ")");
+                        mine.add(0, v);
+                        ref.add(0, v);
+                      }
+                      case 3 -> {                              // set
+                        if (!ref.isEmpty()) {
+                          int idx = r.nextInt(ref.size());
+                          log.add("set(" + idx + "," + v + ")");
+                          mine.set(idx, v);
+                          ref.set(idx, v);
+                        }
+                      }
+                      case 4, 5, 6 -> {                        // remove : 임의 위치 / head / tail
+                        if (!ref.isEmpty()) {
+                          int idx = (op == 4) ? r.nextInt(ref.size()) : (op == 5 ? 0 : ref.size() - 1);
+                          log.add("remove(" + idx + ")");
+                          Integer expected = ref.remove(idx);  // int → 인덱스 기준 삭제
+                          Integer actual = mine.remove(idx);
+                          check(Objects.equals(expected, actual), "remove 반환값: 기대=" + expected + ", 실제=" + actual);
+                        }
+                      }
+                      case 7 -> {                              // 범위 밖 index 는 예외, 상태는 그대로
+                        log.add("bounds");
+                        checkBounds(mine, ref.size(), "bounds");
+                      }
+                    }
+
+                    verify(mine, ref, "step " + step);
+                  }
+                } catch (AssertionError | RuntimeException e) {
+                  throw new AssertionError("[trial=" + t + ", 연산 " + log.size() + "개 실행] 원인: " + e
+                      + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
                 }
-                throw new AssertionError(msg + ": 예외가 발생하지 않음");
+              }
+            }
+
+            static void testLarge() {
+              int n = 100_000;
+              SinglyLinkedList<Integer> mine = new SinglyLinkedList<>();
+
+              long start = System.nanoTime();
+              for (int i = 0; i < n; i++) {
+                mine.add(i);
+              }
+              long ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 2000, "add(v) " + n + "번에 " + ms + "ms: O(1) 이어야 함 (tail 활용 확인)");
+              check(mine.getSize() == n, "large: size");
+              check(Objects.equals(mine.getData(0), 0), "large: getData(0)");
+              check(Objects.equals(mine.getData(n / 2), n / 2), "large: getData(n/2)");
+              check(Objects.equals(mine.getData(n - 1), n - 1), "large: getData(n-1)");
+              checkStructure(mine, "large add");
+
+              for (int i = 0; i < n; i++) {              // 앞에서부터 전부 삭제: 반환 순서 확인
+                Integer got = mine.remove(0);
+                check(Objects.equals(got, i), "large: remove(0) 순서 " + i);
+              }
+              check(mine.isEmpty(), "large: 전부 삭제 후 isEmpty");
+              checkStructure(mine, "large drain");
+
+              start = System.nanoTime();
+              for (int i = 0; i < n; i++) {
+                mine.add(0, i);
+              }
+              ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 2000, "add(0, v) " + n + "번에 " + ms + "ms: O(1) 이어야 함");
+              check(Objects.equals(mine.getData(0), n - 1), "large: add(0,v) getData(0)");
+              check(Objects.equals(mine.getData(n - 1), 0), "large: add(0,v) getData(n-1)");
+              checkStructure(mine, "large add(0,v)");
+
+              for (int i = 0; i < 300; i++) {            // 뒤에서 삭제는 O(n) 이라 개수를 줄임
+                Integer got = mine.remove(mine.getSize() - 1);
+                check(Objects.equals(got, i), "large: 마지막 노드 remove 순서 " + i);
+              }
+              check(mine.getSize() == n - 300, "large: 마지막 노드 삭제 후 size");
+              checkStructure(mine, "large 마지막 노드 삭제 후");
+            }
+
+            // ---------- 검증 도구 ----------
+
+            static SinglyLinkedList<Integer> newFilled(int n, List<Integer> ref) {
+              SinglyLinkedList<Integer> list = new SinglyLinkedList<>();
+              for (int i = 0; i < n; i++) {
+                list.add(i + 10);                        // 서로 다른 값 → 순서/연결 버그가 드러남
+                ref.add(i + 10);
+              }
+              return list;
+            }
+
+            // size, isEmpty, 모든 getData, 내부 연결 구조까지 한 번에 비교
+            static void verify(SinglyLinkedList<Integer> mine, List<Integer> ref, String where) {
+              check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
+              check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
+              for (int i = 0; i < ref.size(); i++) {
+                check(Objects.equals(mine.getData(i), ref.get(i)), where + ": getData(" + i + ")");
+              }
+              checkStructure(mine, where);
+            }
+
+            // head ~ tail 연결 구조 검증 (값만 비교해서는 잡히지 않는 tail 버그 확인용)
+            static void checkStructure(SinglyLinkedList<Integer> list, String where) {
+              int count = 0;
+              Node<Integer> cur = list.head;
+              Node<Integer> last = null;
+
+              while (cur != null) {
+                last = cur;
+                cur = cur.next;
+                count++;
+                check(count <= list.getSize(), where + ": 노드 수가 size 보다 많음 (유실/순환 의심)");
               }
 
-              static void check(boolean cond, String msg) {
-                if (!cond) {throw new AssertionError(msg);}
+              check(count == list.getSize(), where + ": head 부터 센 노드 수(" + count + ") != size(" + list.getSize() + ")");
+              check(last == list.tail, where + ": 마지막 노드 != tail");
+              check(list.tail == null || list.tail.next == null, where + ": tail.next != null");
+            }
+
+            // 범위 밖 index 는 모두 예외여야 하고, 실패한 연산이 size / 구조를 바꾸면 안 됨
+            static void checkBounds(SinglyLinkedList<Integer> mine, int size, String where) {
+              expectIOOBE(() -> mine.getData(-1), where + ": getData(-1)");
+              expectIOOBE(() -> mine.getData(size), where + ": getData(size)");
+              expectIOOBE(() -> mine.getData(Integer.MAX_VALUE), where + ": getData(MAX)");
+              expectIOOBE(() -> mine.set(-1, 0), where + ": set(-1)");
+              expectIOOBE(() -> mine.set(size, 0), where + ": set(size)");
+              expectIOOBE(() -> mine.remove(-1), where + ": remove(-1)");
+              expectIOOBE(() -> mine.remove(size), where + ": remove(size)");
+              expectIOOBE(() -> mine.add(-1, 0), where + ": add(-1)");
+              expectIOOBE(() -> mine.add(size + 1, 0), where + ": add(size+1)");
+              expectIOOBE(() -> mine.add(Integer.MAX_VALUE, 0), where + ": add(MAX)");
+              check(mine.getSize() == size, where + ": 예외 발생 후 size 가 변함");
+              checkStructure(mine, where + " (예외 발생 후)");
+            }
+
+            static String recent(List<String> log) {
+              return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
+            }
+
+            @SuppressWarnings("all")
+            static void expectIOOBE(Runnable action, String msg) {
+              try {
+                action.run();
+              } catch (IndexOutOfBoundsException e) {
+                return;
               }
+              throw new AssertionError(msg + ": 예외가 발생하지 않음");
+            }
+
+            static void check(boolean cond, String msg) {
+              if (!cond) {throw new AssertionError(msg);}
+            }
             """);
         break;
       }
       case "3": {
         System.out.println("""
-              static final Class<? extends RuntimeException> NULL_EXCEPTION = IllegalArgumentException.class;
-                        
-              public static void main(String[] args) {
-                testEmpty();               // 빈 리스트
-                testNullPolicy();          // null 입력 거부 + 거부 후 상태 유지
-                testRegression();          // 구현 중 실제로 나왔던 버그 재현 시나리오
-                testExhaustiveSmall();     // 작은 크기에서 모든 위치의 삽입/삭제/수정 (전수 검사)
-                testExhaustivePairs();     // 연산 2개 연속의 모든 (i, j) 조합 (연쇄 버그 확인)
-                testRemovedNodeDetached(); // 삭제된 노드의 prev / next 정리
-                testRandom();              // ArrayList 와 비교하는 랜덤 테스트
-                testLarge();               // 대량 데이터 + 성능(tail 활용, 양방향 탐색)
-                System.out.println("ALL PASSED");
+            static final Class<? extends RuntimeException> NULL_EXCEPTION = IllegalArgumentException.class;
+
+            public static void main(String[] args) {
+              testEmpty();               // 빈 리스트
+              testNullPolicy();          // null 입력 거부 + 거부 후 상태 유지
+              testRegression();          // 구현 중 실제로 나왔던 버그 재현 시나리오
+              testExhaustiveSmall();     // 작은 크기에서 모든 위치의 삽입/삭제/수정 (전수 검사)
+              testExhaustivePairs();     // 연산 2개 연속의 모든 (i, j) 조합 (연쇄 버그 확인)
+              testRemovedNodeDetached(); // 삭제된 노드의 prev / next 정리
+              testRandom();              // ArrayList 와 비교하는 랜덤 테스트
+              testLarge();               // 대량 데이터 + 성능(tail 활용, 양방향 탐색)
+              System.out.println("ALL PASSED");
+            }
+
+            // ---------- 시나리오 테스트 ----------
+
+            static void testEmpty() {
+              DoublyLinkedList<Integer> list = new DoublyLinkedList<>();
+              check(list.isEmpty(), "empty: isEmpty");
+              check(list.getSize() == 0, "empty: size");
+              check(list.head == null && list.tail == null, "empty: head/tail 은 null 이어야 함");
+              checkBounds(list, 0, "empty");
+              checkStructure(list, "empty");
+            }
+
+            // n 0~6 에서 모든 위치에 대해 null 입력이 거부되고, 거부된 연산이 상태를 바꾸지 않는지 확인
+            @SuppressWarnings("all")
+            static void testNullPolicy() {
+              for (int n = 0; n <= 6; n++) {
+                String base = "n=" + n;
+                List<Integer> ref = new ArrayList<>();
+                DoublyLinkedList<Integer> mine = newFilled(n, ref);
+
+                expectThrows(NULL_EXCEPTION, () -> mine.add(null), base + ": add(null)");
+                for (int idx = 0; idx <= n; idx++) {
+                  final int i = idx;
+                  expectThrows(NULL_EXCEPTION, () -> mine.add(i, null), base + ": add(" + i + ",null)");
+                }
+                for (int idx = 0; idx < n; idx++) {
+                  final int i = idx;
+                  expectThrows(NULL_EXCEPTION, () -> mine.set(i, null), base + ": set(" + i + ",null)");
+                }
+                verify(mine, ref, base + " null 거부 후");
+
+                mine.add(1);                              // 거부 이후에도 정상 동작하는지
+                ref.add(1);
+                mine.add(0, 2);
+                ref.add(0, 2);
+                verify(mine, ref, base + " null 거부 후 add");
+              }
+            }
+
+            // 구현 중 실제로 나왔던 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
+            static void testRegression() {
+              // 빈 리스트에 add(0, v): head 가 null 이어도 동작해야 함
+              DoublyLinkedList<Integer> a = new DoublyLinkedList<>();
+              a.add(0, 1);
+              expectList(a, "regression: 빈 리스트 add(0,1)", 1);
+
+              // size 1 에서 앞 삽입
+              a.add(0, 2);
+              expectList(a, "regression: size 1 에서 add(0,2)", 2, 1);
+
+              // index == size - 1 은 '맨 뒤'가 아니라 '마지막 원소 앞' 삽입
+              a.add(1, 3);
+              expectList(a, "regression: add(size-1, v)", 2, 3, 1);
+
+              // index == size 는 맨 뒤 삽입
+              a.add(3, 4);
+              expectList(a, "regression: add(size, v)", 2, 3, 1, 4);
+
+              // getNode 의 뒤쪽 탐색(tail 에서 prev 로 이동)
+              DoublyLinkedList<Integer> b = newFilled(10, new ArrayList<>());
+              for (int i = 0; i < 10; i++) {
+                check(Objects.equals(b.getData(i), 10 + i), "regression: getData(" + i + ") 뒤쪽 탐색 방향");
               }
 
-              // ---------- 시나리오 테스트 ----------
+              // 중간 삭제 연속 2회: 삭제 뒤 노드의 prev 가 갱신되지 않으면 두 번째에서 깨짐
+              DoublyLinkedList<Integer> c = newFilled(5, new ArrayList<>());
+              check(Objects.equals(c.remove(1), 11), "regression: remove(1) 반환값");
+              expectList(c, "regression: remove(1) 1회", 10, 12, 13, 14);
+              check(Objects.equals(c.remove(1), 12), "regression: remove(1) 2회 반환값");
+              expectList(c, "regression: remove(1) 2회", 10, 13, 14);
 
-              static void testEmpty() {
-                DoublyLinkedList<Integer> list = new DoublyLinkedList<>();
-                check(list.isEmpty(), "empty: isEmpty");
-                check(list.getSize() == 0, "empty: size");
-                check(list.head == null && list.tail == null, "empty: head/tail 은 null 이어야 함");
-                checkBounds(list, 0, "empty");
-                checkStructure(list, "empty");
-              }
+              // 마지막 노드 삭제 후 새 tail.next 가 null 이어야 함 (값 비교만으로는 안 잡힘)
+              DoublyLinkedList<Integer> d = newFilled(4, new ArrayList<>());
+              check(Objects.equals(d.remove(3), 13), "regression: tail 삭제 반환값");
+              check(d.tail.next == null, "regression: tail 삭제 후 tail.next 가 null 이 아님");
+              d.add(3, 50);
+              expectList(d, "regression: tail 삭제 후 add(size,50)", 10, 11, 12, 50);
+              d.remove(3);
+              d.add(2, 51);
+              expectList(d, "regression: tail 삭제 후 add(2,51)", 10, 11, 51, 12);
+            }
 
-              // n 0~6 에서 모든 위치에 대해 null 입력이 거부되고, 거부된 연산이 상태를 바꾸지 않는지 확인
-              static void testNullPolicy() {
-                for (int n = 0; n <= 6; n++) {
-                  String base = "n=" + n;
+            // n 0~12 에서 모든 위치에 대해 연산을 검사한다.
+            // head 삭제 / tail 삭제 / 마지막 1개 삭제 / 빈 리스트에 삽입 / 맨 뒤 삽입 / 앞·뒤 절반 탐색 경계가 전부 포함됨
+            @SuppressWarnings("all")
+            static void testExhaustiveSmall() {
+              for (int n = 0; n <= 12; n++) {
+                String base = "n=" + n;
+
+                // 모든 위치에 삽입 (맨 앞, 중간, 맨 뒤)
+                for (int idx = 0; idx <= n; idx++) {
                   List<Integer> ref = new ArrayList<>();
                   DoublyLinkedList<Integer> mine = newFilled(n, ref);
-
-                  expectThrows(NULL_EXCEPTION, () -> mine.add(null), base + ": add(null)");
-                  for (int idx = 0; idx <= n; idx++) {
-                    final int i = idx;
-                    expectThrows(NULL_EXCEPTION, () -> mine.add(i, null), base + ": add(" + i + ",null)");
-                  }
-                  for (int idx = 0; idx < n; idx++) {
-                    final int i = idx;
-                    expectThrows(NULL_EXCEPTION, () -> mine.set(i, null), base + ": set(" + i + ",null)");
-                  }
-                  verify(mine, ref, base + " null 거부 후");
-
-                  mine.add(1);                              // 거부 이후에도 정상 동작하는지
-                  ref.add(1);
-                  mine.add(0, 2);
-                  ref.add(0, 2);
-                  verify(mine, ref, base + " null 거부 후 add");
-                }
-              }
-
-              // 구현 중 실제로 나왔던 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
-              static void testRegression() {
-                // 빈 리스트에 add(0, v): head 가 null 이어도 동작해야 함
-                DoublyLinkedList<Integer> a = new DoublyLinkedList<>();
-                a.add(0, 1);
-                expectList(a, "regression: 빈 리스트 add(0,1)", 1);
-
-                // size 1 에서 앞 삽입
-                a.add(0, 2);
-                expectList(a, "regression: size 1 에서 add(0,2)", 2, 1);
-
-                // index == size - 1 은 '맨 뒤'가 아니라 '마지막 원소 앞' 삽입
-                a.add(1, 3);
-                expectList(a, "regression: add(size-1, v)", 2, 3, 1);
-
-                // index == size 는 맨 뒤 삽입
-                a.add(3, 4);
-                expectList(a, "regression: add(size, v)", 2, 3, 1, 4);
-
-                // getNode 의 뒤쪽 탐색(tail 에서 prev 로 이동)
-                DoublyLinkedList<Integer> b = newFilled(10, new ArrayList<>());
-                for (int i = 0; i < 10; i++) {
-                  check(Objects.equals(b.getData(i), 10 + i), "regression: getData(" + i + ") 뒤쪽 탐색 방향");
+                  mine.add(idx, 99);
+                  ref.add(idx, 99);
+                  verify(mine, ref, base + " add(" + idx + ",99)");
+                  mine.add(98);                       // 삽입 직후 tail 이 올바른지
+                  ref.add(98);
+                  verify(mine, ref, base + " add(" + idx + ",99) 후 add(98)");
+                  mine.add(0, 97);                    // 삽입 직후 head 가 올바른지
+                  ref.add(0, 97);
+                  verify(mine, ref, base + " add(" + idx + ",99) 후 add(0,97)");
+                  mine.add(ref.size(), 96);           // index == size 로 맨 뒤 삽입
+                  ref.add(ref.size(), 96);
+                  verify(mine, ref, base + " add(" + idx + ",99) 후 add(size,96)");
                 }
 
-                // 중간 삭제 연속 2회: 삭제 뒤 노드의 prev 가 갱신되지 않으면 두 번째에서 깨짐
-                DoublyLinkedList<Integer> c = newFilled(5, new ArrayList<>());
-                check(Objects.equals(c.remove(1), 11), "regression: remove(1) 반환값");
-                expectList(c, "regression: remove(1) 1회", 10, 12, 13, 14);
-                check(Objects.equals(c.remove(1), 12), "regression: remove(1) 2회 반환값");
-                expectList(c, "regression: remove(1) 2회", 10, 13, 14);
+                // 모든 위치 삭제 / 수정
+                for (int idx = 0; idx < n; idx++) {
+                  List<Integer> ref = new ArrayList<>();
+                  DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                  Integer expected = ref.remove(idx);
+                  Integer actual = mine.remove(idx);
+                  check(Objects.equals(expected, actual), base + " remove(" + idx + ") 반환값: 기대=" + expected + ", 실제=" + actual);
+                  verify(mine, ref, base + " remove(" + idx + ")");
+                  mine.add(97);                       // tail 을 지운 뒤에도 add 가 정상인지
+                  ref.add(97);
+                  verify(mine, ref, base + " remove(" + idx + ") 후 add(97)");
+                  mine.add(0, 96);                    // head 를 지운 뒤에도 앞 삽입이 정상인지
+                  ref.add(0, 96);
+                  verify(mine, ref, base + " remove(" + idx + ") 후 add(0,96)");
+                  checkBounds(mine, ref.size(), base + " remove(" + idx + ") 후");
 
-                // 마지막 노드 삭제 후 새 tail.next 가 null 이어야 함 (값 비교만으로는 안 잡힘)
-                DoublyLinkedList<Integer> d = newFilled(4, new ArrayList<>());
-                check(Objects.equals(d.remove(3), 13), "regression: tail 삭제 반환값");
-                check(d.tail.next == null, "regression: tail 삭제 후 tail.next 가 null 이 아님");
-                d.add(3, 50);
-                expectList(d, "regression: tail 삭제 후 add(size,50)", 10, 11, 12, 50);
-                d.remove(3);
-                d.add(2, 51);
-                expectList(d, "regression: tail 삭제 후 add(2,51)", 10, 11, 51, 12);
-              }
+                  ref = new ArrayList<>();
+                  mine = newFilled(n, ref);
+                  mine.set(idx, 95);
+                  ref.set(idx, 95);
+                  verify(mine, ref, base + " set(" + idx + ",95)");
+                  mine.add(94);                       // set 이 구조를 건드리지 않았는지
+                  ref.add(94);
+                  verify(mine, ref, base + " set(" + idx + ") 후 add(94)");
+                }
 
-              // n 0~12 에서 모든 위치에 대해 연산을 검사한다.
-              // head 삭제 / tail 삭제 / 마지막 1개 삭제 / 빈 리스트에 삽입 / 맨 뒤 삽입 / 앞·뒤 절반 탐색 경계가 전부 포함됨
-              static void testExhaustiveSmall() {
-                for (int n = 0; n <= 12; n++) {
-                  String base = "n=" + n;
-
-                  // 모든 위치에 삽입 (맨 앞, 중간, 맨 뒤)
-                  for (int idx = 0; idx <= n; idx++) {
-                    List<Integer> ref = new ArrayList<>();
-                    DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                    mine.add(idx, 99);
-                    ref.add(idx, 99);
-                    verify(mine, ref, base + " add(" + idx + ",99)");
-                    mine.add(98);                       // 삽입 직후 tail 이 올바른지
-                    ref.add(98);
-                    verify(mine, ref, base + " add(" + idx + ",99) 후 add(98)");
-                    mine.add(0, 97);                    // 삽입 직후 head 가 올바른지
-                    ref.add(0, 97);
-                    verify(mine, ref, base + " add(" + idx + ",99) 후 add(0,97)");
-                    mine.add(ref.size(), 96);           // index == size 로 맨 뒤 삽입
-                    ref.add(ref.size(), 96);
-                    verify(mine, ref, base + " add(" + idx + ",99) 후 add(size,96)");
-                  }
-
-                  // 모든 위치 삭제 / 수정
-                  for (int idx = 0; idx < n; idx++) {
-                    List<Integer> ref = new ArrayList<>();
-                    DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                // 앞 / 뒤 / 중간 / 앞뒤 번갈아 전부 삭제 → 빈 리스트 → 재사용
+                for (int mode = 0; mode < 4; mode++) {
+                  List<Integer> ref = new ArrayList<>();
+                  DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                  while (!ref.isEmpty()) {
+                    int idx;
+                    if (mode == 0) {
+                      idx = 0;
+                    } else if (mode == 1) {
+                      idx = ref.size() - 1;
+                    } else if (mode == 2) {
+                      idx = ref.size() / 2;
+                    } else {
+                      idx = (ref.size() % 2 == 0) ? 0 : ref.size() - 1;
+                    }
                     Integer expected = ref.remove(idx);
                     Integer actual = mine.remove(idx);
-                    check(Objects.equals(expected, actual), base + " remove(" + idx + ") 반환값: 기대=" + expected + ", 실제=" + actual);
-                    verify(mine, ref, base + " remove(" + idx + ")");
-                    mine.add(97);                       // tail 을 지운 뒤에도 add 가 정상인지
-                    ref.add(97);
-                    verify(mine, ref, base + " remove(" + idx + ") 후 add(97)");
-                    mine.add(0, 96);                    // head 를 지운 뒤에도 앞 삽입이 정상인지
-                    ref.add(0, 96);
-                    verify(mine, ref, base + " remove(" + idx + ") 후 add(0,96)");
-                    checkBounds(mine, ref.size(), base + " remove(" + idx + ") 후");
-
-                    ref = new ArrayList<>();
-                    mine = newFilled(n, ref);
-                    mine.set(idx, 95);
-                    ref.set(idx, 95);
-                    verify(mine, ref, base + " set(" + idx + ",95)");
-                    mine.add(94);                       // set 이 구조를 건드리지 않았는지
-                    ref.add(94);
-                    verify(mine, ref, base + " set(" + idx + ") 후 add(94)");
+                    check(Objects.equals(expected, actual), base + " 전부 삭제 mode=" + mode + " remove(" + idx + ") 반환값");
+                    verify(mine, ref, base + " 전부 삭제 mode=" + mode + " idx=" + idx);
                   }
+                  check(mine.isEmpty(), base + " 전부 삭제 후 isEmpty mode=" + mode);
+                  checkBounds(mine, 0, base + " 전부 삭제 후 mode=" + mode);
+                  mine.add(1);                        // 비워진 뒤 재사용 (stale head/tail 확인)
+                  ref.add(1);
+                  verify(mine, ref, base + " 전부 삭제 후 add(1) mode=" + mode);
+                  mine.add(0, 2);
+                  ref.add(0, 2);
+                  verify(mine, ref, base + " 전부 삭제 후 add(0,2) mode=" + mode);
+                  mine.add(3);
+                  ref.add(3);
+                  verify(mine, ref, base + " 전부 삭제 후 add(3) mode=" + mode);
+                }
 
-                  // 앞 / 뒤 / 중간 / 앞뒤 번갈아 전부 삭제 → 빈 리스트 → 재사용
-                  for (int mode = 0; mode < 4; mode++) {
+                checkBounds(newFilled(n, new ArrayList<>()), n, base);
+              }
+            }
+
+            // 연산 2개를 연속으로 수행하는 모든 (i, j) 조합 (첫 연산의 포인터 오류가 두 번째 연산에서 드러나는 버그 확인)
+            static void testExhaustivePairs() {
+              for (int n = 0; n <= 8; n++) {
+                String base = "n=" + n;
+
+                // 삽입 -> 삽입
+                for (int i = 0; i <= n; i++) {
+                  for (int j = 0; j <= n + 1; j++) {
                     List<Integer> ref = new ArrayList<>();
                     DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                    while (!ref.isEmpty()) {
-                      int idx;
-                      if (mode == 0) {
-                        idx = 0;
-                      } else if (mode == 1) {
-                        idx = ref.size() - 1;
-                      } else if (mode == 2) {
-                        idx = ref.size() / 2;
-                      } else {
-                        idx = (ref.size() % 2 == 0) ? 0 : ref.size() - 1;
-                      }
-                      Integer expected = ref.remove(idx);
-                      Integer actual = mine.remove(idx);
-                      check(Objects.equals(expected, actual), base + " 전부 삭제 mode=" + mode + " remove(" + idx + ") 반환값");
-                      verify(mine, ref, base + " 전부 삭제 mode=" + mode + " idx=" + idx);
-                    }
-                    check(mine.isEmpty(), base + " 전부 삭제 후 isEmpty mode=" + mode);
-                    checkBounds(mine, 0, base + " 전부 삭제 후 mode=" + mode);
-                    mine.add(1);                        // 비워진 뒤 재사용 (stale head/tail 확인)
-                    ref.add(1);
-                    verify(mine, ref, base + " 전부 삭제 후 add(1) mode=" + mode);
-                    mine.add(0, 2);
-                    ref.add(0, 2);
-                    verify(mine, ref, base + " 전부 삭제 후 add(0,2) mode=" + mode);
-                    mine.add(3);
-                    ref.add(3);
-                    verify(mine, ref, base + " 전부 삭제 후 add(3) mode=" + mode);
+                    mine.add(i, 91);
+                    ref.add(i, 91);
+                    mine.add(j, 92);
+                    ref.add(j, 92);
+                    verify(mine, ref, base + " add(" + i + ") -> add(" + j + ")");
                   }
-
-                  checkBounds(newFilled(n, new ArrayList<>()), n, base);
                 }
-              }
 
-              // 연산 2개를 연속으로 수행하는 모든 (i, j) 조합 (첫 연산의 포인터 오류가 두 번째 연산에서 드러나는 버그 확인)
-              static void testExhaustivePairs() {
-                for (int n = 0; n <= 8; n++) {
-                  String base = "n=" + n;
-
-                  // 삽입 -> 삽입
-                  for (int i = 0; i <= n; i++) {
-                    for (int j = 0; j <= n + 1; j++) {
-                      List<Integer> ref = new ArrayList<>();
-                      DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                      mine.add(i, 91);
-                      ref.add(i, 91);
-                      mine.add(j, 92);
-                      ref.add(j, 92);
-                      verify(mine, ref, base + " add(" + i + ") -> add(" + j + ")");
-                    }
+                // 삭제 -> 삭제 (연속 중간 삭제로 prev 연결이 깨지는 버그)
+                for (int i = 0; i < n; i++) {
+                  for (int j = 0; j < n - 1; j++) {
+                    List<Integer> ref = new ArrayList<>();
+                    DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                    Integer e1 = ref.remove(i);
+                    Integer a1 = mine.remove(i);
+                    check(Objects.equals(e1, a1), base + " remove(" + i + ") -> remove(" + j + ") 첫 반환값");
+                    Integer e2 = ref.remove(j);
+                    Integer a2 = mine.remove(j);
+                    check(Objects.equals(e2, a2), base + " remove(" + i + ") -> remove(" + j + ") 둘째 반환값");
+                    verify(mine, ref, base + " remove(" + i + ") -> remove(" + j + ")");
                   }
+                }
 
-                  // 삭제 -> 삭제 (연속 중간 삭제로 prev 연결이 깨지는 버그)
-                  for (int i = 0; i < n; i++) {
-                    for (int j = 0; j < n - 1; j++) {
-                      List<Integer> ref = new ArrayList<>();
-                      DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                      Integer e1 = ref.remove(i);
-                      Integer a1 = mine.remove(i);
-                      check(Objects.equals(e1, a1), base + " remove(" + i + ") -> remove(" + j + ") 첫 반환값");
-                      Integer e2 = ref.remove(j);
-                      Integer a2 = mine.remove(j);
-                      check(Objects.equals(e2, a2), base + " remove(" + i + ") -> remove(" + j + ") 둘째 반환값");
-                      verify(mine, ref, base + " remove(" + i + ") -> remove(" + j + ")");
-                    }
+                // 삽입 -> 삭제
+                for (int i = 0; i <= n; i++) {
+                  for (int j = 0; j <= n; j++) {
+                    List<Integer> ref = new ArrayList<>();
+                    DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                    mine.add(i, 91);
+                    ref.add(i, 91);
+                    Integer expected = ref.remove(j);
+                    Integer actual = mine.remove(j);
+                    check(Objects.equals(expected, actual), base + " add(" + i + ") -> remove(" + j + ") 반환값");
+                    verify(mine, ref, base + " add(" + i + ") -> remove(" + j + ")");
                   }
+                }
 
-                  // 삽입 -> 삭제
-                  for (int i = 0; i <= n; i++) {
-                    for (int j = 0; j <= n; j++) {
-                      List<Integer> ref = new ArrayList<>();
-                      DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                      mine.add(i, 91);
-                      ref.add(i, 91);
-                      Integer expected = ref.remove(j);
-                      Integer actual = mine.remove(j);
-                      check(Objects.equals(expected, actual), base + " add(" + i + ") -> remove(" + j + ") 반환값");
-                      verify(mine, ref, base + " add(" + i + ") -> remove(" + j + ")");
-                    }
-                  }
-
-                  // 삭제 -> 삽입
-                  for (int i = 0; i < n; i++) {
-                    for (int j = 0; j <= n - 1; j++) {
-                      List<Integer> ref = new ArrayList<>();
-                      DoublyLinkedList<Integer> mine = newFilled(n, ref);
-                      mine.remove(i);
-                      ref.remove(i);
-                      mine.add(j, 92);
-                      ref.add(j, 92);
-                      verify(mine, ref, base + " remove(" + i + ") -> add(" + j + ")");
-                    }
+                // 삭제 -> 삽입
+                for (int i = 0; i < n; i++) {
+                  for (int j = 0; j <= n - 1; j++) {
+                    List<Integer> ref = new ArrayList<>();
+                    DoublyLinkedList<Integer> mine = newFilled(n, ref);
+                    mine.remove(i);
+                    ref.remove(i);
+                    mine.add(j, 92);
+                    ref.add(j, 92);
+                    verify(mine, ref, base + " remove(" + i + ") -> add(" + j + ")");
                   }
                 }
               }
+            }
 
-              // 삭제된 노드는 prev / next 가 모두 null 이어야 함 (정책 테스트)
-              static void testRemovedNodeDetached() {
-                for (int n = 1; n <= 6; n++) {
-                  for (int idx = 0; idx < n; idx++) {
-                    DoublyLinkedList<Integer> mine = newFilled(n, new ArrayList<>());
-                    List<Node<Integer>> nodes = new ArrayList<>();
-                    for (Node<Integer> cur = mine.head; cur != null; cur = cur.next) {
-                      nodes.add(cur);
-                    }
-
-                    Node<Integer> removed = nodes.get(idx);
-                    mine.remove(idx);
-                    check(removed.prev == null, "n=" + n + " remove(" + idx + "): 삭제된 노드의 prev 가 정리되지 않음");
-                    check(removed.next == null, "n=" + n + " remove(" + idx + "): 삭제된 노드의 next 가 정리되지 않음");
+            // 삭제된 노드는 prev / next 가 모두 null 이어야 함 (정책 테스트)
+            static void testRemovedNodeDetached() {
+              for (int n = 1; n <= 6; n++) {
+                for (int idx = 0; idx < n; idx++) {
+                  DoublyLinkedList<Integer> mine = newFilled(n, new ArrayList<>());
+                  List<Node<Integer>> nodes = new ArrayList<>();
+                  for (Node<Integer> cur = mine.head; cur != null; cur = cur.next) {
+                    nodes.add(cur);
                   }
+
+                  Node<Integer> removed = nodes.get(idx);
+                  mine.remove(idx);
+                  check(removed.prev == null, "n=" + n + " remove(" + idx + "): 삭제된 노드의 prev 가 정리되지 않음");
+                  check(removed.next == null, "n=" + n + " remove(" + idx + "): 삭제된 노드의 next 가 정리되지 않음");
                 }
               }
+            }
 
-              // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
-              static void testRandom() {
-                Random r = new Random(1);
+            // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+            @SuppressWarnings("all")
+            static void testRandom() {
+              Random r = new Random(1);
 
-                for (int t = 0; t < 1000; t++) {
-                  DoublyLinkedList<Integer> mine = new DoublyLinkedList<>();
-                  List<Integer> ref = new ArrayList<>();
-                  List<String> log = new ArrayList<>();
-
-                  try {
-                    for (int step = 0; step < 300; step++) {
-                      boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 추가 위주 <-> 삭제 위주 (빈 리스트 자주 발생)
-                      int v = r.nextInt(5);
-                      int op = r.nextInt(10);
-                      if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
-                        op = r.nextInt(3);
-                      }
-                      if (!growing && (op <= 2 || op == 8) && r.nextInt(3) != 0) {
-                        op = 4 + r.nextInt(3);
-                      }
-
-                      switch (op) {
-                        case 0 -> {                              // add(v)
-                          log.add("add(" + v + ")");
-                          mine.add(v);
-                          ref.add(v);
-                        }
-                        case 1 -> {                              // add(idx, v) : 0 ~ size 전체
-                          int idx = r.nextInt(ref.size() + 1);
-                          log.add("add(" + idx + "," + v + ")");
-                          mine.add(idx, v);
-                          ref.add(idx, v);
-                        }
-                        case 2 -> {                              // add(0, v) : 맨 앞 삽입
-                          log.add("add(0," + v + ")");
-                          mine.add(0, v);
-                          ref.add(0, v);
-                        }
-                        case 3 -> {                              // set
-                          if (!ref.isEmpty()) {
-                            int idx = r.nextInt(ref.size());
-                            log.add("set(" + idx + "," + v + ")");
-                            mine.set(idx, v);
-                            ref.set(idx, v);
-                          }
-                        }
-                        case 4, 5, 6 -> {                        // remove : 임의 위치 / head / tail
-                          if (!ref.isEmpty()) {
-                            int idx = (op == 4) ? r.nextInt(ref.size()) : (op == 5 ? 0 : ref.size() - 1);
-                            log.add("remove(" + idx + ")");
-                            Integer expected = ref.remove(idx);  // int → 인덱스 기준 삭제
-                            Integer actual = mine.remove(idx);
-                            check(Objects.equals(expected, actual), "remove 반환값: 기대=" + expected + ", 실제=" + actual);
-                          }
-                        }
-                        case 7 -> {                              // 범위 밖 index 는 예외, 상태는 그대로
-                          log.add("bounds");
-                          checkBounds(mine, ref.size(), "bounds");
-                        }
-                        case 8 -> {                              // add(size, v) : index 로 맨 뒤 삽입
-                          log.add("add(size=" + ref.size() + "," + v + ")");
-                          mine.add(ref.size(), v);
-                          ref.add(ref.size(), v);
-                        }
-                        case 9 -> {                              // null 입력은 거부, 상태는 그대로
-                          log.add("null");
-                          int idx = r.nextInt(ref.size() + 1);
-                          expectThrows(NULL_EXCEPTION, () -> mine.add(null), "null: add(null)");
-                          expectThrows(NULL_EXCEPTION, () -> mine.add(idx, null), "null: add(" + idx + ",null)");
-                          if (!ref.isEmpty()) {
-                            int setIdx = r.nextInt(ref.size());
-                            expectThrows(NULL_EXCEPTION, () -> mine.set(setIdx, null), "null: set(" + setIdx + ",null)");
-                          }
-                        }
-                      }
-
-                      verify(mine, ref, "step " + step);
-                    }
-                  } catch (AssertionError | RuntimeException e) {
-                    throw new AssertionError("[trial=" + t + ", 연산 " + log.size() + "개 실행] 원인: " + e
-                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
-                  }
-                }
-              }
-
-              static void testLarge() {
-                int n = 100_000;
+              for (int t = 0; t < 1000; t++) {
                 DoublyLinkedList<Integer> mine = new DoublyLinkedList<>();
+                List<Integer> ref = new ArrayList<>();
+                List<String> log = new ArrayList<>();
 
-                long start = System.nanoTime();
-                for (int i = 0; i < n; i++) {
-                  mine.add(i);
-                }
-                long ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 2000, "add(v) " + n + "번에 " + ms + "ms: O(1) 이어야 함 (tail 활용 확인)");
-                check(mine.getSize() == n, "large: size");
-                check(Objects.equals(mine.getData(0), 0), "large: getData(0)");
-                check(Objects.equals(mine.getData(n / 2), n / 2), "large: getData(n/2)");
-                check(Objects.equals(mine.getData(n - 1), n - 1), "large: getData(n-1)");
-                checkStructure(mine, "large add");
+                try {
+                  for (int step = 0; step < 300; step++) {
+                    boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 추가 위주 <-> 삭제 위주 (빈 리스트 자주 발생)
+                    int v = r.nextInt(5);
+                    int op = r.nextInt(10);
+                    if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
+                      op = r.nextInt(3);
+                    }
+                    if (!growing && (op <= 2 || op == 8) && r.nextInt(3) != 0) {
+                      op = 4 + r.nextInt(3);
+                    }
 
-                // 뒤쪽 원소 접근이 tail 쪽에서 탐색하는지 (head 에서만 탐색하면 매우 느려짐)
-                start = System.nanoTime();
-                for (int i = 0; i < 5_000; i++) {
-                  int idx = n - 1 - (i % 50);
-                  check(Objects.equals(mine.getData(idx), idx), "large: getData(" + idx + ")");
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 1000, "뒤쪽 원소 getData 5000번에 " + ms + "ms: 양방향 탐색이 아닐 수 있음");
+                    switch (op) {
+                      case 0 -> {                              // add(v)
+                        log.add("add(" + v + ")");
+                        mine.add(v);
+                        ref.add(v);
+                      }
+                      case 1 -> {                              // add(idx, v) : 0 ~ size 전체
+                        int idx = r.nextInt(ref.size() + 1);
+                        log.add("add(" + idx + "," + v + ")");
+                        mine.add(idx, v);
+                        ref.add(idx, v);
+                      }
+                      case 2 -> {                              // add(0, v) : 맨 앞 삽입
+                        log.add("add(0," + v + ")");
+                        mine.add(0, v);
+                        ref.add(0, v);
+                      }
+                      case 3 -> {                              // set
+                        if (!ref.isEmpty()) {
+                          int idx = r.nextInt(ref.size());
+                          log.add("set(" + idx + "," + v + ")");
+                          mine.set(idx, v);
+                          ref.set(idx, v);
+                        }
+                      }
+                      case 4, 5, 6 -> {                        // remove : 임의 위치 / head / tail
+                        if (!ref.isEmpty()) {
+                          int idx = (op == 4) ? r.nextInt(ref.size()) : (op == 5 ? 0 : ref.size() - 1);
+                          log.add("remove(" + idx + ")");
+                          Integer expected = ref.remove(idx);  // int → 인덱스 기준 삭제
+                          Integer actual = mine.remove(idx);
+                          check(Objects.equals(expected, actual), "remove 반환값: 기대=" + expected + ", 실제=" + actual);
+                        }
+                      }
+                      case 7 -> {                              // 범위 밖 index 는 예외, 상태는 그대로
+                        log.add("bounds");
+                        checkBounds(mine, ref.size(), "bounds");
+                      }
+                      case 8 -> {                              // add(size, v) : index 로 맨 뒤 삽입
+                        log.add("add(size=" + ref.size() + "," + v + ")");
+                        mine.add(ref.size(), v);
+                        ref.add(ref.size(), v);
+                      }
+                      case 9 -> {                              // null 입력은 거부, 상태는 그대로
+                        log.add("null");
+                        int idx = r.nextInt(ref.size() + 1);
+                        expectThrows(NULL_EXCEPTION, () -> mine.add(null), "null: add(null)");
+                        expectThrows(NULL_EXCEPTION, () -> mine.add(idx, null), "null: add(" + idx + ",null)");
+                        if (!ref.isEmpty()) {
+                          int setIdx = r.nextInt(ref.size());
+                          expectThrows(NULL_EXCEPTION, () -> mine.set(setIdx, null), "null: set(" + setIdx + ",null)");
+                        }
+                      }
+                    }
 
-                // 뒤쪽 중간 삭제도 tail 쪽에서 탐색해야 함
-                DoublyLinkedList<Integer> tailSide = new DoublyLinkedList<>();
-                for (int i = 0; i < n; i++) {
-                  tailSide.add(i);
-                }
-                start = System.nanoTime();
-                for (int i = 0; i < 5_000; i++) {
-                  Integer got = tailSide.remove(tailSide.getSize() - 2);
-                  check(Objects.equals(got, n - 2 - i), "large: remove(size-2) 반환값 " + i);
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 1000, "뒤쪽 remove(size-2) 5000번에 " + ms + "ms: 양방향 탐색이 아닐 수 있음");
-                check(tailSide.getSize() == n - 5_000, "large: remove(size-2) 후 size");
-                check(Objects.equals(tailSide.getData(tailSide.getSize() - 1), n - 1), "large: remove(size-2) 후 마지막 값");
-                checkStructure(tailSide, "large remove(size-2)");
-
-                for (int i = 0; i < n; i++) {              // 앞에서부터 전부 삭제: 반환 순서 확인
-                  Integer got = mine.remove(0);
-                  check(Objects.equals(got, i), "large: remove(0) 순서 " + i);
-                }
-                check(mine.isEmpty(), "large: 전부 삭제 후 isEmpty");
-                checkStructure(mine, "large drain");
-
-                start = System.nanoTime();
-                for (int i = 0; i < n; i++) {
-                  mine.add(0, i);
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 2000, "add(0, v) " + n + "번에 " + ms + "ms: O(1) 이어야 함");
-                check(Objects.equals(mine.getData(0), n - 1), "large: add(0,v) getData(0)");
-                check(Objects.equals(mine.getData(n - 1), 0), "large: add(0,v) getData(n-1)");
-                checkStructure(mine, "large add(0,v)");
-
-                start = System.nanoTime();
-                for (int i = 0; i < n; i++) {              // 뒤에서부터 전부 삭제: tail 덕분에 O(1) 이어야 함
-                  Integer got = mine.remove(mine.getSize() - 1);
-                  check(Objects.equals(got, i), "large: 마지막 노드 remove 순서 " + i);
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 2000, "마지막 노드 remove " + n + "번에 " + ms + "ms: O(1) 이어야 함");
-                check(mine.isEmpty(), "large: 뒤에서 전부 삭제 후 isEmpty");
-                checkStructure(mine, "large 뒤에서 전부 삭제 후");
-              }
-
-              // ---------- 검증 도구 ----------
-
-              static DoublyLinkedList<Integer> newFilled(int n, List<Integer> ref) {
-                DoublyLinkedList<Integer> list = new DoublyLinkedList<>();
-                for (int i = 0; i < n; i++) {
-                  list.add(i + 10);                        // 서로 다른 값 → 순서/연결 버그가 드러남
-                  ref.add(i + 10);
-                }
-                return list;
-              }
-
-              static void expectList(DoublyLinkedList<Integer> mine, String where, Integer... expected) {
-                verify(mine, Arrays.asList(expected), where);
-              }
-
-              // size, isEmpty, 모든 getData, 정방향/역방향 순회 값, 내부 연결 구조까지 한 번에 비교
-              static void verify(DoublyLinkedList<Integer> mine, List<Integer> ref, String where) {
-                check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
-                check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
-                for (int i = 0; i < ref.size(); i++) {
-                  check(Objects.equals(mine.getData(i), ref.get(i)), where + ": getData(" + i + ")");
-                }
-                checkStructure(mine, where);                // 노드 수가 size 와 같음이 보장된 뒤에 값 순회
-
-                int k = 0;
-                for (Node<Integer> cur = mine.head; cur != null; cur = cur.next) {
-                  check(Objects.equals(cur.data, ref.get(k)), where + ": 정방향 순회 값 (" + k + ")");
-                  k++;
-                }
-                k = ref.size() - 1;
-                for (Node<Integer> cur = mine.tail; cur != null; cur = cur.prev) {
-                  check(Objects.equals(cur.data, ref.get(k)), where + ": 역방향 순회 값 (" + k + ")");
-                  k--;
+                    verify(mine, ref, "step " + step);
+                  }
+                } catch (AssertionError | RuntimeException e) {
+                  throw new AssertionError(
+                      "[trial=" + t + ", 연산 " + log.size() + "개 실행] 원인: " + e + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
                 }
               }
+            }
 
-              // head ~ tail 연결 구조 검증 (값만 비교해서는 잡히지 않는 prev / tail 버그 확인용)
-              // head.prev == null, tail.next == null, 정방향·역방향 노드 수 == size, 모든 노드의 prev/next 가 서로 대칭
-              static void checkStructure(DoublyLinkedList<Integer> list, String where) {
-                int size = list.getSize();
+            static void testLarge() {
+              int n = 100_000;
+              DoublyLinkedList<Integer> mine = new DoublyLinkedList<>();
 
-                if (size == 0) {
-                  check(list.head == null && list.tail == null, where + ": 빈 리스트인데 head/tail 이 null 이 아님");
+              long start = System.nanoTime();
+              for (int i = 0; i < n; i++) {
+                mine.add(i);
+              }
+              long ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 2000, "add(v) " + n + "번에 " + ms + "ms: O(1) 이어야 함 (tail 활용 확인)");
+              check(mine.getSize() == n, "large: size");
+              check(Objects.equals(mine.getData(0), 0), "large: getData(0)");
+              check(Objects.equals(mine.getData(n / 2), n / 2), "large: getData(n/2)");
+              check(Objects.equals(mine.getData(n - 1), n - 1), "large: getData(n-1)");
+              checkStructure(mine, "large add");
+
+              // 뒤쪽 원소 접근이 tail 쪽에서 탐색하는지 (head 에서만 탐색하면 매우 느려짐)
+              start = System.nanoTime();
+              for (int i = 0; i < 5_000; i++) {
+                int idx = n - 1 - (i % 50);
+                check(Objects.equals(mine.getData(idx), idx), "large: getData(" + idx + ")");
+              }
+              ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 1000, "뒤쪽 원소 getData 5000번에 " + ms + "ms: 양방향 탐색이 아닐 수 있음");
+
+              // 뒤쪽 중간 삭제도 tail 쪽에서 탐색해야 함
+              DoublyLinkedList<Integer> tailSide = new DoublyLinkedList<>();
+              for (int i = 0; i < n; i++) {
+                tailSide.add(i);
+              }
+              start = System.nanoTime();
+              for (int i = 0; i < 5_000; i++) {
+                Integer got = tailSide.remove(tailSide.getSize() - 2);
+                check(Objects.equals(got, n - 2 - i), "large: remove(size-2) 반환값 " + i);
+              }
+              ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 1000, "뒤쪽 remove(size-2) 5000번에 " + ms + "ms: 양방향 탐색이 아닐 수 있음");
+              check(tailSide.getSize() == n - 5_000, "large: remove(size-2) 후 size");
+              check(Objects.equals(tailSide.getData(tailSide.getSize() - 1), n - 1), "large: remove(size-2) 후 마지막 값");
+              checkStructure(tailSide, "large remove(size-2)");
+
+              for (int i = 0; i < n; i++) {              // 앞에서부터 전부 삭제: 반환 순서 확인
+                Integer got = mine.remove(0);
+                check(Objects.equals(got, i), "large: remove(0) 순서 " + i);
+              }
+              check(mine.isEmpty(), "large: 전부 삭제 후 isEmpty");
+              checkStructure(mine, "large drain");
+
+              start = System.nanoTime();
+              for (int i = 0; i < n; i++) {
+                mine.add(0, i);
+              }
+              ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 2000, "add(0, v) " + n + "번에 " + ms + "ms: O(1) 이어야 함");
+              check(Objects.equals(mine.getData(0), n - 1), "large: add(0,v) getData(0)");
+              check(Objects.equals(mine.getData(n - 1), 0), "large: add(0,v) getData(n-1)");
+              checkStructure(mine, "large add(0,v)");
+
+              start = System.nanoTime();
+              for (int i = 0; i < n; i++) {              // 뒤에서부터 전부 삭제: tail 덕분에 O(1) 이어야 함
+                Integer got = mine.remove(mine.getSize() - 1);
+                check(Objects.equals(got, i), "large: 마지막 노드 remove 순서 " + i);
+              }
+              ms = (System.nanoTime() - start) / 1_000_000;
+              check(ms < 2000, "마지막 노드 remove " + n + "번에 " + ms + "ms: O(1) 이어야 함");
+              check(mine.isEmpty(), "large: 뒤에서 전부 삭제 후 isEmpty");
+              checkStructure(mine, "large 뒤에서 전부 삭제 후");
+            }
+
+            // ---------- 검증 도구 ----------
+
+            static DoublyLinkedList<Integer> newFilled(int n, List<Integer> ref) {
+              DoublyLinkedList<Integer> list = new DoublyLinkedList<>();
+              for (int i = 0; i < n; i++) {
+                list.add(i + 10);                        // 서로 다른 값 → 순서/연결 버그가 드러남
+                ref.add(i + 10);
+              }
+              return list;
+            }
+
+            static void expectList(DoublyLinkedList<Integer> mine, String where, Integer... expected) {
+              verify(mine, Arrays.asList(expected), where);
+            }
+
+            // size, isEmpty, 모든 getData, 정방향/역방향 순회 값, 내부 연결 구조까지 한 번에 비교
+            static void verify(DoublyLinkedList<Integer> mine, List<Integer> ref, String where) {
+              check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
+              check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
+              for (int i = 0; i < ref.size(); i++) {
+                check(Objects.equals(mine.getData(i), ref.get(i)), where + ": getData(" + i + ")");
+              }
+              checkStructure(mine, where);                // 노드 수가 size 와 같음이 보장된 뒤에 값 순회
+
+              int k = 0;
+              for (Node<Integer> cur = mine.head; cur != null; cur = cur.next) {
+                check(Objects.equals(cur.data, ref.get(k)), where + ": 정방향 순회 값 (" + k + ")");
+                k++;
+              }
+              k = ref.size() - 1;
+              for (Node<Integer> cur = mine.tail; cur != null; cur = cur.prev) {
+                check(Objects.equals(cur.data, ref.get(k)), where + ": 역방향 순회 값 (" + k + ")");
+                k--;
+              }
+            }
+
+            // head ~ tail 연결 구조 검증 (값만 비교해서는 잡히지 않는 prev / tail 버그 확인용)
+            // head.prev == null, tail.next == null, 정방향·역방향 노드 수 == size, 모든 노드의 prev/next 가 서로 대칭
+            static void checkStructure(DoublyLinkedList<Integer> list, String where) {
+              int size = list.getSize();
+
+              if (size == 0) {
+                check(list.head == null && list.tail == null, where + ": 빈 리스트인데 head/tail 이 null 이 아님");
+                return;
+              }
+
+              check(list.head != null && list.tail != null, where + ": size > 0 인데 head/tail 이 null");
+              check(list.head.prev == null, where + ": head.prev != null");
+              check(list.tail.next == null, where + ": tail.next != null");
+
+              int count = 0;
+              Node<Integer> cur = list.head;
+              Node<Integer> last = null;
+
+              while (cur != null) {
+                check(cur.prev == last, where + ": 정방향 " + count + "번째 노드의 prev 가 직전 노드와 다름");
+                last = cur;
+                cur = cur.next;
+                count++;
+                check(count <= size, where + ": 정방향 노드 수가 size 보다 많음 (유실/순환 의심)");
+              }
+              check(count == size, where + ": head 부터 센 노드 수(" + count + ") != size(" + size + ")");
+              check(last == list.tail, where + ": 정방향 마지막 노드 != tail");
+
+              count = 0;
+              cur = list.tail;
+              Node<Integer> after = null;
+
+              while (cur != null) {
+                check(cur.next == after, where + ": 역방향 " + count + "번째 노드의 next 가 직후 노드와 다름");
+                after = cur;
+                cur = cur.prev;
+                count++;
+                check(count <= size, where + ": 역방향 노드 수가 size 보다 많음 (유실/순환 의심)");
+              }
+              check(count == size, where + ": tail 부터 센 노드 수(" + count + ") != size(" + size + ")");
+              check(after == list.head, where + ": 역방향 마지막 노드 != head");
+            }
+
+            // 범위 밖 index 는 모두 예외여야 하고, 실패한 연산이 size / 구조를 바꾸면 안 됨
+            static void checkBounds(DoublyLinkedList<Integer> mine, int size, String where) {
+              expectIOOBE(() -> mine.getData(-1), where + ": getData(-1)");
+              expectIOOBE(() -> mine.getData(size), where + ": getData(size)");
+              expectIOOBE(() -> mine.getData(Integer.MAX_VALUE), where + ": getData(MAX)");
+              expectIOOBE(() -> mine.getData(Integer.MIN_VALUE), where + ": getData(MIN)");
+              expectIOOBE(() -> mine.set(-1, 0), where + ": set(-1)");
+              expectIOOBE(() -> mine.set(size, 0), where + ": set(size)");
+              expectIOOBE(() -> mine.set(Integer.MAX_VALUE, 0), where + ": set(MAX)");
+              expectIOOBE(() -> mine.remove(-1), where + ": remove(-1)");
+              expectIOOBE(() -> mine.remove(size), where + ": remove(size)");
+              expectIOOBE(() -> mine.remove(Integer.MAX_VALUE), where + ": remove(MAX)");
+              expectIOOBE(() -> mine.add(-1, 0), where + ": add(-1)");
+              expectIOOBE(() -> mine.add(size + 1, 0), where + ": add(size+1)");
+              expectIOOBE(() -> mine.add(Integer.MAX_VALUE, 0), where + ": add(MAX)");
+              expectIOOBE(() -> mine.add(Integer.MIN_VALUE, 0), where + ": add(MIN)");
+              check(mine.getSize() == size, where + ": 예외 발생 후 size 가 변함");
+              checkStructure(mine, where + " (예외 발생 후)");
+            }
+
+            static String recent(List<String> log) {
+              return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
+            }
+
+            static void expectIOOBE(Runnable action, String msg) {
+              expectThrows(IndexOutOfBoundsException.class, action, msg);
+            }
+
+            static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
+              try {
+                action.run();
+              } catch (RuntimeException e) {
+                if (type.isInstance(e)) {
                   return;
                 }
-
-                check(list.head != null && list.tail != null, where + ": size > 0 인데 head/tail 이 null");
-                check(list.head.prev == null, where + ": head.prev != null");
-                check(list.tail.next == null, where + ": tail.next != null");
-
-                int count = 0;
-                Node<Integer> cur = list.head;
-                Node<Integer> last = null;
-
-                while (cur != null) {
-                  check(cur.prev == last, where + ": 정방향 " + count + "번째 노드의 prev 가 직전 노드와 다름");
-                  last = cur;
-                  cur = cur.next;
-                  count++;
-                  check(count <= size, where + ": 정방향 노드 수가 size 보다 많음 (유실/순환 의심)");
-                }
-                check(count == size, where + ": head 부터 센 노드 수(" + count + ") != size(" + size + ")");
-                check(last == list.tail, where + ": 정방향 마지막 노드 != tail");
-
-                count = 0;
-                cur = list.tail;
-                Node<Integer> after = null;
-
-                while (cur != null) {
-                  check(cur.next == after, where + ": 역방향 " + count + "번째 노드의 next 가 직후 노드와 다름");
-                  after = cur;
-                  cur = cur.prev;
-                  count++;
-                  check(count <= size, where + ": 역방향 노드 수가 size 보다 많음 (유실/순환 의심)");
-                }
-                check(count == size, where + ": tail 부터 센 노드 수(" + count + ") != size(" + size + ")");
-                check(after == list.head, where + ": 역방향 마지막 노드 != head");
+                throw new AssertionError(msg + ": 기대 예외=" + type.getSimpleName() + ", 실제=" + e, e);
               }
+              throw new AssertionError(msg + ": 예외가 발생하지 않음");
+            }
 
-              // 범위 밖 index 는 모두 예외여야 하고, 실패한 연산이 size / 구조를 바꾸면 안 됨
-              static void checkBounds(DoublyLinkedList<Integer> mine, int size, String where) {
-                expectIOOBE(() -> mine.getData(-1), where + ": getData(-1)");
-                expectIOOBE(() -> mine.getData(size), where + ": getData(size)");
-                expectIOOBE(() -> mine.getData(Integer.MAX_VALUE), where + ": getData(MAX)");
-                expectIOOBE(() -> mine.getData(Integer.MIN_VALUE), where + ": getData(MIN)");
-                expectIOOBE(() -> mine.set(-1, 0), where + ": set(-1)");
-                expectIOOBE(() -> mine.set(size, 0), where + ": set(size)");
-                expectIOOBE(() -> mine.set(Integer.MAX_VALUE, 0), where + ": set(MAX)");
-                expectIOOBE(() -> mine.remove(-1), where + ": remove(-1)");
-                expectIOOBE(() -> mine.remove(size), where + ": remove(size)");
-                expectIOOBE(() -> mine.remove(Integer.MAX_VALUE), where + ": remove(MAX)");
-                expectIOOBE(() -> mine.add(-1, 0), where + ": add(-1)");
-                expectIOOBE(() -> mine.add(size + 1, 0), where + ": add(size+1)");
-                expectIOOBE(() -> mine.add(Integer.MAX_VALUE, 0), where + ": add(MAX)");
-                expectIOOBE(() -> mine.add(Integer.MIN_VALUE, 0), where + ": add(MIN)");
-                check(mine.getSize() == size, where + ": 예외 발생 후 size 가 변함");
-                checkStructure(mine, where + " (예외 발생 후)");
-              }
-
-              static String recent(List<String> log) {
-                return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
-              }
-
-              static void expectIOOBE(Runnable action, String msg) {
-                expectThrows(IndexOutOfBoundsException.class, action, msg);
-              }
-
-              static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
-                try {
-                  action.run();
-                } catch (RuntimeException e) {
-                  if (type.isInstance(e)) {
-                    return;
-                  }
-                  throw new AssertionError(msg + ": 기대 예외=" + type.getSimpleName() + ", 실제=" + e, e);
-                }
-                throw new AssertionError(msg + ": 예외가 발생하지 않음");
-              }
-
-              static void check(boolean cond, String msg) {
-                if (!cond) {throw new AssertionError(msg);}
-              }
+            static void check(boolean cond, String msg) {
+              if (!cond) {throw new AssertionError(msg);}
+            }
             """);
         break;
       }
 
       case "4": {
         System.out.println("""
-              static final Class<? extends RuntimeException> NULL_EXCEPTION = NullPointerException.class;
-              static final Class<? extends RuntimeException> EMPTY_EXCEPTION = EmptyStackException.class;
-              static final Class<? extends RuntimeException> CAPACITY_EXCEPTION = IllegalArgumentException.class;
+            static final Class<? extends RuntimeException> NULL_EXCEPTION = NullPointerException.class;
+            static final Class<? extends RuntimeException> EMPTY_EXCEPTION = EmptyStackException.class;
+            static final Class<? extends RuntimeException> CAPACITY_EXCEPTION = IllegalArgumentException.class;
 
-              public static void main(String[] args) {
-                testConstructor();          // 생성자 용량 검증 (1 미만 거부)
-                testEmpty();                // 빈 스택
-                testNullPolicy();           // null 입력 거부 + 거부 후 상태 유지
-                testRegression();           // 구현 중 나오기 쉬운 버그 재현 시나리오
-                testExhaustiveSmall();      // 작은 용량·크기에서 모든 상태의 push/pop/peek (전수 검사)
-                testExhaustiveSequences();  // push/pop 모든 조합 (연쇄 버그 확인)
-                testRandom();               // ArrayList 와 비교하는 랜덤 테스트
-                testLarge();                // 대량 데이터 + 성능(용량 증가 정책)
-                System.out.println("ALL PASSED");
+            public static void main(String[] args) {
+              testConstructor();          // 생성자 용량 검증 (1 미만 거부)
+              testEmpty();                // 빈 스택
+              testNullPolicy();           // null 입력 거부 + 거부 후 상태 유지
+              testRegression();           // 구현 중 나오기 쉬운 버그 재현 시나리오
+              testExhaustiveSmall();      // 작은 용량·크기에서 모든 상태의 push/pop/peek (전수 검사)
+              testExhaustiveSequences();  // push/pop 모든 조합 (연쇄 버그 확인)
+              testRandom();               // ArrayList 와 비교하는 랜덤 테스트
+              testLarge();                // 대량 데이터 + 성능(용량 증가 정책)
+              System.out.println("ALL PASSED");
+            }
+
+            // ---------- 시나리오 테스트 ----------
+
+            // 용량 1 미만은 거부, 1 이상은 허용 (허용된 용량보다 많이 넣어도 정상 증가)
+            static void testConstructor() {
+              int[] invalid = {0, -1, -2, -100, Integer.MIN_VALUE};
+              for (int cap : invalid) {
+                expectThrows(CAPACITY_EXCEPTION, () -> new ArrayBasedStack<Integer>(cap), "생성자 capacity=" + cap);
               }
 
-              // ---------- 시나리오 테스트 ----------
-
-              // 용량 1 미만은 거부, 1 이상은 허용 (허용된 용량보다 많이 넣어도 정상 증가)
-              static void testConstructor() {
-                int[] invalid = {0, -1, -2, -100, Integer.MIN_VALUE};
-                for (int cap : invalid) {
-                  expectThrows(CAPACITY_EXCEPTION, () -> new ArrayBasedStack<Integer>(cap), "생성자 capacity=" + cap);
-                }
-
-                for (int cap = 1; cap <= 20; cap++) {
-                  ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
-                  checkEmpty(s, "생성자 cap=" + cap);
-                  List<Integer> ref = new ArrayList<>();
-                  for (int i = 0; i < 50; i++) {
-                    s.push(i + 10);
-                    ref.add(i + 10);
-                  }
-                  verifyAll(s, ref, "생성자 cap=" + cap + " 용량보다 많이 push");
-                }
-              }
-
-              static void testEmpty() {
-                for (int cap = 1; cap <= 4; cap++) {
-                  ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
-                  checkEmpty(s, "empty cap=" + cap);
-                }
-              }
-
-              // 모든 용량 / 크기 (용량이 꽉 찬 상태 포함) 에서 null 입력이 거부되고, 거부된 push 가 상태를 바꾸지 않는지 확인
-              static void testNullPolicy() {
-                for (int cap = 1; cap <= 4; cap++) {
-                  for (int n = 0; n <= 10; n++) {
-                    String base = "cap=" + cap + ", n=" + n;
-                    List<Integer> ref = new ArrayList<>();
-                    ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
-
-                    expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null)");
-                    expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null) 두 번째");
-                    verifyAll(mine, ref, base + " null 거부 후");
-
-                    mine.push(1);                           // 거부 이후에도 정상 동작하는지
-                    ref.add(1);
-                    verifyAll(mine, ref, base + " null 거부 후 push(1)");
-                    mine.push(2);
-                    ref.add(2);
-                    verifyAll(mine, ref, base + " null 거부 후 push(2)");
-                  }
-                }
-              }
-
-              // 구현 중 실제로 나오기 쉬운 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
-              static void testRegression() {
-                // LIFO 순서
-                ArrayBasedStack<Integer> a = new ArrayBasedStack<>(4);
-                a.push(1);
-                a.push(2);
-                a.push(3);
-                expectStack(a, "regression: push 1,2,3", 1, 2, 3);
-                check(Objects.equals(a.pop(), 3), "regression: pop 반환값 3");
-                check(Objects.equals(a.pop(), 2), "regression: pop 반환값 2");
-                check(Objects.equals(a.pop(), 1), "regression: pop 반환값 1");
-                checkEmpty(a, "regression: 전부 pop 후");
-
-                // peek 은 상태를 바꾸지 않음
-                ArrayBasedStack<Integer> b = new ArrayBasedStack<>(2);
-                b.push(5);
-                check(Objects.equals(b.peek(), 5), "regression: peek 1회");
-                check(Objects.equals(b.peek(), 5), "regression: peek 2회 (peek 이 top 을 움직임)");
-                check(b.getSize() == 1, "regression: peek 후 size");
-                expectStack(b, "regression: peek 반복 후", 5);
-
-                // 용량이 꽉 찬 상태에서 push -> 증가 후 기존 원소 보존 (1 -> 3 -> 7)
-                ArrayBasedStack<Integer> c = new ArrayBasedStack<>(1);
-                c.push(1);                                  // 용량이 꽉 참
-                c.push(2);                                  // 여기서 증가: 기존 원소가 유지되어야 함
-                expectStack(c, "regression: 용량 1 에서 증가", 1, 2);
-                c.push(3);
-                c.push(4);                                  // 두 번째 증가
-                c.push(5);
-                expectStack(c, "regression: 두 번째 증가 후", 1, 2, 3, 4, 5);
-
-                // 꽉 찬 상태에서 pop 후 push: 증가 없이 빈 자리 재사용
-                ArrayBasedStack<Integer> d = new ArrayBasedStack<>(2);
-                d.push(1);
-                d.push(2);
-                check(Objects.equals(d.pop(), 2), "regression: 꽉 찬 상태 pop 반환값");
-                d.push(3);
-                expectStack(d, "regression: 꽉 찬 상태에서 pop 후 push", 1, 3);
-                d.pop();
-                d.pop();
-                d.push(4);
-                expectStack(d, "regression: 비운 뒤 push", 4);
-
-                // 빈 스택에서 pop / peek 이 여러 번 실패해도 top 이 음수로 내려가지 않음
-                ArrayBasedStack<Integer> e = new ArrayBasedStack<>(2);
-                e.push(1);
-                e.pop();
-                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 1회");
-                expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 2회");
-                expectThrows(EMPTY_EXCEPTION, () -> e.peek(), "regression: 빈 스택 peek");
-                check(e.getSize() == 0, "regression: 빈 스택 pop 실패 후 size (음수가 되면 안 됨)");
-                check(e.isEmpty(), "regression: 빈 스택 pop 실패 후 isEmpty");
-                e.push(2);
-                check(e.getSize() == 1, "regression: 실패 후 push 의 size");
-                expectStack(e, "regression: 빈 스택 pop 실패 후 push", 2);
-
-                // 꽉 찬 상태에서 null 이 거부된 뒤에도 정상 동작
-                ArrayBasedStack<Integer> f = new ArrayBasedStack<>(1);
-                f.push(1);
-                expectThrows(NULL_EXCEPTION, () -> f.push(null), "regression: 꽉 찬 상태 push(null)");
-                expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후", 1);
-                f.push(2);
-                expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후 push(2)", 1, 2);
-
-                // 넣은 객체 그대로 (같은 인스턴스) 돌려줘야 함
-                ArrayBasedStack<String> g = new ArrayBasedStack<>(1);
-                String x = new String("x");
-                String y = new String("y");
-                g.push(x);
-                g.push(y);
-                check(g.peek() == y, "regression: peek 은 같은 인스턴스여야 함");
-                check(g.pop() == y, "regression: pop 은 같은 인스턴스여야 함 (y)");
-                check(g.pop() == x, "regression: pop 은 같은 인스턴스여야 함 (x)");
-                check(g.isEmpty(), "regression: 객체 스택 비움");
-
-                // 중복 값 / Integer 캐시 범위를 넘는 값 (== 비교 버그 확인)
-                ArrayBasedStack<Integer> h = new ArrayBasedStack<>(1);
-                h.push(1000);
-                h.push(1000);
-                h.push(1000);
-                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 1");
-                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 2");
-                check(Objects.equals(h.pop(), 1000), "regression: 중복 큰 값 pop 3");
-                checkEmpty(h, "regression: 중복 큰 값 전부 pop 후");
-              }
-
-              // cap 1~8, n 0~20 의 모든 조합에서 모든 상태에 대해 연산을 검사한다.
-              // (용량이 꽉 찬 상태 / 한 칸 남은 상태 / 여유 있는 상태 / 증가 직후 상태가 모두 포함됨)
-              static void testExhaustiveSmall() {
-                for (int cap = 1; cap <= 8; cap++) {
-                  for (int n = 0; n <= 20; n++) {
-                    String base = "cap=" + cap + ", n=" + n;
-
-                    // 채운 직후 + peek 반복 + 추가로 0~25개 더 push (증가가 여러 번 일어나는 구간 포함)
-                    for (int extra = 0; extra <= 25; extra++) {
-                      List<Integer> ref = new ArrayList<>();
-                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
-                      verifyAll(mine, ref, base + " 채운 직후");
-                      verify(mine, ref, base + " peek 반복 1");
-                      verify(mine, ref, base + " peek 반복 2");
-                      for (int i = 0; i < extra; i++) {
-                        mine.push(100 + i);
-                        ref.add(100 + i);
-                      }
-                      verifyAll(mine, ref, base + " 추가 push " + extra + "개 후");
-                    }
-
-                    // k 번 pop 한 뒤 (k = 0 ~ n) 상태 확인 + 이어서 push
-                    for (int k = 0; k <= n; k++) {
-                      List<Integer> ref = new ArrayList<>();
-                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
-                      for (int i = 0; i < k; i++) {
-                        Integer expected = ref.remove(ref.size() - 1);
-                        Integer actual = mine.pop();
-                        check(Objects.equals(expected, actual), base + " pop " + k + "번 중 " + i + "번째 반환값: 기대=" + expected + ", 실제=" + actual);
-                      }
-                      verifyAll(mine, ref, base + " pop " + k + "번 후");
-                      mine.push(97);                        // pop 으로 비워진 칸에 정상적으로 쓰는지
-                      ref.add(97);
-                      verifyAll(mine, ref, base + " pop " + k + "번 후 push(97)");
-                      mine.push(98);
-                      ref.add(98);
-                      verifyAll(mine, ref, base + " pop " + k + "번 후 push(98)");
-                    }
-
-                    // 전부 pop -> 빈 스택 -> 재사용 (3회 반복)
-                    {
-                      List<Integer> ref = new ArrayList<>();
-                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
-                      for (int round = 0; round < 3; round++) {
-                        while (!ref.isEmpty()) {
-                          Integer expected = ref.remove(ref.size() - 1);
-                          Integer actual = mine.pop();
-                          check(Objects.equals(expected, actual), base + " 전부 pop round=" + round + " 반환값: 기대=" + expected + ", 실제=" + actual);
-                          verify(mine, ref, base + " 전부 pop round=" + round);
-                        }
-                        checkEmpty(mine, base + " 전부 pop 후 round=" + round);
-                        for (int i = 0; i < n + round; i++) {   // 비워진 뒤 재사용
-                          mine.push(i + 30 * round);
-                          ref.add(i + 30 * round);
-                        }
-                        verifyAll(mine, ref, base + " 재사용 후 round=" + round);
-                      }
-                    }
-
-                    // 현재 크기(경계)에서 push / pop 번갈아: 용량 경계에서 증가가 반복되거나 값이 밀리지 않는지
-                    {
-                      List<Integer> ref = new ArrayList<>();
-                      ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
-                      for (int i = 0; i < 6; i++) {
-                        mine.push(90 + i);                  // push -> pop
-                        ref.add(90 + i);
-                        verifyAll(mine, ref, base + " 경계 push(" + (90 + i) + ")");
-                        Integer expected = ref.remove(ref.size() - 1);
-                        check(Objects.equals(mine.pop(), expected), base + " 경계 pop 반환값 " + i);
-                        verifyAll(mine, ref, base + " 경계 pop " + i);
-                      }
-                      for (int i = 0; i < 6; i++) {
-                        mine.push(80 + i);                  // push, push -> pop
-                        ref.add(80 + i);
-                        mine.push(70 + i);
-                        ref.add(70 + i);
-                        Integer expected = ref.remove(ref.size() - 1);
-                        check(Objects.equals(mine.pop(), expected), base + " 경계 push,push,pop 반환값 " + i);
-                        verifyAll(mine, ref, base + " 경계 push,push,pop " + i);
-                      }
-                    }
-                  }
-                }
-              }
-
-              // cap 1~4 에서 push / pop 길이 11 의 모든 조합 (2^11 가지). 빈 스택에서의 pop 도 포함.
-              // (앞 연산이 남긴 잘못된 내부 상태가 뒤 연산에서 드러나는 버그 확인)
-              static void testExhaustiveSequences() {
-                int len = 11;
-
-                for (int cap = 1; cap <= 4; cap++) {
-                  for (int mask = 0; mask < (1 << len); mask++) {
-                    ArrayBasedStack<Integer> mine = new ArrayBasedStack<>(cap);
-                    List<Integer> ref = new ArrayList<>();
-                    StringBuilder ops = new StringBuilder();
-
-                    for (int step = 0; step < len; step++) {
-                      boolean isPush = ((mask >> step) & 1) == 1;
-                      ops.append(isPush ? "push " : "pop ");
-                      String where = "cap=" + cap + ", 연산 순서: " + ops;
-
-                      if (isPush) {
-                        mine.push(step + 10);
-                        ref.add(step + 10);
-                      } else if (ref.isEmpty()) {
-                        expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
-                      } else {
-                        Integer expected = ref.remove(ref.size() - 1);
-                        Integer actual = mine.pop();
-                        check(Objects.equals(expected, actual), where + ": pop 반환값 기대=" + expected + ", 실제=" + actual);
-                      }
-                      verifyAll(mine, ref, where);
-                    }
-                  }
-                }
-              }
-
-              // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
-              static void testRandom() {
-                Random r = new Random(1);
-                int[] caps = {1, 2, 3, 5, 16};
-
-                for (int t = 0; t < 1000; t++) {
-                  int cap = caps[t % caps.length];
-                  ArrayBasedStack<Integer> mine = new ArrayBasedStack<>(cap);
-                  List<Integer> ref = new ArrayList<>();
-                  List<String> log = new ArrayList<>();
-
-                  try {
-                    for (int step = 0; step < 300; step++) {
-                      boolean growing = (step / 50) % 2 == 0;   // 50스텝마다 push 위주 <-> pop 위주 (빈 스택 / 재확장 유도)
-                      int v = r.nextInt(100);
-                      int op = r.nextInt(8);
-                      if (growing && op >= 4 && op <= 6 && r.nextInt(3) != 0) {
-                        op = r.nextInt(3);
-                      }
-                      if (!growing && op <= 2 && r.nextInt(3) != 0) {
-                        op = 4 + r.nextInt(3);
-                      }
-
-                      switch (op) {
-                        case 0, 1, 2 -> {                        // push
-                          log.add("push(" + v + ")");
-                          mine.push(v);
-                          ref.add(v);
-                        }
-                        case 3 -> {                              // peek (빈 스택이면 예외)
-                          log.add("peek");
-                          if (ref.isEmpty()) {
-                            expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), "peek: 빈 스택");
-                          } else {
-                            Integer expected = ref.get(ref.size() - 1);
-                            Integer actual = mine.peek();
-                            check(Objects.equals(expected, actual), "peek 값: 기대=" + expected + ", 실제=" + actual);
-                          }
-                        }
-                        case 4, 5, 6 -> {                        // pop (빈 스택이면 예외)
-                          log.add("pop");
-                          if (ref.isEmpty()) {
-                            expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), "pop: 빈 스택");
-                          } else {
-                            Integer expected = ref.remove(ref.size() - 1);  // int → 인덱스 기준 삭제
-                            Integer actual = mine.pop();
-                            check(Objects.equals(expected, actual), "pop 반환값: 기대=" + expected + ", 실제=" + actual);
-                          }
-                        }
-                        case 7 -> {                              // null 입력은 거부, 상태는 그대로
-                          log.add("push(null)");
-                          expectThrows(NULL_EXCEPTION, () -> mine.push(null), "push(null)");
-                        }
-                      }
-
-                      verify(mine, ref, "step " + step);
-                      if (step % 10 == 0) {
-                        verifyAll(mine, ref, "step " + step + " (전체 확인)");
-                      }
-                    }
-                  } catch (AssertionError | RuntimeException e) {
-                    throw new AssertionError("[trial=" + t + ", cap=" + cap + ", 연산 " + log.size() + "개 실행] 원인: " + e
-                        + " | 마지막 연산: " + recent(log) + " | ref 상태: " + ref, e);
-                  }
-                }
-              }
-
-              static void testLarge() {
-                int n = 300_000;
-                ArrayBasedStack<Integer> a = new ArrayBasedStack<>(1);
-
-                long start = System.nanoTime();
-                for (int i = 0; i < n; i++) {
-                  a.push(i);
-                }
-                long ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 1000, "push " + n + "번에 " + ms + "ms: 용량 증가가 2배 방식(amortized O(1))이 아닐 수 있음");
-                check(a.getSize() == n, "large: size");
-                check(!a.isEmpty(), "large: isEmpty");
-                check(Objects.equals(a.peek(), n - 1), "large: peek");
-
-                for (int i = n - 1; i >= 0; i--) {          // 뒤에서부터 전부 pop: 반환 순서 확인
-                  check(Objects.equals(a.peek(), i), "large: peek 순서 " + i);
-                  Integer got = a.pop();
-                  check(Objects.equals(got, i), "large: pop 순서 " + i);
-                }
-                check(a.getSize() == 0, "large: 전부 pop 후 size");
-                checkEmpty(a, "large 전부 pop 후");
-
-                for (int i = 0; i < 1_000; i++) {           // 비워진 뒤 재사용
-                  a.push(i * 2);
-                }
-                for (int i = 999; i >= 0; i--) {
-                  check(Objects.equals(a.pop(), i * 2), "large: 재사용 후 pop 순서 " + i);
-                }
-                checkEmpty(a, "large 재사용 후 전부 pop");
-
-                // 같은 크기 근처에서 push / pop 반복: 매번 증가하거나 복사하면 매우 느려짐
-                ArrayBasedStack<Integer> b = new ArrayBasedStack<>(1);
-                for (int i = 0; i < 1_000; i++) {
-                  b.push(i);
-                }
-                start = System.nanoTime();
-                for (int i = 0; i < 1_000_000; i++) {
-                  b.push(i);
-                  Integer got = b.pop();
-                  if (!Objects.equals(got, i)) {
-                    check(false, "large: push/pop 반복 반환값 " + i);
-                  }
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 1000, "push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
-                check(b.getSize() == 1_000, "large: push/pop 반복 후 size");
-                check(Objects.equals(b.peek(), 999), "large: push/pop 반복 후 peek");
-
-                // 빈 스택 <-> 1개 상태 반복 (용량 1)
-                ArrayBasedStack<Integer> c = new ArrayBasedStack<>(1);
-                start = System.nanoTime();
-                for (int i = 0; i < 1_000_000; i++) {
-                  c.push(i);
-                  Integer got = c.pop();
-                  if (!Objects.equals(got, i)) {
-                    check(false, "large: 용량 1 push/pop 반복 반환값 " + i);
-                  }
-                }
-                ms = (System.nanoTime() - start) / 1_000_000;
-                check(ms < 1000, "용량 1 push/pop 100만 번 반복에 " + ms + "ms: O(1) 이어야 함");
-                checkEmpty(c, "large 용량 1 push/pop 반복 후");
-              }
-
-              // ---------- 검증 도구 ----------
-
-              static ArrayBasedStack<Integer> newFilled(int cap, int n, List<Integer> ref) {
+              for (int cap = 1; cap <= 20; cap++) {
                 ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
-                for (int i = 0; i < n; i++) {
-                  s.push(i + 10);                          // 서로 다른 값 → 밀림/덮어쓰기 버그가 드러남
-                  ref.add(i + 10);                         // ref 의 마지막 원소 = 스택의 top
+                checkEmpty(s, "생성자 cap=" + cap);
+                List<Integer> ref = new ArrayList<>();
+                for (int i = 0; i < 50; i++) {
+                  s.push(i + 10);
+                  ref.add(i + 10);
                 }
-                return s;
+                verifyAll(s, ref, "생성자 cap=" + cap + " 용량보다 많이 push");
               }
+            }
 
-              static void expectStack(ArrayBasedStack<Integer> mine, String where, Integer... bottomToTop) {
-                verifyAll(mine, new ArrayList<>(Arrays.asList(bottomToTop)), where);
+            static void testEmpty() {
+              for (int cap = 1; cap <= 4; cap++) {
+                ArrayBasedStack<Integer> s = new ArrayBasedStack<>(cap);
+                checkEmpty(s, "empty cap=" + cap);
               }
+            }
 
-              // size, isEmpty, peek(또는 빈 스택의 예외) 를 빠르게 비교 (큰 데이터에서도 사용 가능)
-              static void verify(ArrayBasedStack<Integer> mine, List<Integer> ref, String where) {
-                check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
-                check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
-                if (ref.isEmpty()) {
-                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
-                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
-                  check(mine.getSize() == 0, where + ": 빈 스택 예외 후 size");
-                } else {
-                  Integer expected = ref.get(ref.size() - 1);
-                  Integer actual = mine.peek();
-                  check(Objects.equals(expected, actual), where + ": peek 기대=" + expected + ", 실제=" + actual);
+            // 모든 용량 / 크기 (용량이 꽉 찬 상태 포함) 에서 null 입력이 거부되고, 거부된 push 가 상태를 바꾸지 않는지 확인
+            static void testNullPolicy() {
+              for (int cap = 1; cap <= 4; cap++) {
+                for (int n = 0; n <= 10; n++) {
+                  String base = "cap=" + cap + ", n=" + n;
+                  List<Integer> ref = new ArrayList<>();
+                  ArrayBasedStack<Integer> mine = newFilled(cap, n, ref);
+
+                  expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null)");
+                  expectThrows(NULL_EXCEPTION, () -> mine.push(null), base + ": push(null) 두 번째");
+                  verifyAll(mine, ref, base + " null 거부 후");
+
+                  mine.push(1);                           // 거부 이후에도 정상 동작하는지
+                  ref.add(1);
+                  verifyAll(mine, ref, base + " null 거부 후 push(1)");
+                  mine.push(2);
+                  ref.add(2);
+                  verifyAll(mine, ref, base + " null 거부 후 push(2)");
                 }
               }
+            }
 
-              // verify + 내부 원소 전부 확인: 전부 pop 해서 ref 와 비교한 뒤 같은 순서로 다시 push 해서 복원 (작은 크기에서만 사용)
-              static void verifyAll(ArrayBasedStack<Integer> mine, List<Integer> ref, String where) {
-                verify(mine, ref, where);
-                try {
-                  List<Integer> popped = new ArrayList<>();
-                  for (int i = ref.size() - 1; i >= 0; i--) {
-                    Integer got = mine.pop();
-                    popped.add(got);
-                    check(Objects.equals(got, ref.get(i)), where + ": 전체 확인 pop (index " + i + ") 기대=" + ref.get(i) + ", 실제=" + got);
-                  }
-                  check(mine.isEmpty() && mine.getSize() == 0, where + ": 전체 pop 후 비어 있어야 함");
-                  for (int i = popped.size() - 1; i >= 0; i--) {
-                    mine.push(popped.get(i));
-                  }
-                } catch (RuntimeException e) {
-                  throw new AssertionError(where + ": 전체 확인 중 예외 " + e, e);
-                }
-                verify(mine, ref, where + " (전체 확인 후 복원)");
-              }
+            // 구현 중 실제로 나오기 쉬운 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
+            @SuppressWarnings("all")
+            static void testRegression() {
+              // LIFO 순서
+              ArrayBasedStack<Integer> a = new ArrayBasedStack<>(4);
+              a.push(1);
+              a.push(2);
+              a.push(3);
+              expectStack(a, "regression: push 1,2,3", 1, 2, 3);
+              check(Objects.equals(a.pop(), 3), "regression: pop 반환값 3");
+              check(Objects.equals(a.pop(), 2), "regression: pop 반환값 2");
+              check(Objects.equals(a.pop(), 1), "regression: pop 반환값 1");
+              checkEmpty(a, "regression: 전부 pop 후");
 
-              // 빈 스택은 pop / peek 이 모두 예외여야 하고, 실패한 연산이 상태를 바꾸면 안 됨 (여러 번 반복)
-              static void checkEmpty(ArrayBasedStack<Integer> mine, String where) {
-                check(mine.isEmpty(), where + ": isEmpty");
-                check(mine.getSize() == 0, where + ": size");
-                for (int i = 0; i < 3; i++) {
-                  expectThrows(EMPTY_EXCEPTION, () -> mine.pop(), where + ": 빈 스택 pop");
-                  expectThrows(EMPTY_EXCEPTION, () -> mine.peek(), where + ": 빈 스택 peek");
-                }
-                check(mine.isEmpty(), where + ": 예외 발생 후 isEmpty");
-                check(mine.getSize() == 0, where + ": 예외 발생 후 size 가 변함");
-              }
+              // peek 은 상태를 바꾸지 않음
+              ArrayBasedStack<Integer> b = new ArrayBasedStack<>(2);
+              b.push(5);
+              check(Objects.equals(b.peek(), 5), "regression: peek 1회");
+              check(Objects.equals(b.peek(), 5), "regression: peek 2회 (peek 이 top 을 움직임)");
+              check(b.getSize() == 1, "regression: peek 후 size");
+              expectStack(b, "regression: peek 반복 후", 5);
 
-              static String recent(List<String> log) {
-                return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
-              }
+              // 용량이 꽉 찬 상태에서 push -> 증가 후 기존 원소 보존 (1 -> 3 -> 7)
+              ArrayBasedStack<Integer> c = new ArrayBasedStack<>(1);
+              c.push(1);                                  // 용량이 꽉 참
+              c.push(2);                                  // 여기서 증가: 기존 원소가 유지되어야 함
+              expectStack(c, "regression: 용량 1 에서 증가", 1, 2);
+              c.push(3);
+              c.push(4);                                  // 두 번째 증가
+              c.push(5);
+              expectStack(c, "regression: 두 번째 증가 후", 1, 2, 3, 4, 5);
 
-              static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
-                try {
-                  action.run();
-                } catch (RuntimeException e) {
-                  if (type.isInstance(e)) {
-                    return;
-                  }
-                  throw new AssertionError(msg + ": 기대 예외=" + type.getSimpleName() + ", 실제=" + e, e);
-                }
-                throw new AssertionError(msg + ": 예외가 발생하지 않음");
-              }
+              // 꽉 찬 상태에서 pop 후 push: 증가 없이 빈 자리 재사용
+              ArrayBasedStack<Integer> d = new ArrayBasedStack<>(2);
+              d.push(1);
+              d.push(2);
+              check(Objects.equals(d.pop(), 2), "regression: 꽉 찬 상태 pop 반환값");
+              d.push(3);
+              expectStack(d, "regression: 꽉 찬 상태에서 pop 후 push", 1, 3);
+              d.pop();
+              d.pop();
+              d.push(4);
+              expectStack(d, "regression: 비운 뒤 push", 4);
 
-              static void check(boolean cond, String msg) {
-                if (!cond) {throw new AssertionError(msg);}
-              }
+              // 빈 스택에서 pop / peek 이 여러 번 실패해도 top 이 음수로 내려가지 않음
+              @SuppressWarnings("all")
+              ArrayBasedStack<Integer> e = new ArrayBasedStack<>(2);
+              e.push(1);
+              e.pop();
+              expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 1회");
+              expectThrows(EMPTY_EXCEPTION, () -> e.pop(), "regression: 빈 스택 pop 2회");
+              expectThrows(EMPTY_EXCEPTION, () -> e.peek(), "regression: 빈 스택 peek");
+              check(e.getSize() == 0, "regression: 빈 스택 pop 실패 후 size (음수가 되면 안 됨)");
+              check(e.isEmpty(), "regression: 빈 스택 pop 실패 후 isEmpty");
+              e.push(2);
+              check(e.getSize() == 1, "regression: 실패 후 push 의 size");
+              expectStack(e, "regression: 빈 스택 pop 실패 후 push", 2);
+
+              // 꽉 찬 상태에서 null 이 거부된 뒤에도 정상 동작
+              ArrayBasedStack<Integer> f = new ArrayBasedStack<>(1);
+              f.push(1);
+              expectThrows(NULL_EXCEPTION, () -> f.push(null), "regression: 꽉 찬 상태 push(null)");
+              expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후", 1);
+              f.push(2);
+              expectStack(f, "regression: 꽉 찬 상태에서 null 거부 후 push(2)", 1, 2);
+
+              // 넣은 객체 그대로 (같은 인스턴스) 돌려줘야 함
+              @SuppressWarnings("all")
+              ArrayBasedStack<String> g = new ArrayBasedStack<>(1);
+              String
             """);
         break;
       }
 
       case "5": {
         System.out.println("""
+
               static final Class<? extends RuntimeException> NULL_EXCEPTION = NullPointerException.class;
               static final Class<? extends RuntimeException> EMPTY_EXCEPTION = EmptyStackException.class;
 
@@ -1676,6 +1344,7 @@ public class DataStructureTestCodes {
               }
 
               // 구현 중 실제로 나왔던 버그를 그대로 재현하는 시나리오 (실패 위치가 바로 원인을 가리키도록 따로 분리)
+              @SuppressWarnings("all")
               static void testRegression() {
                 // push 마다 top 이 새 노드로 이동해야 함 + LIFO 순서
                 LinkedListBasedStack<Integer> a = new LinkedListBasedStack<>();
@@ -1781,6 +1450,7 @@ public class DataStructureTestCodes {
 
               // n 0~20 에서 모든 상태에 대해 연산을 검사한다.
               // (빈 스택 / 노드 1개 / 여러 개 / pop 으로 비워진 뒤 재사용 경계가 모두 포함됨)
+              @SuppressWarnings("all")
               static void testExhaustiveSmall() {
                 for (int n = 0; n <= 20; n++) {
                   String base = "n=" + n;
@@ -1864,6 +1534,7 @@ public class DataStructureTestCodes {
 
               // push / pop 길이 12 의 모든 조합 (2^12 가지). 빈 스택에서의 pop 도 포함.
               // (앞 연산이 남긴 잘못된 top / size 상태가 뒤 연산에서 드러나는 버그 확인)
+              @SuppressWarnings("all")
               static void testExhaustiveSequences() {
                 int len = 12;
 
@@ -1893,6 +1564,7 @@ public class DataStructureTestCodes {
               }
 
               // (선택) pop 된 노드는 next 가 null 이어야 함 (정책 테스트: pop 시 poped.next = null 로 끊도록 구현했다면 사용)
+              @SuppressWarnings("all")
               static void testRemovedNodeDetached() {
                 for (int n = 1; n <= 6; n++) {
                   LinkedListBasedStack<Integer> mine = newFilled(n, new ArrayList<>());
@@ -1909,6 +1581,7 @@ public class DataStructureTestCodes {
               }
 
               // ArrayList 와 결과를 비교하는 랜덤 테스트 (seed 고정 → 항상 같은 결과로 재현 가능)
+              @SuppressWarnings("all")
               static void testRandom() {
                 Random r = new Random(1);
 
@@ -1970,6 +1643,7 @@ public class DataStructureTestCodes {
                 }
               }
 
+              @SuppressWarnings("all")
               static void testLarge() {
                 int n = 300_000;
                 LinkedListBasedStack<Integer> a = new LinkedListBasedStack<>();
@@ -2060,6 +1734,7 @@ public class DataStructureTestCodes {
               }
 
               // size, isEmpty, peek(또는 빈 스택의 예외), 내부 연결 구조와 모든 노드 값(top → 바닥)을 한 번에 비교
+              @SuppressWarnings("all")
               static void verify(LinkedListBasedStack<Integer> mine, List<Integer> ref, String where) {
                 check(mine.getSize() == ref.size(), where + ": size " + mine.getSize() + " != " + ref.size());
                 check(mine.isEmpty() == ref.isEmpty(), where + ": isEmpty");
@@ -2109,6 +1784,7 @@ public class DataStructureTestCodes {
               }
 
               // 빈 스택은 pop / peek 이 모두 예외여야 하고, 실패한 연산이 상태를 바꾸면 안 됨 (여러 번 반복)
+              @SuppressWarnings("all")
               static void checkEmpty(LinkedListBasedStack<Integer> mine, String where) {
                 check(mine.isEmpty(), where + ": isEmpty");
                 check(mine.getSize() == 0, where + ": size");
@@ -2126,6 +1802,7 @@ public class DataStructureTestCodes {
                 return String.join(", ", log.subList(Math.max(0, log.size() - 8), log.size()));
               }
 
+              @SuppressWarnings("all")
               static void expectThrows(Class<? extends RuntimeException> type, Runnable action, String msg) {
                 try {
                   action.run();
@@ -2141,6 +1818,7 @@ public class DataStructureTestCodes {
               static void check(boolean cond, String msg) {
                 if (!cond) {throw new AssertionError(msg);}
               }
+            }
             """);
         break;
       }
